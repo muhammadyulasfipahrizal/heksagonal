@@ -8,6 +8,8 @@ interface Product {
   mainImage: string;
   manufacturer: string;
   categoryId: string;
+  code?: string | null;
+  weight?: number | null;
   category: {name: string}?;
   inStock: number;
 }

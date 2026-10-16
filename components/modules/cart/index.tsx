@@ -6,7 +6,7 @@ import Image from "next/image"
 import Link from "next/link";
 import { FaCheck, FaCircleQuestion, FaClock, FaXmark } from "react-icons/fa6";
 import QuantityInputCart from "@/components/QuantityInputCart";
-import { sanitize } from "@/lib/sanitize";
+import { formatRupiah, sanitize } from "@/lib/sanitize";
 
 export const CartModule = () => {
 
@@ -62,7 +62,7 @@ export const CartModule = () => {
                         ) : null}
                       </div> */}
                     <p className="mt-1 text-sm font-medium text-gray-900">
-                      ${product.price}
+                      {formatRupiah(product.price)}
                     </p>
                   </div>
 
@@ -94,7 +94,7 @@ export const CartModule = () => {
                     />
                   )}
 
-                  <span>{1 ? "In stock" : `Ships in 3 days`}</span>
+                  <span>{1 ? "Tersedia" : `Ships in 3 days`}</span>
                 </p>
               </div>
             </li>
@@ -111,19 +111,19 @@ export const CartModule = () => {
           id="summary-heading"
           className="text-lg font-medium text-gray-900"
         >
-          Order summary
+          Ringkasan Order
         </h2>
 
         <dl className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
             <dt className="text-sm text-gray-600">Subtotal</dt>
             <dd className="text-sm font-medium text-gray-900">
-              ${total}
+              {formatRupiah(total)}
             </dd>
           </div>
           <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="flex items-center text-sm text-gray-600">
-              <span>Shipping estimate</span>
+              <span>CHANGE LATER - Estimasi Pengiriman</span>
               <a
                 href="#"
                 className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
@@ -137,11 +137,11 @@ export const CartModule = () => {
                 />
               </a>
             </dt>
-            <dd className="text-sm font-medium text-gray-900">$5.00</dd>
+            <dd className="text-sm font-medium text-gray-900">Rp. 5.000</dd>
           </div>
           <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="flex text-sm text-gray-600">
-              <span>Tax estimate</span>
+              <span>Estimasi Pajak</span>
               <a
                 href="#"
                 className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
@@ -156,15 +156,15 @@ export const CartModule = () => {
               </a>
             </dt>
             <dd className="text-sm font-medium text-gray-900">
-              ${total / 5}
+              {formatRupiah(total / 5)}
             </dd>
           </div>
           <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="text-base font-medium text-gray-900">
-              Order total
+              Total
             </dt>
             <dd className="text-base font-medium text-gray-900">
-              ${total === 0 ? 0 : Math.round(total + total / 5 + 5)}
+              {formatRupiah(total === 0 ? 0 : Math.round(total + total / 5 + 5))}
             </dd>
           </div>
         </dl>
@@ -172,7 +172,7 @@ export const CartModule = () => {
           <div className="mt-6">
             <Link
               href="/checkout"
-              className="block flex justify-center items-center w-full uppercase bg-white px-4 py-3 text-base border border-black border-gray-300 font-bold text-blue-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
+              className="block flex justify-center items-center w-full uppercase bg-white px-4 py-3 text-base border border-black border-gray-300 font-bold text-[#02054b] shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
             >
               <span>Checkout</span>
             </Link>

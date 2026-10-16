@@ -42,16 +42,16 @@ export default function MerchantPage() {
   }, []);
 
   return (
-    <div className="flex h-screen">
+    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto h-full max-xl:flex-col max-xl:h-fit">
       <DashboardSidebar />
       <div className="flex-1 p-10 overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Merchants</h1>
+          <h1 className="text-3xl font-bold">Merchant</h1>
           <Link
             href="/admin/merchant/new"
-            className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
+            className="bg-[#02054b] text-white px-6 py-2 rounded-md hover:bg-[#01043D] transition"
           >
-            Add Merchant
+            Tambah Merchant
           </Link>
         </div>
 
@@ -89,13 +89,13 @@ export default function MerchantPage() {
                     <td className="py-4">
                       <Link
                         href={`/admin/merchant/${merchant.id}`}
-                        className="text-blue-500 hover:underline mr-3"
+                        className="text-[#02054b] hover:underline mr-3"
                       >
                         View
                       </Link>
                       <Link
                         href={`/admin/merchant/${merchant.id}`}
-                        className="text-blue-500 hover:underline"
+                        className="text-[#02054b] hover:underline"
                       >
                         Edit
                       </Link>

@@ -2,17 +2,22 @@ const { parse } = require("csv-parse/sync");
 
 // Validate a single CSV row according to the Product schema constraints
 function validateRow(row) {
+  console.log("Merchant ID:", row.merchantId);
+  
   const errs = [];
   const clean = {};
 
   const title = String(row.title ?? "").trim();
   const slug = String(row.slug ?? "").trim();
+  const code = String(row.code ?? "").trim();
+  const weight = Number(row.weight);
   const price = Number(row.price);
   const categoryId = String(row.categoryId ?? "").trim();
   const inStock = Number(row.inStock ?? 0);
 
   if (!title) errs.push("title is required");
   if (!slug) errs.push("slug is required");
+  if (!code) errs.push("code is required");
   if (!Number.isFinite(price) || price < 0)
     errs.push("price must be a non-negative number");
   if (!categoryId) errs.push("categoryId is required");
@@ -21,10 +26,29 @@ function validateRow(row) {
 
   if (errs.length) return { ok: false, error: errs.join(", ") };
 
+  const merchantId = String(row.merchantId ?? "").trim();
+
+  if (!merchantId) {
+    errs.push("merchantId is required");
+  }
+
+  if (
+    row.weight === undefined ||
+    String(row.weight).trim() === "" ||
+    !Number.isInteger(weight) ||
+    weight < 0
+  ) {
+    errs.push("weight must be a non-negative integer");
+  }
+
+  clean.merchantId = merchantId;
+
   clean.title = title;
   clean.slug = slug;
-  clean.price = Math.round(price * 100) / 100; // Keep 2 decimal places
+  clean.price = Math.round(price); // Keep 2 decimal places
   clean.categoryId = categoryId;
+  clean.code = code;
+  clean.weight = weight;
   clean.inStock = Math.floor(inStock); // Integer stock quantity
 
   clean.manufacturer = row.manufacturer
@@ -90,6 +114,8 @@ async function createBatchWithItems(tx, batchId, validRows, errorRows) {
           batchId,
           title: row.title,
           slug: row.slug,
+          code: row.code,
+          weight: row.weight,
           price: row.price,
           manufacturer: row.manufacturer,
           description: row.description,
@@ -109,13 +135,24 @@ async function createBatchWithItems(tx, batchId, validRows, errorRows) {
         data: {
           title: row.title,
           slug: row.slug,
+          code: row.code,
+          weight: row.weight,
           price: row.price,
           rating: 5,
-          description: row.description ?? "",
-          manufacturer: row.manufacturer ?? "",
-          mainImage: row.mainImage ?? "",
-          categoryId: resolvedCategoryId, // Use resolved category ID
+          description: row.description,
+          manufacturer: row.manufacturer,
+          mainImage: row.mainImage,
           inStock: row.inStock,
+          category: {
+            connect: {
+              id: resolvedCategoryId,
+            },
+          },
+          merchant: {
+            connect: {
+              id: row.merchantId,
+            },
+          },
         },
       });
 
@@ -125,6 +162,8 @@ async function createBatchWithItems(tx, batchId, validRows, errorRows) {
           productId: product.id,
           title: row.title,
           slug: row.slug,
+          code: row.code,
+          weight: row.weight,
           price: row.price,
           manufacturer: row.manufacturer,
           description: row.description,
@@ -142,6 +181,8 @@ async function createBatchWithItems(tx, batchId, validRows, errorRows) {
           batchId,
           title: row.title,
           slug: row.slug,
+          code: row.code,
+          weight: row.weight,
           price: row.price,
           manufacturer: row.manufacturer,
           description: row.description,
@@ -163,6 +204,8 @@ async function createBatchWithItems(tx, batchId, validRows, errorRows) {
         title: "",
         slug: "",
         price: 0,
+        code: null,
+        weight: null,
         manufacturer: null,
         description: null,
         mainImage: null,
@@ -222,13 +265,15 @@ async function canDeleteProductsForBatch(prisma, batchId) {
   return { canDelete: true, blockedProductIds: [] };
 }
 
+
 async function applyItemUpdates(tx, batchId, updates) {
-  // updates: [{ itemId, price, inStock }]
   const ids = updates.map((u) => u.itemId);
+
   const items = await tx.bulk_upload_item.findMany({
     where: { id: { in: ids }, batchId },
     select: { id: true, productId: true },
   });
+
   const byId = new Map(items.map((i) => [i.id, i]));
   const result = [];
 
@@ -236,24 +281,75 @@ async function applyItemUpdates(tx, batchId, updates) {
     const current = byId.get(upd.itemId);
     if (!current) continue;
 
-    const price = Math.round(Number(upd.price));
-    const inStock = Number(upd.inStock) === 1 ? 1 : 0;
+    const data = {};
 
-    if (current.productId) {
+    if (upd.price !== undefined) {
+      const price = Number(upd.price);
+
+      if (!Number.isFinite(price) || price < 0) {
+        throw new Error("price must be a non-negative number");
+      }
+
+      data.price = Math.round(price);
+    }
+
+    if (upd.inStock !== undefined) {
+      const inStock = Number(upd.inStock);
+
+      if (!Number.isFinite(inStock) || inStock < 0) {
+        throw new Error("inStock must be a non-negative number");
+      }
+
+      data.inStock = Math.floor(inStock);
+    }
+
+    if (upd.code !== undefined) {
+      const code = String(upd.code ?? "").trim();
+
+      if (!code) {
+        throw new Error("code is required");
+      }
+
+      data.code = code;
+    }
+
+    if (upd.weight !== undefined) {
+      const weight = Number(upd.weight);
+
+      if (
+        upd.weight === null ||
+        String(upd.weight).trim() === "" ||
+        !Number.isFinite(weight) ||
+        weight < 0
+      ) {
+        throw new Error("weight must be a non-negative number");
+      }
+
+      data.weight = weight;
+    }
+
+    if (current.productId && Object.keys(data).length > 0) {
       await tx.product.update({
         where: { id: current.productId },
-        data: { price, inStock },
+        data,
       });
     }
 
     const updatedItem = await tx.bulk_upload_item.update({
       where: { id: upd.itemId },
-      data: { price, inStock, status: "UPDATED", error: null },
+      data: {
+        ...data,
+        status: "UPDATED",
+        error: null,
+      },
     });
+
     result.push(updatedItem);
   }
+
   return result;
 }
+
 
 module.exports = {
   parseCsvBufferToRows,

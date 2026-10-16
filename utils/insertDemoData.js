@@ -187,43 +187,19 @@ const demoProductImages = [
 
 const demoCategories = [
   {
-    name: "speakers",
+    name: "alat_teknik",
   },
   {
-    name: "trimmers",
+    name: "material_teknik",
   },
   {
-    name: "laptops",
+    name: "perlengkapan_teknik",
   },
   {
-    name: "watches",
+    name: "bahan_kimia",
   },
   {
-    name: "headphones",
-  },
-  {
-    name: "juicers",
-  },
-  {
-    name: "speakers",
-  },
-  {
-    name: "earbuds",
-  },
-  {
-    name: "tablet-keyboards",
-  },
-  {
-    name: "phone-gimbals",
-  },
-  {
-    name: "mixer-grinders",
-  },
-  {
-    name: "cameras",
-  },
-  {
-    name: "smart-phones",
+    name: "asbak",
   },
 ];
 

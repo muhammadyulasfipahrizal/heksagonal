@@ -13,36 +13,50 @@ import React from "react";
 
 const Hero = () => {
   return (
-    <div className="h-[700px] w-full bg-blue-500 max-lg:h-[900px] max-md:h-[750px]">
-      <div className="grid grid-cols-3 items-center justify-items-center px-10 gap-x-10 max-w-screen-2xl mx-auto h-full max-lg:grid-cols-1 max-lg:py-10 max-lg:gap-y-10">
-        <div className="flex flex-col gap-y-5 max-lg:order-last col-span-2">
-          <h1 className="text-6xl text-white font-bold mb-3 max-xl:text-5xl max-md:text-4xl max-sm:text-3xl">
-            THE PRODUCT OF THE FUTURE
+    <section className="w-full bg-white px-4 py-4 md:px-8 md:py-2">
+      <div className="relative mx-auto h-[250px] w-[1560px] overflow-hidden rounded-2xl sm:h-[400px] md:h-[500px] lg:h-[500px] xl:h-[600px]">
+        <Image
+          src="/banner.png"
+          alt="Heksagonal Trading Banner"
+          fill
+          priority
+          className="object-contain object-center"
+          sizes="100vw"
+        />
+        {/* <div className="flex flex-1 flex-col gap-y-5">
+          <h1 className="text-5xl font-bold max-lg:text-4xl max-sm:text-3xl">
+            HEKSAGONAL TRADING
           </h1>
-          <p className="text-white max-sm:text-sm">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor modi
-            iure laudantium necessitatibus ab, voluptates vitae ullam. Officia
-            ipsam iusto beatae nesciunt, consequatur deserunt minima maiores
-            earum obcaecati. Optio, nam!
+
+          <p className="text-gray-200 leading-relaxed max-sm:text-sm">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+            Dolor modi iure laudantium necessitatibus ab, voluptates
+            vitae ullam. Officia ipsam iusto beatae nesciunt,
+            consequatur deserunt minima maiores earum obcaecati.
           </p>
-          <div className="flex gap-x-1 max-lg:flex-col max-lg:gap-y-1">
-            <button className="bg-white text-blue-600 font-bold px-12 py-3 max-lg:text-xl max-sm:text-lg hover:bg-gray-100">
+
+          <div className="flex flex-wrap gap-3 max-sm:flex-col">
+            <button className="bg-white px-8 py-3 font-bold text-[#02054b] transition hover:bg-gray-100">
               BUY NOW
             </button>
-            <button className="bg-white text-blue-600 font-bold px-12 py-3 max-lg:text-xl max-sm:text-lg hover:bg-gray-100">
+
+            <button className="border border-white px-8 py-3 font-bold text-white transition hover:bg-white hover:text-[#02054b]">
               LEARN MORE
             </button>
           </div>
         </div>
-        <Image
-          src="/watch for banner.png"
-          width={400}
-          height={400}
-          alt="smart watch"
-          className="max-md:w-[300px] max-md:h-[300px] max-sm:h-[250px] max-sm:w-[250px] w-auto h-auto"
-        />
+
+        <div className="flex flex-1 justify-center">
+          <Image
+            src="/watch for banner.png"
+            width={400}
+            height={400}
+            alt="Smart watch"
+            className="h-auto w-full max-w-[350px] object-contain max-md:max-w-[280px]"
+          />
+        </div> */}
       </div>
-    </div>
+    </section>
   );
 };
 

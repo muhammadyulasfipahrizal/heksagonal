@@ -25,7 +25,7 @@ const DashboardCategory = () => {
       <DashboardSidebar />
       <div className="w-full">
         <h1 className="text-3xl font-semibold text-center mb-5">
-          All Categories
+          Semua Kategori
         </h1>
         <div className="flex justify-end mb-5">
           <Link href="/admin/categories/new">
@@ -35,7 +35,7 @@ const DashboardCategory = () => {
               paddingX={10}
               paddingY={5}
               textSize="base"
-              text="Add new category"
+              text="Tambah Kategori"
             />
           </Link>
         </div>

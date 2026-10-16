@@ -40,7 +40,19 @@ async function getMerchantById(request, response) {
 
 async function createMerchant(request, response) {
   try {
+    
+    console.log("Request body:", request.body);
+
     const { name, email, phone, address, description, status } = request.body;
+
+    console.log("Data sent to Prisma:", {
+      name,
+      email,
+      phone,
+      address,
+      description,
+      status,
+    });
 
     const merchant = await prisma.merchant.create({
       data: {

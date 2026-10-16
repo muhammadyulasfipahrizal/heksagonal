@@ -13,6 +13,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import apiClient from "@/lib/api";
+import { formatRupiah } from "@/lib/sanitize";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -29,7 +30,7 @@ const AdminOrders = () => {
 
   return (
     <div className="xl:ml-5 w-full max-xl:mt-5 ">
-      <h1 className="text-3xl font-semibold text-center mb-5">All orders</h1>
+      <h1 className="text-3xl font-semibold text-center mb-5">Semua Order</h1>
       <div className="overflow-x-auto">
         <table className="table table-md table-pin-cols">
           {/* head */}
@@ -81,7 +82,7 @@ const AdminOrders = () => {
                   </td>
 
                   <td>
-                    <p>${order?.total}</p>
+                    <p>{formatRupiah(order?.total)}</p>
                   </td>
 
                   <td>{ new Date(Date.parse(order?.dateTime)).toDateString() }</td>

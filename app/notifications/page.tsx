@@ -124,7 +124,7 @@ const NotificationsPage = () => {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <FaSpinner className="animate-spin text-4xl text-blue-500" />
+        <FaSpinner className="animate-spin text-4xl text-[#02054b]" />
       </div>
     );
   }
@@ -140,7 +140,7 @@ const NotificationsPage = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
-            <FaBell className="text-2xl text-blue-600" />
+            <FaBell className="text-2xl text-[#02054b]" />
             <h1 className="text-3xl font-bold text-gray-900">Notification Center</h1>
           </div>
           <p className="text-gray-600">
@@ -163,7 +163,7 @@ const NotificationsPage = () => {
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1 bg-[#01043D] text-white text-sm rounded hover:bg-[#01043D] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
               >
                 Search
               </button>
@@ -226,15 +226,15 @@ const NotificationsPage = () => {
 
         {/* Bulk Actions */}
         {selectedIds.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="bg-[#E6E7EF] border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-700">
+              <span className="text-sm text-[#01043D]">
                 {selectedIds.length} notification(s) selected
               </span>
               <div className="flex space-x-3">
                 <button
                   onClick={handleBulkMarkAsRead}
-                  className="inline-flex items-center px-3 py-1 text-sm font-medium text-blue-600 bg-white border border-blue-300 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  className="inline-flex items-center px-3 py-1 text-sm font-medium text-[#02054b] bg-white border border-blue-300 rounded-md hover:bg-[#E6E7EF] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                 >
                   <FaCheckCircle className="w-4 h-4 mr-1" />
                   Mark as Read
@@ -259,7 +259,7 @@ const NotificationsPage = () => {
                 type="checkbox"
                 checked={selectedIds.length === notifications.length && notifications.length > 0}
                 onChange={handleSelectAll}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-4 h-4 text-[#02054b] bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
               <span>Select all notifications</span>
             </label>
@@ -284,7 +284,7 @@ const NotificationsPage = () => {
               <p className="text-gray-500 mb-4">{error}</p>
               <button
                 onClick={() => fetchNotifications()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="px-4 py-2 bg-[#01043D] text-white rounded-md hover:bg-[#01043D] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Try Again
               </button>
@@ -322,7 +322,7 @@ const NotificationsPage = () => {
                   <button
                     onClick={loadMore}
                     disabled={loading}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2 bg-[#01043D] text-white rounded-md hover:bg-[#01043D] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <>

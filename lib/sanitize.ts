@@ -53,3 +53,7 @@ export function sanitizeHtml(text: string | null | undefined): string {
   // For server-side, strip all HTML tags
   return text.replace(/<[^>]*>/g, '');
 }
+
+export function formatRupiah(amount: number): string {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount);
+}

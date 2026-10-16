@@ -24,6 +24,7 @@ import { signOut, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useWishlistStore } from "@/app/_zustand/wishlistStore";
 import apiClient from "@/lib/api";
+import CategoryHeader from "./CategoryHeader";
 
 const Header = () => {
   const { data: session, status } = useSession();
@@ -75,30 +76,45 @@ const Header = () => {
     getUserByEmail();
   }, [session?.user?.email, wishlist.length]);
 
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
   return (
     <header className="bg-white">
       <HeaderTop />
       {pathname.startsWith("/admin") === false && (
         <div className="h-32 bg-white flex items-center justify-between px-16 max-[1320px]:px-16 max-md:px-6 max-lg:flex-col max-lg:gap-y-7 max-lg:justify-center max-lg:h-60 max-w-screen-2xl mx-auto">
           <Link href="/">
-            <img src="/logo v1 svg.svg" width={300} height={300} alt="singitronic logo" className="relative right-5 max-[1023px]:w-56" />
+            <img src="/logo_heksagonal.png" width={300} height={300} alt="heksagonal logo" className="relative right-5 max-[1023px]:w-56" />
           </Link>
+          <button
+            type="button"
+            onClick={() => setIsCategoryOpen(true)}
+            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-3 font-medium text-gray-700 transition hover:border-blue-600 hover:bg-blue-50"
+          >
+            <span className="text-xl">☰</span>
+            <span>Kategori</span>
+          </button>
+
           <SearchInput />
           <div className="flex gap-x-10 items-center">
             <NotificationBell />
-            <HeartElement wishQuantity={wishQuantity} />
+            {/* <HeartElement wishQuantity={wishQuantity} /> */}
             <CartElement />
           </div>
+          <CategoryHeader
+            isOpen={isCategoryOpen}
+            onClose={() => setIsCategoryOpen(false)}
+          />
         </div>
       )}
       {pathname.startsWith("/admin") === true && (
         <div className="flex justify-between h-32 bg-white items-center px-16 max-[1320px]:px-10  max-w-screen-2xl mx-auto max-[400px]:px-5">
           <Link href="/">
             <Image
-              src="/logo v1.png"
+              src="/logo_heksagonal.png"
               width={130}
               height={130}
-              alt="singitronic logo"
+              alt="heksagonal logo"
               className="w-56 h-auto"
             />
           </Link>

@@ -151,21 +151,21 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
   };
 
   return (
-    <div className="flex xl:flex-row flex-col justify-start items-start">
+    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto h-full max-xl:flex-col max-xl:h-fit">
       <DashboardSidebar />
       <div className="w-full xl:p-14 p-4">
-        <h1 className="text-4xl font-bold mb-8">Bulk Upload Products</h1>
+        <h1 className="text-4xl font-bold mb-8">Bulk Upload Produk</h1>
 
         {/* Instructions */}
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-          <h2 className="text-lg font-semibold mb-2 text-blue-800">
-            📋 Instructions
+        <div className="bg-[#E6E7EF] border-l-4 border-blue-500 p-4 mb-6">
+          <h2 className="text-lg font-semibold mb-2 text-[#01032F]">
+            📋 Instruksi
           </h2>
-          <ul className="list-disc list-inside space-y-1 text-sm text-blue-700">
+          <ul className="list-disc list-inside space-y-1 text-sm text-[#01043D]">
             <li>Download the CSV template below</li>
             <li>
               Fill in your product data (title, price, manufacturer, stock,
-              image URL, description, slug, categoryId)
+              image URL, description, slug, categoryId, weight, code)
             </li>
             <li>Upload the completed CSV file</li>
             <li>Maximum file size: 5MB</li>
@@ -187,7 +187,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragActive
-                ? "border-blue-500 bg-blue-50"
+                ? "border-blue-500 bg-[#E6E7EF]"
                 : "border-gray-300 bg-gray-50 hover:border-gray-400"
             }`}
             onDragEnter={handleDrag}
@@ -198,7 +198,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
             <FaFileUpload className="text-6xl text-gray-400 mx-auto mb-4" />
             <p className="text-lg mb-2">
               {file ? (
-                <span className="font-semibold text-blue-600">
+                <span className="font-semibold text-[#02054b]">
                   Selected: {file.name} ({(file.size / 1024).toFixed(2)} KB)
                 </span>
               ) : (
@@ -215,7 +215,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
             />
             <label
               htmlFor="file-upload"
-              className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded cursor-pointer transition-colors"
+              className="inline-block bg-[#02054b] hover:bg-[#01043D] text-white font-bold py-2 px-6 rounded cursor-pointer transition-colors"
             >
               Select CSV File
             </label>
@@ -231,7 +231,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
               className={`w-full py-4 px-6 rounded-lg font-bold text-white text-lg transition-colors ${
                 uploading
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-600"
+                  : "bg-[#02054b] hover:bg-[#01043D]"
               }`}
             >
               {uploading ? (
@@ -303,7 +303,7 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
                     <p className="font-semibold">Upload Statistics:</p>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-blue-600">
+                        <p className="text-2xl font-bold text-[#02054b]">
                           {uploadResult.details.processed}
                         </p>
                         <p className="text-sm text-gray-600">Processed</p>
@@ -442,6 +442,26 @@ Another Product,149.99,Another Manufacturer,5,https://example.com/image2.jpg,Ano
                   <td className="border border-gray-300 px-4 py-2">UUID</td>
                   <td className="border border-gray-300 px-4 py-2">
                     Category ID from database
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 font-mono">
+                    code
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">✅ Yes</td>
+                  <td className="border border-gray-300 px-4 py-2">String</td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    Code from database
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-4 py-2 font-mono">
+                    weight
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">✅ Yes</td>
+                  <td className="border border-gray-300 px-4 py-2">Int</td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    Weight from database
                   </td>
                 </tr>
               </tbody>

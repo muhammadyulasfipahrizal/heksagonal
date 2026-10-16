@@ -15,7 +15,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import CustomButton from "./CustomButton";
 import apiClient from "@/lib/api";
-import { sanitize } from "@/lib/sanitize";
+import { formatRupiah, sanitize } from "@/lib/sanitize";
 
 const DashboardProductTable = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -32,7 +32,7 @@ const DashboardProductTable = () => {
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-semibold text-center mb-5">All products</h1>
+      <h1 className="text-3xl font-semibold text-center mb-5">Semua Produk</h1>
       <div className="flex justify-end mb-5">
         <Link href="/admin/products/new">
           <CustomButton
@@ -97,13 +97,13 @@ const DashboardProductTable = () => {
 
                   <td>
                     { product?.inStock ? (<span className="badge badge-success text-white badge-sm">
-                      In stock
+                      Tersedia
                     </span>) : (<span className="badge badge-error text-white badge-sm">
-                      Out of stock
+                      Habis
                     </span>) }
                     
                   </td>
-                  <td>${product?.price}</td>
+                  <td>{formatRupiah(product?.price)}</td>
                   <th>
                     <Link
                       href={`/admin/products/${product.id}`}

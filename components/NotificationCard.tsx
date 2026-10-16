@@ -33,7 +33,7 @@ interface NotificationCardProps {
 const getTypeIcon = (type: NotificationType) => {
   switch (type) {
     case NotificationType.ORDER_UPDATE:
-      return <FaShoppingCart className="text-blue-500" />;
+      return <FaShoppingCart className="text-[#02054b]" />;
     case NotificationType.PAYMENT_STATUS:
       return <FaCreditCard className="text-green-500" />;
     case NotificationType.PROMOTION:
@@ -48,7 +48,7 @@ const getTypeIcon = (type: NotificationType) => {
 const getTypeColor = (type: NotificationType) => {
   switch (type) {
     case NotificationType.ORDER_UPDATE:
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-[#CCCDDB] text-[#01032F]';
     case NotificationType.PAYMENT_STATUS:
       return 'bg-green-100 text-green-800';
     case NotificationType.PROMOTION:
@@ -63,7 +63,7 @@ const getTypeColor = (type: NotificationType) => {
 const getPriorityBadge = (priority: NotificationPriority) => {
   const priorityStyles = {
     [NotificationPriority.LOW]: 'bg-gray-100 text-gray-600 border-gray-300',
-    [NotificationPriority.NORMAL]: 'bg-blue-100 text-blue-600 border-blue-300',
+    [NotificationPriority.NORMAL]: 'bg-[#CCCDDB] text-[#02054b] border-blue-300',
     [NotificationPriority.HIGH]: 'bg-orange-100 text-orange-600 border-orange-300',
     [NotificationPriority.URGENT]: 'bg-red-100 text-red-600 border-red-300'
   };
@@ -94,7 +94,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   return (
     <div className={`
       border rounded-lg p-4 transition-all duration-200 hover:shadow-md
-      ${notification.isRead ? 'bg-white border-gray-200' : 'bg-blue-50 border-blue-200 shadow-sm'}
+      ${notification.isRead ? 'bg-white border-gray-200' : 'bg-[#E6E7EF] border-blue-200 shadow-sm'}
       ${isSelected ? 'ring-2 ring-blue-500 border-blue-500' : ''}
     `}>
       <div className="flex items-start space-x-3">
@@ -104,7 +104,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
             type="checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(notification.id)}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            className="w-4 h-4 text-[#02054b] bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
             aria-label={`Select notification: ${notification.title}`}
           />
         </div>
@@ -123,7 +123,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                 {notification.title}
               </h3>
               {!notification.isRead && (
-                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" aria-label="Unread notification" />
+                <div className="w-2 h-2 bg-[#02054b] rounded-full flex-shrink-0" aria-label="Unread notification" />
               )}
             </div>
 
@@ -157,7 +157,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
               {!notification.isRead && (
                 <button
                   onClick={() => onMarkAsRead(notification.id)}
-                  className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
+                  className="inline-flex items-center px-2 py-1 text-xs font-medium text-[#02054b] bg-[#CCCDDB] rounded hover:bg-[#999ABC] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
                   aria-label="Mark as read"
                 >
                   <FaCheck className="w-3 h-3 mr-1" />

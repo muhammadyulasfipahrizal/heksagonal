@@ -20,8 +20,10 @@ model Product {
   mainImage      String
   price          Int                      @default(0)
   rating         Int                      @default(0)
-  description    String
+  description    String @db.LongText
   manufacturer   String
+  code         String?
+  weight       Int?
   inStock        Int                      @default(1)
   categoryId     String
   category       Category                 @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -168,10 +170,12 @@ model bulk_upload_item {
   slug          String
   price         Int
   manufacturer  String?
-  description   String?
+  description   String? @db.LongText
   mainImage     String?
   categoryId    String
   inStock       Int
+  code         String?
+  weight       Int?
 
   status        BulkUploadItemStatus @default(CREATED)
   error         String?

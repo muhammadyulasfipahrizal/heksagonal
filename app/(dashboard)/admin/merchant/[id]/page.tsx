@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api";
 import { toast } from "react-hot-toast";
+import { formatRupiah } from "@/lib/sanitize";
 
 interface Product {
   id: string;
@@ -247,7 +248,7 @@ const handleInputChange = (
             <div className="md:col-span-2">
               <button 
                 type="submit"
-                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
+                className="bg-[#02054b] text-white px-6 py-2 rounded-md hover:bg-[#01043D] transition"
               >
                 Save Changes
               </button>
@@ -271,12 +272,12 @@ const handleInputChange = (
                 {merchant.products.map((product) => (
                   <tr key={product.id} className="border-b hover:bg-gray-50">
                     <td className="py-4">{product.title}</td>
-                    <td className="py-4">${product.price / 100}</td>
+                    <td className="py-4">{formatRupiah(product.price)}</td>
                     <td className="py-4">{product.inStock}</td>
                     <td className="py-4">
                       <Link
                         href={`/admin/products/${product.id}`}
-                        className="text-blue-500 hover:underline"
+                        className="text-[#02054b] hover:underline"
                       >
                         View
                       </Link>

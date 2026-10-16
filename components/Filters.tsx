@@ -14,6 +14,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useSortStore } from "@/app/_zustand/sortStore";
 import { usePaginationStore } from "@/app/_zustand/paginationStore";
+import { formatRupiah } from "@/lib/sanitize";
 
 interface InputCategory {
   inStock: { text: string, isChecked: boolean },
@@ -69,9 +70,9 @@ const Filters = () => {
                   },
                 })
               }
-              className="checkbox"
+              className="checkbox accent-purple-500"
             />
-            <span className="label-text text-lg ml-2 text-black">In stock</span>
+            <span className="label-text text-lg ml-2 text-black">Stock</span>
           </label>
         </div>
 
@@ -89,7 +90,7 @@ const Filters = () => {
                   },
                 })
               }
-              className="checkbox"
+              className="checkbox accent-purple-500"
             />
             <span className="label-text text-lg ml-2 text-black">
               Out of stock
@@ -108,7 +109,7 @@ const Filters = () => {
             max={3000}
             step={10}
             value={inputCategory.priceFilter.value}
-            className="range"
+            className="range accent-purple-500"
             onChange={(e) =>
               setInputCategory({
                 ...inputCategory,
@@ -119,7 +120,7 @@ const Filters = () => {
               })
             }
           />
-          <span>{`Max price: $${inputCategory.priceFilter.value}`}</span>
+          <span>{`Max price: ${formatRupiah(inputCategory.priceFilter.value)}`}</span>
         </div>
       </div>
 

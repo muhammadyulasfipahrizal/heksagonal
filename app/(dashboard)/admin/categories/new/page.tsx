@@ -61,7 +61,7 @@ const DashboardNewCategoryPage = () => {
         <div className="flex gap-x-2">
           <button
             type="button"
-            className="uppercase bg-blue-500 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2"
+            className="uppercase bg-[#02054b] px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-[#01043D] hover:text-white focus:outline-none focus:ring-2"
             onClick={addNewCategory}
           >
             Create category

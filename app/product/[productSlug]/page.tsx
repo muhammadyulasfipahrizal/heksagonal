@@ -13,7 +13,7 @@ import React from "react";
 import { FaSquareFacebook } from "react-icons/fa6";
 import { FaSquareXTwitter } from "react-icons/fa6";
 import { FaSquarePinterest } from "react-icons/fa6";
-import { sanitize } from "@/lib/sanitize";
+import { formatRupiah, sanitize } from "@/lib/sanitize";
 
 interface ImageItem {
   imageID: string;
@@ -71,23 +71,26 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
           <div className="flex flex-col gap-y-7 text-black max-[500px]:text-center">
         
             <h1 className="text-3xl">{sanitize(product?.title)}</h1>
-            <p className="text-xl font-semibold">${product?.price}</p>
+            <p className="text-xl font-semibold">{formatRupiah(product?.price)}</p>
             <StockAvailabillity stock={94} inStock={product?.inStock} />
             <SingleProductDynamicFields product={product} />
             <div className="flex flex-col gap-y-2 max-[500px]:items-center">
              
               <p className="text-lg">
-                SKU: <span className="ml-1">abccd-18</span>
+                SKU: <span className="ml-1">{product?.code}</span>
+              </p>
+              <p className="text-lg">
+                Berat: <span className="ml-1">{product?.weight} KG</span>
               </p>
               <div className="text-lg flex gap-x-2">
-                <span>Share:</span>
+                <span>Bagikan:</span>
                 <div className="flex items-center gap-x-1 text-2xl">
                   <FaSquareFacebook />
                   <FaSquareXTwitter />
                   <FaSquarePinterest />
                 </div>
               </div>
-              <div className="flex gap-x-2">
+              {/* <div className="flex gap-x-2">
                 <Image
                   src="/visa.svg"
                   width={50}
@@ -130,7 +133,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
                   alt="discover icon"
                   className="h-auto w-auto"
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

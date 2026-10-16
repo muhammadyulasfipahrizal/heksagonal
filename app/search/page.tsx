@@ -31,7 +31,7 @@ const SearchPage = async ({ searchParams }: Props) => {
 
   return (
     <div>
-      <SectionTitle title="Search Page" path="Home | Search" />
+      {/* <SectionTitle title="Search Page" path="Home | Search" /> */}
       <div className="max-w-screen-2xl mx-auto">
         {sp?.search && (
           <h3 className="text-4xl text-center py-10 max-sm:text-3xl">

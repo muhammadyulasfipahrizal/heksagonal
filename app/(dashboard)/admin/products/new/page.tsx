@@ -32,6 +32,8 @@ const AddNewProduct = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const addProduct = async () => {
+    console.log("Product form data:", product);
+
     if (
       !product.merchantId ||
       product.title === "" ||
@@ -80,59 +82,79 @@ const AddNewProduct = () => {
 
   const fetchMerchants = async () => {
     try {
-      const res = await apiClient.get("/api/merchants");
-      const data: Merchant[] = await res.json();
-      setMerchants(data || []);
+      const response = await apiClient.get("/api/merchants");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch merchants");
+      }
+
+      const data: Merchant[] = await response.json();
+
+      setMerchants(data);
+
       setProduct((prev) => ({
-      ...prev,
-        merchantId: prev.merchantId || data?.[0]?.id || "",
+        ...prev,
+        merchantId: prev.merchantId || data[0]?.id || "",
       }));
-    } catch (e) {
+
+      if (data.length === 0) {
+        toast.error("No merchants found. Please create a merchant first.");
+      }
+    } catch (error) {
+      console.error("Error fetching merchants:", error);
       toast.error("Failed to load merchants");
     }
   };
 
-  const uploadFile = async (file: any) => {
+  const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append("uploadedFile", file);
 
     try {
-      const response = await apiClient.post("/api/main-image", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await apiClient.post("/api/main-image", formData);
 
       if (response.ok) {
         const data = await response.json();
+        console.log("File uploaded successfully:", data);
+        toast.success("File uploaded successfully");
       } else {
-        console.error("File upload unsuccessfull");
+        const errorData = await response.json().catch(() => null);
+
+        console.error("File upload failed:", {
+          status: response.status,
+          error: errorData,
+        });
+
+        toast.error(errorData?.message || "Failed to upload file");
       }
     } catch (error) {
-      console.error("Error happend while sending request:", error);
+      console.error("Error while uploading file:", error);
+      toast.error("Network error while uploading file");
     }
   };
 
   const fetchCategories = async () => {
-    apiClient
-      .get(`/api/categories`)
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        setCategories(data);
-        setProduct({
-          merchantId: product.merchantId || "",
-          title: "",
-          price: 0,
-          manufacturer: "",
-          inStock: 1,
-          mainImage: "",
-          description: "",
-          slug: "",
-          categoryId: data[0]?.id,
-        });
-      });
+    try {
+      const response = await apiClient.get("/api/categories");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+
+      const data: Category[] = await response.json();
+
+      setCategories(data);
+
+      setProduct((prev) => ({
+        ...prev,
+        categoryId: prev.categoryId || data[0]?.id || "",
+      }));
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      toast.error("Failed to load categories");
+    }
   };
+
 
   useEffect(() => {
     fetchCategories();
@@ -233,12 +255,19 @@ const AddNewProduct = () => {
               <span className="label-text">Product price:</span>
             </div>
             <input
-              type="text"
+              type="number"
+              min="0"
+              step="any"
               className="input input-bordered w-full max-w-xs"
-              value={product?.price}
-              onChange={(e) =>
-                setProduct({ ...product, price: Number(e.target.value) })
-              }
+              value={Number.isFinite(product.price) ? product.price : ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const value = e.target.value;
+
+                setProduct((prev) => ({
+                  ...prev,
+                  price: value === "" ? 0 : Number(value),
+                }));
+              }}
             />
           </label>
         </div>
@@ -311,7 +340,7 @@ const AddNewProduct = () => {
           <button
             onClick={addProduct}
             type="button"
-            className="uppercase bg-blue-500 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2"
+            className="uppercase bg-[#02054b] px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-[#01043D] hover:text-white focus:outline-none focus:ring-2"
           >
             Add product
           </button>

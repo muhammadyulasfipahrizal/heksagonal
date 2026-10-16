@@ -10,74 +10,77 @@
 
 "use client";
 
-import React, { useState } from "react";
-import RatingPercentElement from "./RatingPercentElement";
-import SingleReview from "./SingleReview";
+import React from "react";
 import { formatCategoryName } from "@/utils/categoryFormating";
 import { sanitize, sanitizeHtml } from "@/lib/sanitize";
 
 const ProductTabs = ({ product }: { product: Product }) => {
-  const [currentProductTab, setCurrentProductTab] = useState<number>(0);
-
   return (
     <div className="px-5 text-black">
       <div role="tablist" className="tabs tabs-bordered">
         <a
           role="tab"
-          className={`tab text-lg text-black pb-8 max-[500px]:text-base max-[400px]:text-sm max-[370px]:text-xs ${
-            currentProductTab === 0 && "tab-active"
-          }`}
-          onClick={() => setCurrentProductTab(0)}
+          aria-selected="true"
+          className="tab tab-active text-lg text-black pb-8 max-[500px]:text-base max-[400px]:text-sm max-[370px]:text-xs"
         >
-          Description
-        </a>
-        <a
-          role="tab"
-          className={`tab text-black text-lg pb-8 max-[500px]:text-base max-[400px]:text-sm max-[370px]:text-xs ${
-            currentProductTab === 1 && "tab-active"
-          }`}
-          onClick={() => setCurrentProductTab(1)}
-        >
-          Additional info
+          
         </a>
       </div>
-      <div className="pt-5">
-        {currentProductTab === 0 && (
-          <div 
-            className="text-lg max-sm:text-base max-sm:text-sm"
-            dangerouslySetInnerHTML={{ 
-              __html: sanitizeHtml(product?.description) 
-            }}
-          />
-        )}
 
-        {currentProductTab === 1 && (
+      <div className="pt-5 space-y-8">
+        {/* Additional info */}
+        <section>
+          <h2 className="text-2xl font-semibold mb-4 max-sm:text-xl">
+            Informasi
+          </h2>
+
           <div className="overflow-x-auto">
-            <table className="table text-xl text-center max-[500px]:text-base">
+            <table className="table text-lg max-[500px]:text-base">
               <tbody>
-                {/* row 1 */}
                 <tr>
-                  <th>Manufacturer:</th>
+                  <th className="w-1/3">Merek</th>
                   <td>{sanitize(product?.manufacturer)}</td>
                 </tr>
-                {/* row 2 */}
                 <tr>
-                  <th>Category:</th>
+                  <th>Kategori</th>
                   <td>
                     {product?.category?.name
-                      ? sanitize(formatCategoryName(product?.category?.name))
+                      ? sanitize(
+                          formatCategoryName(product.category.name)
+                        )
                       : "No category"}
                   </td>
                 </tr>
-                {/* row 3 */}
                 <tr>
-                  <th>Color:</th>
-                  <td>Silver, LightSlateGray, Blue</td>
+                  <th>Kode Produk</th>
+                  <td>{sanitize(product?.code ?? "") || "-"}</td>
+                </tr>
+                <tr>
+                  <th>Berat</th>
+                  <td>
+                    {product?.weight != null
+                      ? `${product.weight} kg`
+                      : "-"}
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        )}
+        </section>
+
+        {/* Description */}
+        <section>
+          <h2 className="text-2xl font-semibold mb-4 max-sm:text-xl">
+            Deskripsi
+          </h2>
+
+          <div
+            className="text-lg max-sm:text-base"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHtml(product?.description ?? ""),
+            }}
+          />
+        </section>
       </div>
     </div>
   );

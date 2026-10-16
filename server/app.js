@@ -18,6 +18,7 @@ const orderProductRouter = require('./routes/customer_order_product');
 const notificationsRouter = require('./routes/notifications');
 const merchantRouter = require('./routes/merchant'); // Add this line
 const bulkUploadRouter = require('./routes/bulkUpload');
+const addressesRouter = require("./routes/addresses");
 var cors = require("cors");
 
 // Import logging middleware
@@ -117,6 +118,8 @@ app.use("/api/users/email", authLimiter); // For login attempts via email lookup
 
 // Apply admin rate limiting to admin routes
 
+// address
+app.use("/api/addresses", addressesRouter);
 
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoryRouter);

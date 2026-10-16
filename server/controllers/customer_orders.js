@@ -1,169 +1,197 @@
-const { PrismaClient } = require("@prisma/client");
+
+const { PrismaClient, DeliveryMethod } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { validateOrderData, ValidationError } = require('../utills/validation');
-const { createOrderUpdateNotification } = require('../utills/notificationHelpers');
+
+const { createOrderUpdateNotification } = require("../utills/notificationHelpers");
+
+const VALID_DELIVERY_METHODS = Object.values(DeliveryMethod);
+
+function validateOrderData(body, existingOrder = null) {
+  const data = {
+    name: body.name ?? existingOrder?.name,
+    phone: body.phone ?? existingOrder?.phone,
+    email: body.email ?? existingOrder?.email,
+    deliveryMethod:
+      body.deliveryMethod ?? existingOrder?.deliveryMethod ?? "PICKUP",
+    adress: body.adress ?? existingOrder?.adress ?? null,
+    postalCode: body.postalCode ?? existingOrder?.postalCode ?? null,
+    city: body.city ?? existingOrder?.city ?? null,
+    province: body.province ?? existingOrder?.province ?? null,
+    district: body.district ?? existingOrder?.district ?? null,
+    orderNotice: body.orderNotice ?? existingOrder?.orderNotice ?? null,
+    total: body.total ?? existingOrder?.total,
+    status: body.status ?? existingOrder?.status ?? "pending",
+  };
+
+  const errors = [];
+
+  if (typeof data.name !== "string" || !data.name.trim()) {
+    errors.push({ field: "name", message: "Name is required" });
+  }
+
+  if (typeof data.phone !== "string" || !data.phone.trim()) {
+    errors.push({ field: "phone", message: "Phone is required" });
+  }
+
+  if (
+    typeof data.email !== "string" ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)
+  ) {
+    errors.push({ field: "email", message: "A valid email is required" });
+  }
+
+  if (!VALID_DELIVERY_METHODS.includes(data.deliveryMethod)) {
+    errors.push({
+      field: "deliveryMethod",
+      message: "Delivery method must be PICKUP or SHIPPING",
+    });
+  }
+
+  if (
+    data.deliveryMethod === "SHIPPING"
+  ) {
+    for (const field of [
+      "adress",
+      "postalCode",
+      "city",
+      "province",
+      "district",
+    ]) {
+      if (typeof data[field] !== "string" || !data[field].trim()) {
+        errors.push({
+          field,
+          message: `${field} is required for shipping`,
+        });
+      }
+    }
+  }
+
+  if (!Number.isInteger(data.total) || data.total < 0) {
+    errors.push({
+      field: "total",
+      message: "Total must be a non-negative integer",
+    });
+  }
+
+  if (typeof data.status !== "string" || !data.status.trim()) {
+    errors.push({ field: "status", message: "Status is required" });
+  }
+
+  if (
+    data.orderNotice !== null &&
+    typeof data.orderNotice !== "string"
+  ) {
+    errors.push({
+      field: "orderNotice",
+      message: "Order notice must be a string or null",
+    });
+  }
+
+  return { isValid: errors.length === 0, errors, data };
+}
+
+function getPrismaErrorResponse(error, response, action) {
+  console.error(`Error ${action}:`, error);
+
+  if (error.code === "P2025") {
+    return response.status(404).json({
+      error: "Order not found",
+    });
+  }
+
+  return response.status(500).json({
+    error: "Internal server error",
+    details: `Failed to ${action}. Please try again later.`,
+  });
+}
 
 async function createCustomerOrder(request, response) {
   try {
-    console.log("=== ORDER CREATION REQUEST ===");
-    console.log("Request body:", JSON.stringify(request.body, null, 2));
-    
-    // Validate request body
-    if (!request.body || typeof request.body !== 'object') {
-      console.log("❌ Invalid request body");
-      return response.status(400).json({ 
+    if (
+      !request.body ||
+      typeof request.body !== "object" ||
+      Array.isArray(request.body)
+    ) {
+      return response.status(400).json({
         error: "Invalid request body",
-        details: "Request body must be a valid JSON object"
       });
     }
 
-    // Server-side validation
     const validation = validateOrderData(request.body);
-    console.log("Validation result:", validation);
-    
+
     if (!validation.isValid) {
-      console.log("❌ Validation failed:", validation.errors);
       return response.status(400).json({
         error: "Validation failed",
-        details: validation.errors
+        details: validation.errors,
       });
     }
 
-    const validatedData = validation.validatedData;
-    console.log("✅ Validation passed, validated data:", validatedData);
+    const data = validation.data;
 
-    // Additional business logic validation
-    if (validatedData.total < 0.01) {
-      console.log("❌ Invalid total amount");
-      return response.status(400).json({
-        error: "Invalid order total",
-        details: [{ field: 'total', message: 'Order total must be at least $0.01' }]
-      });
-    }
-
-    // Check for duplicate orders (same email and total within last 1 minute) - less strict
-    const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000);
-    const duplicateOrder = await prisma.customer_order.findFirst({
-      where: {
-        email: validatedData.email,
-        total: validatedData.total,
-        dateTime: {
-          gte: oneMinuteAgo
-        }
-      }
-    });
-
-    if (duplicateOrder) {
-      console.log("❌ Duplicate order detected (same email, amount, within 1 minute)");
-      return response.status(409).json({
-        error: "Duplicate order detected",
-        details: "An identical order was just created. Please wait a moment before creating another order with the same details."
-      });
-    }
-
-    console.log("Creating order in database...");
-    // Create the order with validated data
-    const corder = await prisma.customer_order.create({
+    const order = await prisma.customer_order.create({
       data: {
-        name: validatedData.name,
-        lastname: validatedData.lastname,
-        phone: validatedData.phone,
-        email: validatedData.email,
-        company: validatedData.company,
-        adress: validatedData.adress,
-        apartment: validatedData.apartment,
-        postalCode: validatedData.postalCode,
-        status: validatedData.status,
-        city: validatedData.city,
-        country: validatedData.country,
-        orderNotice: validatedData.orderNotice,
-        total: validatedData.total,
-        dateTime: new Date()
+        name: data.name.trim(),
+        phone: data.phone.trim(),
+        email: data.email.trim().toLowerCase(),
+        deliveryMethod: data.deliveryMethod,
+        adress: data.adress?.trim() || null,
+        postalCode: data.postalCode?.trim() || null,
+        city: data.city?.trim() || null,
+        province: data.province?.trim() || null,
+        district: data.district?.trim() || null,
+        orderNotice: data.orderNotice?.trim() || null,
+        total: data.total,
+        status: data.status,
       },
     });
 
-    console.log("✅ Order created successfully:", corder);
-    console.log("Order ID:", corder.id);
-
-    // Create notification for the user if they have an account
+    // Notification failure must not invalidate the order.
     try {
       let user = null;
-      
-      // First, try to use userId if provided (from logged-in user)
+
       if (request.body.userId) {
-        console.log(`🔍 Using provided userId: ${request.body.userId}`);
         user = await prisma.user.findUnique({
-          where: { id: request.body.userId }
+          where: { id: request.body.userId },
         });
-        if (user) {
-          console.log(`✅ Found user by ID: ${user.email}`);
-        } else {
-          console.log(`❌ User not found with ID: ${request.body.userId}`);
-        }
       }
-      
-      // Fallback: search by email if no userId or user not found
+
       if (!user) {
-        console.log(`🔍 Searching user by email: ${validatedData.email}`);
         user = await prisma.user.findUnique({
-          where: { email: validatedData.email }
+          where: { email: data.email.trim().toLowerCase() },
         });
-        if (user) {
-          console.log(`✅ Found user by email: ${user.email}`);
-        }
       }
-      
+
       if (user) {
         await createOrderUpdateNotification(
           user.id,
-          'confirmed',
-          corder.id,
-          validatedData.total
+          "confirmed",
+          order.id,
+          order.total
         );
-        console.log(`📧 Order confirmation notification sent to user: ${user.email}`);
-      } else {
-        console.log(`ℹ️  No user account found for email: ${validatedData.email} - notification skipped`);
       }
     } catch (notificationError) {
-      console.error('❌ Failed to create order notification:', notificationError);
-      // Don't fail the order if notification fails
+      console.error("Failed to create order notification:", notificationError);
     }
 
-    // Log successful order creation (for monitoring)
-    console.log(`Order created successfully: ID ${corder.id}, Email: ${validatedData.email}, Total: $${validatedData.total}`);
-
-    const responseData = {
-      id: corder.id,
+    return response.status(201).json({
+      id: order.id,
+      orderNumber: order.id,
       message: "Order created successfully",
-      orderNumber: corder.id
-    };
-    
-    console.log("Sending response:", responseData);
-    return response.status(201).json(responseData);
-
+    });
   } catch (error) {
-    console.error("❌ Error creating order:", error);
-    
-    // Handle specific Prisma errors
-    if (error.code === 'P2002') {
-      return response.status(409).json({ 
+    if (error instanceof Error) {
+      console.error("Error creating order:", error);
+    }
+
+    if (error.code === "P2002") {
+      return response.status(409).json({
         error: "Order conflict",
-        details: "An order with this information already exists"
       });
     }
 
-    // Handle validation errors
-    if (error instanceof ValidationError) {
-      return response.status(400).json({
-        error: "Validation failed",
-        details: [{ field: error.field, message: error.message }]
-      });
-    }
-
-    // Generic error response
-    return response.status(500).json({ 
+    return response.status(500).json({
       error: "Internal server error",
-      details: "Failed to create order. Please try again later."
+      details: "Failed to create order. Please try again later.",
     });
   }
 }
@@ -171,239 +199,202 @@ async function createCustomerOrder(request, response) {
 async function updateCustomerOrder(request, response) {
   try {
     const { id } = request.params;
-    
-    // Validate ID format
-    if (!id || typeof id !== 'string') {
+
+    if (!id) {
       return response.status(400).json({
-        error: "Invalid order ID",
-        details: "Order ID must be provided"
+        error: "Order ID is required",
       });
     }
 
-    // Validate request body
-    if (!request.body || typeof request.body !== 'object') {
-      return response.status(400).json({ 
+    if (
+      !request.body ||
+      typeof request.body !== "object" ||
+      Array.isArray(request.body)
+    ) {
+      return response.status(400).json({
         error: "Invalid request body",
-        details: "Request body must be a valid JSON object"
       });
     }
-
-    // Server-side validation for update data
-    const validation = validateOrderData(request.body);
-    
-    if (!validation.isValid) {
-      return response.status(400).json({
-        error: "Validation failed",
-        details: validation.errors
-      });
-    }
-
-    const validatedData = validation.validatedData;
 
     const existingOrder = await prisma.customer_order.findUnique({
-      where: {
-        id: id,
-      },
+      where: { id },
     });
 
     if (!existingOrder) {
-      return response.status(404).json({ 
+      return response.status(404).json({
         error: "Order not found",
-        details: "The specified order does not exist"
       });
     }
 
+    // Merge existing values so partial updates are supported.
+    const validation = validateOrderData(request.body, existingOrder);
+
+    if (!validation.isValid) {
+      return response.status(400).json({
+        error: "Validation failed",
+        details: validation.errors,
+      });
+    }
+
+    const data = validation.data;
+
     const updatedOrder = await prisma.customer_order.update({
-      where: {
-        id: existingOrder.id,
-      },
+      where: { id },
       data: {
-        name: validatedData.name,
-        lastname: validatedData.lastname,
-        phone: validatedData.phone,
-        email: validatedData.email,
-        company: validatedData.company,
-        adress: validatedData.adress,
-        apartment: validatedData.apartment,
-        postalCode: validatedData.postalCode,
-        status: validatedData.status,
-        city: validatedData.city,
-        country: validatedData.country,
-        orderNotice: validatedData.orderNotice,
-        total: validatedData.total,
+        name: data.name.trim(),
+        phone: data.phone.trim(),
+        email: data.email.trim().toLowerCase(),
+        deliveryMethod: data.deliveryMethod,
+        adress: data.adress?.trim() || null,
+        postalCode: data.postalCode?.trim() || null,
+        city: data.city?.trim() || null,
+        province: data.province?.trim() || null,
+        district: data.district?.trim() || null,
+        orderNotice: data.orderNotice?.trim() || null,
+        total: data.total,
+        status: data.status,
       },
     });
 
-    // Create notification for status update if status changed
-    if (existingOrder.status !== validatedData.status) {
+    if (existingOrder.status !== updatedOrder.status) {
       try {
         const user = await prisma.user.findUnique({
-          where: { email: validatedData.email }
+          where: { email: updatedOrder.email },
         });
-        
+
         if (user) {
           await createOrderUpdateNotification(
             user.id,
-            validatedData.status,
+            updatedOrder.status,
             updatedOrder.id,
-            validatedData.total
+            updatedOrder.total
           );
-          console.log(`📧 Status update notification sent to user: ${user.email} - Status: ${validatedData.status}`);
         }
       } catch (notificationError) {
-        console.error('❌ Failed to create status update notification:', notificationError);
+        console.error("Failed to create status notification:", notificationError);
       }
     }
 
-    console.log(`Order updated successfully: ID ${updatedOrder.id}`);
-
     return response.status(200).json(updatedOrder);
   } catch (error) {
-    console.error("Error updating order:", error);
-    
-    if (error.code === 'P2025') {
-      return response.status(404).json({ 
-        error: "Order not found",
-        details: "The specified order does not exist"
-      });
-    }
-
-    if (error instanceof ValidationError) {
-      return response.status(400).json({
-        error: "Validation failed",
-        details: [{ field: error.field, message: error.message }]
-      });
-    }
-
-    return response.status(500).json({ 
-      error: "Internal server error",
-      details: "Failed to update order. Please try again later."
-    });
+    return getPrismaErrorResponse(error, response, "update order");
   }
 }
 
 async function deleteCustomerOrder(request, response) {
   try {
     const { id } = request.params;
-    
-    if (!id || typeof id !== 'string') {
+
+    if (!id) {
       return response.status(400).json({
-        error: "Invalid order ID",
-        details: "Order ID must be provided"
+        error: "Order ID is required",
       });
     }
 
     const existingOrder = await prisma.customer_order.findUnique({
-      where: { id: id },
+      where: { id },
     });
 
     if (!existingOrder) {
-      return response.status(404).json({ 
+      return response.status(404).json({
         error: "Order not found",
-        details: "The specified order does not exist"
       });
     }
 
-    await prisma.customer_order.delete({
-      where: {
-        id: id,
-      },
-    });
+    // Delete child rows first if your relation does not use onDelete: Cascade.
+    await prisma.$transaction([
+      prisma.customer_order_product.deleteMany({
+        where: { customerOrderId: id },
+      }),
+      prisma.customer_order.delete({
+        where: { id },
+      }),
+    ]);
 
-    console.log(`Order deleted successfully: ID ${id}`);
     return response.status(204).send();
   } catch (error) {
-    console.error("Error deleting order:", error);
-    
-    if (error.code === 'P2025') {
-      return response.status(404).json({ 
-        error: "Order not found",
-        details: "The specified order does not exist"
-      });
-    }
-
-    return response.status(500).json({ 
-      error: "Internal server error",
-      details: "Failed to delete order. Please try again later."
-    });
+    return getPrismaErrorResponse(error, response, "delete order");
   }
 }
 
 async function getCustomerOrder(request, response) {
   try {
     const { id } = request.params;
-    
-    if (!id || typeof id !== 'string') {
+
+    if (!id) {
       return response.status(400).json({
-        error: "Invalid order ID",
-        details: "Order ID must be provided"
+        error: "Order ID is required",
       });
     }
 
     const order = await prisma.customer_order.findUnique({
-      where: {
-        id: id,
+      where: { id },
+      include: {
+        products: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
-    
+
     if (!order) {
-      return response.status(404).json({ 
+      return response.status(404).json({
         error: "Order not found",
-        details: "The specified order does not exist"
       });
     }
-    
+
     return response.status(200).json(order);
   } catch (error) {
-    console.error("Error fetching order:", error);
-    return response.status(500).json({ 
-      error: "Internal server error",
-      details: "Failed to fetch order. Please try again later."
-    });
+    return getPrismaErrorResponse(error, response, "fetch order");
   }
 }
 
 async function getAllOrders(request, response) {
   try {
-    // Add pagination and filtering for better performance
-    const page = parseInt(request.query.page) || 1;
-    const limit = parseInt(request.query.limit) || 50;
-    const offset = (page - 1) * limit;
-    
-    // Validate pagination parameters
-    if (page < 1 || limit < 1 || limit > 100) {
+    const page = Number.parseInt(request.query.page, 10) || 1;
+    const limit = Number.parseInt(request.query.limit, 10) || 50;
+
+    if (
+      !Number.isInteger(page) ||
+      !Number.isInteger(limit) ||
+      page < 1 ||
+      limit < 1 ||
+      limit > 100
+    ) {
       return response.status(400).json({
         error: "Invalid pagination parameters",
-        details: "Page must be >= 1, limit must be between 1 and 100"
+        details: "Page must be >= 1 and limit must be between 1 and 100",
       });
     }
 
     const [orders, totalCount] = await Promise.all([
       prisma.customer_order.findMany({
-        skip: offset,
+        skip: (page - 1) * limit,
         take: limit,
-        orderBy: {
-          dateTime: 'desc'
-        }
+        orderBy: { dateTime: "desc" },
+        include: {
+          products: {
+            include: {
+              product: true,
+            },
+          },
+        },
       }),
-      prisma.customer_order.count()
+      prisma.customer_order.count(),
     ]);
 
-    return response.json({
+    return response.status(200).json({
       orders,
       pagination: {
         page,
         limit,
         total: totalCount,
-        totalPages: Math.ceil(totalCount / limit)
-      }
+        totalPages: Math.ceil(totalCount / limit),
+      },
     });
   } catch (error) {
-    console.error("Error fetching orders:", error);
-    return response.status(500).json({ 
-      error: "Internal server error",
-      details: "Failed to fetch orders. Please try again later."
-    });
+    return getPrismaErrorResponse(error, response, "fetch orders");
   }
 }
 

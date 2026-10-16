@@ -29,26 +29,26 @@ export default function NewMerchantPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) {
       toast.error("Merchant name is required");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const response = await apiClient.post("/api/merchants", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        name: formData.name.trim(),
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        description: formData.description,
+        status: formData.status,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to create merchant");
-      }
-
       const data = await response.json();
+
       toast.success("Merchant created successfully");
       router.push(`/admin/merchant/${data.id}`);
     } catch (error) {
@@ -146,7 +146,7 @@ export default function NewMerchantPage() {
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className={`bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition ${
+                className={`bg-[#02054b] text-white px-6 py-2 rounded-md hover:bg-[#01043D] transition ${
                   isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
