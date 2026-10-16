@@ -46,40 +46,23 @@ console.log("NextAuth user:", session?.user);
   try {
     const response = await addressApi.get("/");
 
-    console.log("GET /api/addresses status:", response.status);
-    console.log("GET /api/addresses response:", response.data);
-
-    const data = response.data;
-
-    // Mendukung respons berbentuk { addresses: [...] }
-    // maupun array langsung [...]
-    const addressList = Array.isArray(data)
-      ? data
-      : data?.addresses;
+    const addressList = response?.addresses;
 
     if (!Array.isArray(addressList)) {
       setAddresses([]);
-      setMessage(
-        "Respons API tidak memiliki daftar alamat yang valid. Periksa console browser."
-      );
+      setMessage("Respons API tidak valid.");
       return;
     }
 
     setAddresses(addressList);
-    setMessage(`GET berhasil: ${addressList.length} alamat ditemukan.`);
-  } catch (error: any) {
-    console.error("GET addresses error:", error);
-    console.error("API error response:", error.response?.data);
-
     setMessage(
-      `GET gagal: ${
-        error.response?.status ?? ""
-      } ${
-        error.response?.data?.error ??
-        error.message ??
-        "Unknown error"
-      }`
+      `GET berhasil: ${addressList.length} alamat ditemukan.`
     );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Unknown error";
+
+    setMessage(`GET gagal: ${message}`);
   } finally {
     setLoading(false);
   }
