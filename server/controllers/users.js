@@ -16,36 +16,78 @@ const getAllUsers = asyncHandler(async (request, response) => {
   return response.json(usersWithoutPasswords);
 });
 
+
 const createUser = asyncHandler(async (request, response) => {
-  const { email, password, role } = request.body;
+  const { name, phone, email, password, role } = request.body;
 
   // Basic validation
-  if (!email || !password) {
-    throw new AppError("Email and password are required", 400);
+  if (!name || !phone || !email || !password) {
+    throw new AppError(
+      "Name, phone, email, and password are required",
+      400
+    );
+  }
+
+  // Name validation
+  if (typeof name !== "string" || name.trim().length < 3) {
+    throw new AppError(
+      "Name must be at least 3 characters long",
+      400
+    );
+  }
+
+  // Phone validation
+  if (typeof phone !== "string" || phone.trim().length < 8) {
+    throw new AppError(
+      "Phone number must be at least 8 characters long",
+      400
+    );
   }
 
   // Email validation
+  const normalizedEmail = email.trim().toLowerCase();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+
+  if (!emailRegex.test(normalizedEmail)) {
     throw new AppError("Invalid email format", 400);
   }
 
   // Password validation
-  if (password.length < 8) {
-    throw new AppError("Password must be at least 8 characters long", 400);
+  if (typeof password !== "string" || password.length < 8) {
+    throw new AppError(
+      "Password must be at least 8 characters long",
+      400
+    );
+  }
+
+  // Check duplicate email
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email: normalizedEmail,
+    },
+  });
+
+  if (existingUser) {
+    throw new AppError("Email is already in use", 409);
   }
 
   const hashedPassword = await bcrypt.hash(password, 14);
 
   const user = await prisma.user.create({
     data: {
-      email,
+      name: name.trim(),
+      phone: phone.trim(),
+      email: normalizedEmail,
       password: hashedPassword,
       role: role || "user",
     },
   });
-  // Exclude password from response
-  return response.status(201).json(excludePassword(user));
+
+  // Never return the password
+  return response.status(201).json({
+    message: "User registered successfully",
+    user: excludePassword(user),
+  });
 });
 
 const updateUser = asyncHandler(async (request, response) => {

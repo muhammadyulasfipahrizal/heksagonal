@@ -119,11 +119,6 @@ const AdminSingleOrder = () => {
       return;
     }
 
-    if (!isValidNameOrLastname(order.name.trim())) {
-      toast.error("You entered an invalid name");
-      return;
-    }
-
     if (!isValidEmailAddressFormat(order.email.trim())) {
       toast.error("You entered an invalid email address");
       return;

@@ -1,8 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-const requireAuth = require("../middleware/requireAuth");
-
 const {
   getAddresses,
   createAddress,
@@ -10,12 +8,16 @@ const {
   deleteAddress,
 } = require("../controllers/addresses");
 
-// Semua endpoint alamat wajib login.
-router.use(requireAuth);
+// GET /api/addresses/:userId
+router.get("/:userId", getAddresses);
 
-router.get("/", getAddresses);
+// POST /api/addresses
 router.post("/", createAddress);
+
+// PUT /api/addresses/:id
 router.put("/:id", updateAddress);
+
+// DELETE /api/addresses/:id
 router.delete("/:id", deleteAddress);
 
 module.exports = router;

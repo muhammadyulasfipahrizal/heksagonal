@@ -1,87 +1,131 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import addressApi from "@/lib/addressApi";
 
 type Address = {
   id: string;
-  name: string;
+  userId: string;
+  recipientName: string;
   phone: string;
-  label?: string | null;
+  label: string | null;
   adress: string;
   postalCode: string;
   city: string;
   province: string;
   district: string;
   isDefault: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
+
+type AddressForm = Omit<
+  Address,
+  "id" | "userId" | "createdAt" | "updatedAt"
+>;
+
+type AddressListResponse = {
+  addresses: Address[];
+};
+
+type AddressMutationResponse = {
+  message: string;
+  address?: Address;
+};
+
+type AddressApiError = Error & {
+  status?: number;
+  data?: unknown;
+};
+
+const initialForm: AddressForm = {
+  recipientName: "Muhammad",
+  phone: "081234567890",
+  label: "Rumah",
+  adress: "Jl. Contoh No. 10",
+  postalCode: "76114",
+  city: "Balikpapan",
+  province: "Kalimantan Timur",
+  district: "Balikpapan Selatan",
+  isDefault: false,
+};
+
+function getAddressApiErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "Unknown error";
+  }
+
+  const apiError = error as AddressApiError;
+  const prefix =
+    typeof apiError.status === "number"
+      ? `${apiError.status} `
+      : "";
+
+  return `${prefix}${error.message}`.trim();
+}
 
 export default function AddressTestPage() {
   const { data: session, status } = useSession();
+  const userId = session?.user?.id;
+
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [addressId, setAddressId] = useState("");
+  const [form, setForm] = useState<AddressForm>(initialForm);
 
-  const [form, setForm] = useState({
-    name: "Muhammad",
-    phone: "081234567890",
-    label: "Rumah",
-    adress: "Jl. Contoh No. 10",
-    postalCode: "76114",
-    city: "Balikpapan",
-    province: "Kalimantan Timur",
-    district: "Balikpapan Selatan",
-    isDefault: false,
-  });
-
-  console.log("NextAuth status:", status);
-console.log("NextAuth user:", session?.user);
-
-  async function getAddresses() {
-  setLoading(true);
-  setMessage("");
-
-  try {
-    const response = await addressApi.get("/");
-
-    const addressList = response?.addresses;
-
-    if (!Array.isArray(addressList)) {
+  const getAddresses = useCallback(async () => {
+    if (!userId) {
       setAddresses([]);
-      setMessage("Respons API tidak valid.");
+      setMessage("GET gagal: User ID tidak tersedia.");
       return;
     }
 
-    setAddresses(addressList);
-    setMessage(
-      `GET berhasil: ${addressList.length} alamat ditemukan.`
-    );
-  } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Unknown error";
-
-    setMessage(`GET gagal: ${message}`);
-  } finally {
-    setLoading(false);
-  }
-}
-
-  async function createAddress() {
     setLoading(true);
     setMessage("");
 
     try {
-      const response = await addressApi.post("/", form);
-      setMessage("POST berhasil: " + response.data.message);
-      await getAddresses();
-    } catch (error: any) {
+      const response = (await addressApi.get(
+        userId
+      )) as AddressListResponse;
+
+      if (!Array.isArray(response?.addresses)) {
+        setAddresses([]);
+        setMessage("GET gagal: Respons API tidak valid.");
+        return;
+      }
+
+      setAddresses(response.addresses);
       setMessage(
-        `POST gagal: ${error.response?.status ?? ""} ${
-          error.response?.data?.error ?? error.message
-        }`
+        `GET berhasil: ${response.addresses.length} alamat ditemukan.`
       );
+    } catch (error: unknown) {
+      setMessage(`GET gagal: ${getAddressApiErrorMessage(error)}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  async function createAddress() {
+    if (!userId) {
+      setMessage("POST gagal: User ID tidak tersedia.");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const response = (await addressApi.post({
+        ...form,
+        userId,
+      })) as AddressMutationResponse;
+
+      setMessage(response.message ?? "POST berhasil.");
+      await getAddresses();
+    } catch (error: unknown) {
+      setMessage(`POST gagal: ${getAddressApiErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -93,22 +137,24 @@ console.log("NextAuth user:", session?.user);
       return;
     }
 
+    if (!userId) {
+      setMessage("PUT gagal: User ID tidak tersedia.");
+      return;
+    }
+
     setLoading(true);
+    setMessage("");
 
     try {
-      const response = await addressApi.put(
-        `/${encodeURIComponent(addressId)}`,
-        { label: form.label, adress: form.adress }
-      );
+      const response = (await addressApi.put(addressId, {
+        ...form,
+        userId,
+      })) as AddressMutationResponse;
 
-      setMessage("PUT berhasil: " + response.data.message);
+      setMessage(response.message ?? "PUT berhasil.");
       await getAddresses();
-    } catch (error: any) {
-      setMessage(
-        `PUT gagal: ${error.response?.status ?? ""} ${
-          error.response?.data?.error ?? error.message
-        }`
-      );
+    } catch (error: unknown) {
+      setMessage(`PUT gagal: ${getAddressApiErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -120,62 +166,83 @@ console.log("NextAuth user:", session?.user);
       return;
     }
 
-    if (!window.confirm("Yakin ingin menghapus alamat ini?")) return;
+    if (!userId) {
+      setMessage("DELETE gagal: User ID tidak tersedia.");
+      return;
+    }
+
+    if (!window.confirm("Yakin ingin menghapus alamat ini?")) {
+      return;
+    }
 
     setLoading(true);
+    setMessage("");
 
     try {
-      const response = await addressApi.delete(
-        `/${encodeURIComponent(addressId)}`
-      );
+      const response = (await addressApi.delete(
+        addressId,
+        userId
+      )) as AddressMutationResponse;
 
-      setMessage("DELETE berhasil: " + response.data.message);
+      setMessage(response.message ?? "DELETE berhasil.");
       setAddressId("");
       await getAddresses();
-    } catch (error: any) {
-      setMessage(
-        `DELETE gagal: ${error.response?.status ?? ""} ${
-          error.response?.data?.error ?? error.message
-        }`
-      );
+    } catch (error: unknown) {
+      setMessage(`DELETE gagal: ${getAddressApiErrorMessage(error)}`);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && userId) {
       void getAddresses();
+    } else if (status === "authenticated" && !userId) {
+      setAddresses([]);
+      setMessage("User ID tidak tersedia pada session.");
     }
-  }, [status]);
+  }, [status, userId, getAddresses]);
 
-  if (status === "loading") return <p>Memeriksa session...</p>;
+  if (status === "loading") {
+    return <p className="p-6">Memeriksa session...</p>;
+  }
 
   if (status === "unauthenticated") {
-    return <p>Silakan login terlebih dahulu untuk menguji API alamat.</p>;
+    return (
+      <p className="p-6">
+        Silakan login terlebih dahulu untuk menguji API alamat.
+      </p>
+    );
   }
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
       <h1 className="text-2xl font-bold">Address API Test</h1>
 
-      <p>
-        Login sebagai: <strong>{session?.user?.email}</strong>
-      </p>
+      <div className="space-y-1">
+        <p>
+          Login sebagai: <strong>{session?.user?.email}</strong>
+        </p>
+        <p className="break-all text-sm text-gray-500">
+          User ID: {userId ?? "Tidak tersedia"}
+        </p>
+      </div>
 
       <div className="flex flex-wrap gap-3">
         <button
-          className="rounded bg-blue-600 px-4 py-2 text-white"
-          disabled={loading}
-          onClick={getAddresses}
+          type="button"
+          className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+          disabled={loading || !userId}
+          onClick={() => void getAddresses()}
         >
           GET Addresses
         </button>
 
         <button
-          className="rounded bg-green-600 px-4 py-2 text-white"
-          disabled={loading}
-          onClick={createAddress}
+          type="button"
+          className="rounded bg-green-600 px-4 py-2 text-white disabled:opacity-50"
+          disabled={loading || !userId}
+          onClick={() => void createAddress()}
         >
           POST Create
         </button>
@@ -186,10 +253,10 @@ console.log("NextAuth user:", session?.user);
 
         {Object.entries(form).map(([key, value]) =>
           key === "isDefault" ? (
-            <label key={key} className="flex gap-2">
+            <label key={key} className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={Boolean(value)}
+                checked={value as boolean}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
@@ -200,18 +267,19 @@ console.log("NextAuth user:", session?.user);
               Jadikan alamat utama
             </label>
           ) : (
-            <input
-              key={key}
-              className="w-full rounded border p-2"
-              placeholder={key}
-              value={String(value)}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  [key]: event.target.value,
-                }))
-              }
-            />
+            <label key={key} className="block space-y-1">
+              <span className="text-sm text-gray-600">{key}</span>
+              <input
+                className="w-full rounded border p-2"
+                value={String(value ?? "")}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    [key]: event.target.value,
+                  }))
+                }
+              />
+            </label>
           )
         )}
       </section>
@@ -228,17 +296,19 @@ console.log("NextAuth user:", session?.user);
 
         <div className="flex flex-wrap gap-3">
           <button
-            className="rounded bg-amber-500 px-4 py-2 text-white"
-            disabled={loading}
-            onClick={updateAddress}
+            type="button"
+            className="rounded bg-amber-500 px-4 py-2 text-white disabled:opacity-50"
+            disabled={loading || !userId}
+            onClick={() => void updateAddress()}
           >
             PUT Update
           </button>
 
           <button
-            className="rounded bg-red-600 px-4 py-2 text-white"
-            disabled={loading}
-            onClick={deleteAddress}
+            type="button"
+            className="rounded bg-red-600 px-4 py-2 text-white disabled:opacity-50"
+            disabled={loading || !userId}
+            onClick={() => void deleteAddress()}
           >
             DELETE Address
           </button>
@@ -246,7 +316,11 @@ console.log("NextAuth user:", session?.user);
       </section>
 
       {message && (
-        <p className="break-words rounded bg-gray-100 p-3 text-gray-900">
+        <p
+          role="status"
+          aria-live="polite"
+          className="break-words rounded bg-gray-100 p-3 text-gray-900"
+        >
           {message}
         </p>
       )}
@@ -256,24 +330,47 @@ console.log("NextAuth user:", session?.user);
           Daftar alamat ({addresses.length})
         </h2>
 
+        {addresses.length === 0 && (
+          <p className="text-sm text-gray-500">
+            Belum ada alamat atau data belum berhasil dimuat.
+          </p>
+        )}
+
         {addresses.map((address) => (
           <article key={address.id} className="rounded border p-4">
             <p className="font-semibold">
-              {address.label || "Alamat"} — {address.name}
+              {address.label || "Alamat"} — {address.recipientName}
             </p>
+
             <p>{address.phone}</p>
+
             <p>
               {address.adress}, {address.district}, {address.city},{" "}
               {address.province} {address.postalCode}
             </p>
-            <p>ID: {address.id}</p>
+
+            <p className="break-all">ID: {address.id}</p>
             <p>Alamat utama: {address.isDefault ? "Ya" : "Tidak"}</p>
 
             <button
+              type="button"
               className="mt-2 rounded border px-3 py-1"
-              onClick={() => setAddressId(address.id)}
+              onClick={() => {
+                setAddressId(address.id);
+                setForm({
+                  recipientName: address.recipientName,
+                  phone: address.phone,
+                  label: address.label ?? "",
+                  adress: address.adress,
+                  postalCode: address.postalCode,
+                  city: address.city,
+                  province: address.province,
+                  district: address.district,
+                  isDefault: address.isDefault,
+                });
+              }}
             >
-              Pilih ID untuk PUT/DELETE
+              Pilih alamat untuk PUT/DELETE
             </button>
           </article>
         ))}

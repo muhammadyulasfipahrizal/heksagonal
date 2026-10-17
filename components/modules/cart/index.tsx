@@ -7,8 +7,11 @@ import Link from "next/link";
 import { FaCheck, FaCircleQuestion, FaClock, FaXmark } from "react-icons/fa6";
 import QuantityInputCart from "@/components/QuantityInputCart";
 import { formatRupiah, sanitize } from "@/lib/sanitize";
+  import { useRouter } from "next/navigation";
 
 export const CartModule = () => {
+
+  const router = useRouter();
 
   const { products, removeFromCart, calculateTotals, total } =
     useProductStore();
@@ -18,6 +21,47 @@ export const CartModule = () => {
     calculateTotals();
     toast.success("Product removed from the cart");
   };
+
+  if (products.length === 0) {
+    return (
+      <main className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+        <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="h-10 w-10 text-gray-400"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M2.25 3h1.386c.51 0 .955.343 1.085.836L5.25 6.75m0 0h14.568c.854 0 1.47.79 1.26 1.622l-1.2 4.8a1.5 1.5 0 0 1-1.455 1.136H8.118a1.5 1.5 0 0 1-1.455-1.136L5.25 6.75Zm2.25 10.5a1.125 1.125 0 1 0 0 2.25 1.125 1.125 0 0 0 0-2.25Zm9 0a1.125 1.125 0 1 0 0 2.25 1.125 1.125 0 0 0 0-2.25Z"
+            />
+          </svg>
+        </div>
+
+        <h1 className="text-xl font-semibold text-gray-900">
+          Keranjang Belanja Kosong
+        </h1>
+
+        <p className="mt-2 max-w-md text-sm text-gray-500">
+          Maaf, Anda belum menambahkan item ke keranjang.
+          Silakan pilih produk terlebih dahulu untuk melanjutkan checkout.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          className="mt-6 rounded-md bg-[#02054b] px-6 py-3 font-semibold text-white transition hover:bg-blue-950"
+        >
+          Mulai Belanja
+        </button>
+      </main>
+    );
+  }
+
   return (
 
     <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">

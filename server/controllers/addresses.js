@@ -1,9 +1,10 @@
 const { PrismaClient } = require("@prisma/client");
+const { add } = require("winston");
 
 const prisma = new PrismaClient();
 
 const ADDRESS_FIELDS = [
-  "name",
+  "recipientName",
   "phone",
   "label",
   "adress",
@@ -15,7 +16,7 @@ const ADDRESS_FIELDS = [
 ];
 
 const REQUIRED_FIELDS = [
-  "name",
+  "recipientName",
   "phone",
   "adress",
   "postalCode",
@@ -158,19 +159,25 @@ function handleAddressError(error, response, action) {
 // GET /api/addresses
 async function getAddresses(request, response) {
   try {
+    const { userId } = request.params;
+
+    if (!userId) {
+      return response.status(400).json({
+        error: "User ID is required",
+      });
+    }
+
     const addresses = await prisma.address.findMany({
-      where: {
-        userId: request.auth.userId,
-      },
+      where: { userId },
       orderBy: [
         { isDefault: "desc" },
         { createdAt: "desc" },
       ],
     });
 
-    return response.status(200).json({
-      addresses,
-    });
+    console.log(`Fetched ${addresses.length} addresses for user ${userId}`);
+
+    return response.status(200).json({ addresses });
   } catch (error) {
     return handleAddressError(error, response, "fetch addresses");
   }
@@ -184,8 +191,17 @@ async function createAddress(request, response) {
         error: "Invalid request body",
       });
     }
+    const { userId, ...addressBody } = request.body;
 
-    const validation = validateAddress(request.body);
+    if (typeof userId !== "string" || !userId.trim()) {
+      return response.status(400).json({
+        error: "User ID is required",
+      });
+    }
+
+    console.log("address body", addressBody);
+
+    const validation = validateAddress(addressBody);
 
     if (!validation.isValid) {
       return response.status(400).json({
@@ -195,7 +211,6 @@ async function createAddress(request, response) {
     }
 
     const { isDefault, ...addressData } = validation.data;
-    const userId = request.auth.userId;
 
     const address = await prisma.$transaction(async (tx) => {
       if (isDefault) {
@@ -240,13 +255,22 @@ async function updateAddress(request, response) {
       });
     }
 
-    if (Object.keys(request.body).length === 0) {
+    const { userId, ...addressBody } = request.body;
+
+    if (typeof userId !== "string" || !userId.trim()) {
       return response.status(400).json({
-        error: "At least one field must be provided",
+        error: "User ID is required",
       });
     }
 
-    const validation = validateAddress(request.body, true);
+    if (Object.keys(addressBody).length === 0) {
+      return response.status(400).json({
+        error: "At least one address field must be provided",
+      });
+    }
+
+    // Validate address fields only; userId is not an address field.
+    const validation = validateAddress(addressBody, true);
 
     if (!validation.isValid) {
       return response.status(400).json({
@@ -255,9 +279,7 @@ async function updateAddress(request, response) {
       });
     }
 
-    const userId = request.auth.userId;
-
-    // Check ownership before modifying the address.
+    // Check whether this address belongs to the specified user.
     const existingAddress = await prisma.address.findFirst({
       where: {
         id,
@@ -272,14 +294,20 @@ async function updateAddress(request, response) {
     }
 
     const updatedAddress = await prisma.$transaction(async (tx) => {
+      // If this address becomes the default, unset the other defaults.
       if (validation.data.isDefault === true) {
         await tx.address.updateMany({
-          where: { userId },
-          data: { isDefault: false },
+          where: {
+            userId,
+            id: { not: id },
+          },
+          data: {
+            isDefault: false,
+          },
         });
       }
 
-      // Include userId in the update condition to enforce ownership.
+      // Update only the address belonging to this user.
       await tx.address.updateMany({
         where: {
           id,
@@ -315,6 +343,7 @@ async function updateAddress(request, response) {
 async function deleteAddress(request, response) {
   try {
     const { id } = request.params;
+    const userId = request.body?.userId;
 
     if (!id) {
       return response.status(400).json({
@@ -322,10 +351,16 @@ async function deleteAddress(request, response) {
       });
     }
 
+    if (typeof userId !== "string" || !userId.trim()) {
+      return response.status(400).json({
+        error: "User ID is required",
+      });
+    }
+
     const result = await prisma.address.deleteMany({
       where: {
         id,
-        userId: request.auth.userId,
+        userId,
       },
     });
 

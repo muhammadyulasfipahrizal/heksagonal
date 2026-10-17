@@ -1,18 +1,10 @@
-
-const ADDRESS_API_BASE_URL = "/api/addresses";
+import apiClient from "@/lib/api";
 
 export const addressApi = {
   async request(endpoint: string, options: RequestInit = {}) {
-    const response = await fetch(
-      `${ADDRESS_API_BASE_URL}${endpoint}`,
-      {
-        ...options,
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          ...options.headers,
-        },
-      }
+    const response = await apiClient.request(
+      `/api/addresses${endpoint === "/" ? "" : endpoint}`,
+      options
     );
 
     const contentType = response.headers.get("content-type");
@@ -21,43 +13,63 @@ export const addressApi = {
       : await response.text();
 
     if (!response.ok) {
-      throw Object.assign(
-        new Error(
-          typeof data === "object" && data?.error
-            ? data.error
-            : `Request failed with status ${response.status}`
-        ),
-        {
-          status: response.status,
-          data,
-        }
-      );
+      const message =
+        typeof data === "object" &&
+        data !== null &&
+        "error" in data
+          ? String(data.error)
+          : `Request failed with status ${response.status}`;
+
+      throw Object.assign(new Error(message), {
+        status: response.status,
+        data,
+      });
     }
 
     return data;
   },
 
-  get: (endpoint = "/", options?: RequestInit) =>
-    addressApi.request(endpoint, { ...options, method: "GET" }),
+  // GET /api/addresses/:userId
+  get: (userId: string, options?: RequestInit) =>
+    addressApi.request(`/${encodeURIComponent(userId)}`, {
+      ...options,
+      method: "GET",
+    }),
 
-  
-
-  post: (endpoint = "/", data?: unknown, options?: RequestInit) =>
-    addressApi.request(endpoint, {
+  // POST /api/addresses
+  post: (
+    data: Record<string, unknown>,
+    options?: RequestInit
+  ) =>
+    addressApi.request("/", {
       ...options,
       method: "POST",
-      body: data === undefined ? undefined : JSON.stringify(data),
+      body: JSON.stringify(data),
     }),
 
-  put: (endpoint: string, data?: unknown, options?: RequestInit) =>
-    addressApi.request(endpoint, {
+  // PUT /api/addresses/:id
+  put: (
+    id: string,
+    data: Record<string, unknown>,
+    options?: RequestInit
+  ) =>
+    addressApi.request(`/${encodeURIComponent(id)}`, {
       ...options,
       method: "PUT",
-      body: data === undefined ? undefined : JSON.stringify(data),
+      body: JSON.stringify(data),
     }),
 
-  delete: (endpoint: string, options?: RequestInit) =>
-    addressApi.request(endpoint, { ...options, method: "DELETE" }),
+  // DELETE /api/addresses/:id
+  delete: (
+    id: string,
+    userId: string,
+    options?: RequestInit
+  ) =>
+    addressApi.request(`/${encodeURIComponent(id)}`, {
+      ...options,
+      method: "DELETE",
+      body: JSON.stringify({ userId }),
+    }),
 };
 
 export default addressApi;

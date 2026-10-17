@@ -1,239 +1,562 @@
 "use client";
-import { CustomButton, SectionTitle } from "@/components";
+
+import RegisterAddressForm, {
+  RegisterAddressData,
+} from "@/components/RegisterAddressForm";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import addressApi from "@/lib/addressApi";
+import apiClient from "@/lib/api";
 
 const RegisterPage = () => {
-  const [error, setError] = useState("");
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const { status: sessionStatus } = useSession();
+
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [form, setForm] = useState({
+    name: "",
+    lastname: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    acceptTerms: false,
+  });
+
+  const [address, setAddress] = useState<RegisterAddressData>({
+    phone: "",
+    adress: "",
+    province: "",
+    city: "",
+    district: "",
+    postalCode: "",
+  });
 
   useEffect(() => {
-    // chechking if user has already registered redirect to home page
     if (sessionStatus === "authenticated") {
       router.replace("/");
     }
   }, [sessionStatus, router]);
 
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-    return emailRegex.test(email);
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value, checked, type } = e.target;
+
+    setForm((current) => ({
+      ...current,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+
+    if (error) setError("");
   };
-  
-  const handleSubmit = async (e: any) => {
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
-    const email = e.target[2].value;
-    const password = e.target[3].value;
-    const confirmPassword = e.target[4].value;
+    setError("");
 
-    if (!isValidEmail(email)) {
-      setError("Email is invalid");
-      toast.error("Email is invalid");
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
+    if (!form.name.trim()) {
+      const message = "Please enter your full name.";
+      setError(message);
+      toast.error(message);
       return;
     }
 
-    if (!password || password.length < 8) {
-      setError("Password must be 8 characters long");
-      toast.error("Password must be 8 characters long");
+    if (!emailRegex.test(form.email)) {
+      const message = "Please enter a valid email address.";
+      setError(message);
+      toast.error(message);
       return;
     }
 
-    if (confirmPassword !== password) {
-      setError("Passwords are not equal");
-      toast.error("Passwords are not equal");
+    if (form.password.length < 8) {
+      const message = "Password must be at least 8 characters.";
+      setError(message);
+      toast.error(message);
       return;
     }
+
+    if (form.password !== form.confirmPassword) {
+      const message = "Passwords do not match.";
+      setError(message);
+      toast.error(message);
+      return;
+    }
+
+    if (!form.acceptTerms) {
+      const message = "Please accept the terms and privacy policy.";
+      setError(message);
+      toast.error(message);
+      return;
+    }
+
+    if (
+      !address.phone.trim() ||
+      !address.adress.trim() ||
+      !address.province ||
+      !address.city ||
+      !address.district ||
+      !address.postalCode.trim()
+    ) {
+      const message = "Please complete your contact and address details.";
+      setError(message);
+      toast.error(message);
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      // sending API request for registering user
-      const res = await fetch("/api/register", {
+      // STEP 1: Register user
+      const registerResponse = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
-          password,
+          name: form.name.trim(),
+          phone: address.phone.trim(),
+          email: form.email.trim(),
+          password: form.password,
         }),
       });
 
-      const data = await res.json();
+      const registerData = await registerResponse.json();
 
-      if (res.ok) {
-        setError("");
-        toast.success("Registration successful");
-        router.push("/login");
-      } else {
-        // Handle different types of errors
-        if (data.details && Array.isArray(data.details)) {
-          // Validation errors
-          const errorMessage = data.details.map((err: any) => err.message).join(", ");
-          setError(errorMessage);
-          toast.error(errorMessage);
-        } else if (data.error) {
-          // General errors
-          setError(data.error);
-          toast.error(data.error);
-        } else {
-          setError("Registration failed");
-          toast.error("Registration failed");
-        }
+      if (!registerResponse.ok) {
+        const message = Array.isArray(registerData.details)
+          ? registerData.details
+              .map((item: { message?: string }) => item.message)
+              .filter(Boolean)
+              .join(", ")
+          : registerData.error || "Registration failed.";
+
+        throw new Error(message);
       }
-    } catch (error) {
-      toast.error("Error, try again");
-      setError("Error, try again");
-      console.log(error);
+
+      // Extract the ID returned by the registration API.
+      // Adjust this path to match the actual response from /api/register.
+      const userId =
+        registerData.user?.id ??
+        registerData.userId ??
+        registerData.id;
+
+      if (!userId) {
+        throw new Error(
+          "Account was created, but the user ID was not returned. Please contact support before retrying."
+        );
+      }
+
+      // STEP 2: Create the user's address using the existing address API.
+      const addressResponse = await addressApi.post({
+        userId,
+        recipientName: `${form.name.trim()} ${form.lastname.trim()}`,
+        phone: address.phone.trim(),
+        label: "Rumah",
+        adress: address.adress.trim(),
+        postalCode: address.postalCode.trim(),
+        city: address.city,
+        province: address.province,
+        district: address.district,
+        isDefault: true,
+      });
+
+      toast.success(
+        addressResponse?.message ??
+          "Account and address created successfully!"
+      );
+
+      router.push("/login");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
+
+      setError(message);
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   if (sessionStatus === "loading") {
-    return <h1>Loading...</h1>;
-  }
-  return (
-    <div className="bg-white">
-      {/* <SectionTitle title="Register" path="Home | Register" /> */}
-      <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8 bg-white">
-        <div className="flex justify-center flex-col items-center">
-          <h2 className="mt-6 text-center text-2xl leading-9 tracking-tight text-gray-900">
-            Sign up on our website
-          </h2>
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-[#02054b]" />
+          <p className="mt-4 text-sm text-gray-500">
+            Preparing your registration...
+          </p>
         </div>
+      </div>
+    );
+  }
 
-        <div className="mt-5 sm:mx-auto sm:w-full sm:max-w-[480px]">
-          <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium leading-6 text-gray-900"
+  if (sessionStatus === "authenticated") {
+    return null;
+  }
+
+  const inputClass =
+    "block w-full rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 hover:border-gray-300 focus:border-[#02054b] focus:bg-white focus:ring-4 focus:ring-[#02054b]/10";
+
+  const labelClass =
+    "mb-2 block text-sm font-semibold text-gray-700";
+
+  return (
+    <main className="min-h-screen bg-gray-50 px-4 py-4 sm:px-6 lg:px-8 lg:py-16">
+      <div className="mx-auto grid max-w-8xl overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-xl shadow-gray-900/5 lg:grid-cols-[0.8fr_1.5fr]">
+        {/* Brand panel */}
+        <aside className="relative flex flex-col justify-between overflow-hidden bg-[#02054b] p-8 text-white sm:p-10 lg:p-12">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full border-[40px] border-white/[0.06]"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-white/[0.05] blur-2xl"
+          />
+
+          <div className="relative">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-3 text-xl font-extrabold tracking-[0.12em] text-white"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-lg">
+                H
+              </span>
+              HEKSAGONAL
+            </Link>
+
+            <div className="mt-12 lg:mt-20">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-200">
+                Welcome to HEKSAGONAL
+              </p>
+
+              <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+                Create your account.
+                <span className="mt-2 block text-blue-200">
+                  Start your journey with us.
+                </span>
+              </h1>
+
+              <p className="mt-6 max-w-sm text-sm leading-7 text-blue-100/80">
+                Join HEKSAGONAL for a simpler shopping experience.
+                Create your account and save your contact and delivery
+                details for future orders.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative mt-12 border-t border-white/15 pt-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  className="h-5 w-5"
+                  aria-hidden="true"
                 >
-                  Name
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m9 12 2 2 4-4"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold">
+                  Your account, your convenience
+                </p>
+                <p className="mt-1 text-xs text-blue-200/80">
+                  A more convenient shopping experience.
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Registration form */}
+        <section className="min-w-0 px-5 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12">
+          <div className="mx-auto max-w-2xl">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#02054b]/60">
+                Create an account
+              </p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                Sign up
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-gray-500">
+                Fill in your details below to get started.
+              </p>
+            </div>
+
+            <form
+              className="mt-8 space-y-8"
+              onSubmit={handleSubmit}
+            >
+              {/* Personal information */}
+              <div>
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#02054b]/[0.07] text-sm font-bold text-[#02054b]">
+                    1
+                  </span>
+                  <div>
+                    <h3 className="font-bold text-gray-900">
+                      Personal information
+                    </h3>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      Your basic account details.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="name" className={labelClass}>
+                      Name
+                    </label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      autoComplete="given-name"
+                      placeholder="Enter your name"
+                      value={form.name}
+                      onChange={handleChange}
+                      className={inputClass}
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="email" className={labelClass}>
+                      Email address
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={form.email}
+                      onChange={handleChange}
+                      className={inputClass}
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Account security */}
+              <div>
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#02054b]/[0.07] text-sm font-bold text-[#02054b]">
+                    2
+                  </span>
+                  <div>
+                    <h3 className="font-bold text-gray-900">
+                      Account security
+                    </h3>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      Choose a secure password.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="password" className={labelClass}>
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="At least 8 characters"
+                      value={form.password}
+                      onChange={handleChange}
+                      className={inputClass}
+                      minLength={8}
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="confirmPassword"
+                      className={labelClass}
+                    >
+                      Confirm password
+                    </label>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="Re-enter your password"
+                      value={form.confirmPassword}
+                      onChange={handleChange}
+                      className={inputClass}
+                      minLength={8}
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact and address */}
+              <div>
+                <div className="mb-5 flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#02054b]/[0.07] text-sm font-bold text-[#02054b]">
+                    3
+                  </span>
+                  <div>
+                    <h3 className="font-bold text-gray-900">
+                      Contact & address
+                    </h3>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      Add your phone number and delivery address.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 bg-gray-50/50 p-4 sm:p-6">
+                  <RegisterAddressForm
+                    value={address}
+                    onChange={setAddress}
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
 
+              {/* Terms */}
               <div>
-                <label
-                  htmlFor="lastname"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Lastname
-                </label>
-                <div className="mt-2">
+                <label className="flex cursor-pointer items-start gap-3">
                   <input
-                    id="lastname"
-                    name="lastname"
-                    type="text"
-                    required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Email address
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Password
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="confirmpassword"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Confirm password
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="confirmpassword"
-                    name="confirmpassword"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
+                    id="acceptTerms"
+                    name="acceptTerms"
                     type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
+                    checked={form.acceptTerms}
+                    onChange={handleChange}
+                    required
+                    disabled={isSubmitting}
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 accent-[#02054b] focus:ring-[#02054b]"
                   />
-                  <label
-                    htmlFor="remember-me"
-                    className="ml-3 block text-sm leading-6 text-gray-900"
-                  >
-                    Accept our terms and privacy policy
-                  </label>
-                </div>
+                  <span className="text-sm leading-6 text-gray-600">
+                    I agree to the{" "}
+                    <Link
+                      href="/terms"
+                      className="font-semibold text-[#02054b] underline decoration-[#02054b]/30 underline-offset-4 hover:decoration-[#02054b]"
+                    >
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      href="/privacy"
+                      className="font-semibold text-[#02054b] underline decoration-[#02054b]/30 underline-offset-4 hover:decoration-[#02054b]"
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
+                  </span>
+                </label>
               </div>
 
-              <div>
-                <CustomButton
-                  buttonType="submit"
-                  text="Sign up"
-                  paddingX={3}
-                  paddingY={1.5}
-                  customWidth="full"
-                  textSize="sm"
-                />
+              {error && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="mt-0.5 h-5 w-5 shrink-0"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path
+                      strokeLinecap="round"
+                      d="M12 8v4m0 4h.01"
+                    />
+                  </svg>
+                  <p>{error}</p>
+                </div>
+              )}
 
-                <p className="text-red-600 text-center text-[16px] my-4">
-                  {error && error}
+              <div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#02054b] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#02054b]/15 transition hover:bg-[#080d68] focus:outline-none focus:ring-4 focus:ring-[#02054b]/20 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                      Creating your account...
+                    </>
+                  ) : (
+                    <>
+                      Create account
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 12h14m-6-6 6 6-6 6"
+                        />
+                      </svg>
+                    </>
+                  )}
+                </button>
+
+                <p className="mt-5 text-center text-sm text-gray-500">
+                  Already have an account?{" "}
+                  <Link
+                    href="/login"
+                    className="font-bold text-[#02054b] hover:underline"
+                  >
+                    Sign in
+                  </Link>
                 </p>
               </div>
             </form>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+
+      <p className="mx-auto mt-6 max-w-6xl text-center text-xs leading-5 text-gray-400">
+        © {new Date().getFullYear()} HEKSAGONAL. All rights reserved.
+      </p>
+    </main>
   );
 };
 

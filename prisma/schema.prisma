@@ -43,13 +43,14 @@ model Image {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String?
-  role          String?        @default("user")
-  Wishlist      Wishlist[]
-  notifications Notification[]
-  // Back relation for bulk upload batches
+  id                String              @id @default(uuid())
+  name              String?
+  email             String              @unique
+  phone             String              @default("")
+  password          String?
+  role              String?             @default("user")
+  Wishlist          Wishlist[]
+  notifications     Notification[]
   bulkUploadBatches bulk_upload_batch[] @relation("UserBatches")
 }
 

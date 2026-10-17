@@ -2,13 +2,28 @@
 import { SectionTitle } from "@/components";
 import { useProductStore } from "../_zustand/store";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api";
 import { formatRupiah } from "@/lib/sanitize";
 import { ContactForm, CheckoutFormData  } from "@/components/ContactForm";
+import AddressSelector from "@/components/AddressSelector";
+
+type CheckoutAddress = {
+  id: string;
+  userId: string;
+  recipientName: string;
+  phone: string;
+  label: string | null;
+  adress: string;
+  postalCode: string;
+  city: string;
+  province: string;
+  district: string;
+  isDefault: boolean;
+};
 
 interface SavedAddress {
   id: string;
@@ -35,8 +50,20 @@ const CheckoutPage = () => {
   const [isCreatingAddress, setIsCreatingAddress] =
     useState(false);
 
+  const [selectedAddress, setSelectedAddress] =
+    useState<CheckoutAddress | null>(null);
+
   const isLoggedIn = sessionStatus === "authenticated";
   const isSessionLoading = sessionStatus === "loading";
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      setCheckoutForm((current) => ({
+        ...current,
+        email: session?.user?.email ?? current.email,
+      }));
+    }
+  }, [session?.user?.email]);
 
   const [checkoutForm, setCheckoutForm] =
     useState<CheckoutFormData>({
@@ -50,6 +77,28 @@ const CheckoutPage = () => {
       postalCode: "",
       orderNotice: "",
     });
+
+  const handleSelectAddress = useCallback(
+    (address: CheckoutAddress) => {
+      setSelectedAddress(address);
+      setSelectedAddressId(address.id);
+
+      console.log("Selected address:", session?.user?.email );
+
+      setCheckoutForm((current) => ({
+        ...current,
+        name: address.recipientName,
+        phone: address.phone,
+        email: session?.user?.email ?? current.email,
+        adress: address.adress,
+        postalCode: address.postalCode,
+        city: address.city,
+        province: address.province,
+        district: address.district,
+      }));
+    },
+    [session?.user?.email]
+  );
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { products, total, clearCart } = useProductStore();
@@ -107,166 +156,231 @@ const CheckoutPage = () => {
   };
 
   const makePurchase = async () => {
-    const validationErrors = [
-      ...validateContactForm(),
-      ...(deliveryMethod === "shipping"
-        ? validateShippingForm()
-        : []),
-    ];
-
-    if (validationErrors.length > 0) {
-      validationErrors.forEach((error) => toast.error(error));
-      return;
-    }
+    if (isSubmitting) return;
 
     if (products.length === 0) {
-      toast.error("Keranjang belanja kosong");
+      toast.error("Keranjang belanja kosong.");
       return;
     }
 
-    if (total <= 0) {
-      toast.error("Total pesanan tidak valid");
+    if (!Number.isFinite(total) || total <= 0) {
+      toast.error("Total pesanan tidak valid.");
+      return;
+    }
+
+    const isAuthenticated = sessionStatus === "authenticated";
+    const accountEmail = session?.user?.email?.trim().toLowerCase() ?? "";
+
+    // Untuk pengiriman pengguna login, sumber alamat adalah AddressSelector.
+    if (
+      deliveryMethod === "shipping" &&
+      isAuthenticated &&
+      !selectedAddress
+    ) {
+      toast.error("Silakan pilih alamat pengiriman terlebih dahulu.");
+      return;
+    }
+
+    const address = selectedAddress;
+
+    // Tentukan sumber data berdasarkan status login dan metode pengiriman.
+    const contact = {
+      name:
+        deliveryMethod === "shipping" && isAuthenticated
+          ? address?.recipientName ?? ""
+          : isAuthenticated
+            ? address?.recipientName || session?.user?.name || checkoutForm.name
+            : checkoutForm.name,
+
+      phone:
+        deliveryMethod === "shipping" && isAuthenticated
+          ? address?.phone ?? ""
+          : isAuthenticated
+            ? address?.phone || checkoutForm.phone
+            : checkoutForm.phone,
+
+      email: isAuthenticated ? accountEmail : checkoutForm.email.trim().toLowerCase(),
+
+      adress:
+        deliveryMethod === "shipping" && isAuthenticated
+          ? address?.adress ?? ""
+          : checkoutForm.adress,
+
+      postalCode:
+        deliveryMethod === "shipping" && isAuthenticated
+          ? address?.postalCode ?? ""
+          : checkoutForm.postalCode,
+
+      city:
+        deliveryMethod === "shipping" && isAuthenticated
+          ? address?.city ?? ""
+          : checkoutForm.city,
+
+      province:
+        deliveryMethod === "shipping" && isAuthenticated
+          ? address?.province ?? ""
+          : checkoutForm.province,
+
+      district:
+        deliveryMethod === "shipping" && isAuthenticated
+          ? address?.district ?? ""
+          : checkoutForm.district,
+    };
+
+    // Validasi kontak menggunakan data final, bukan checkoutForm secara langsung.
+    const validationErrors: string[] = [];
+
+    if (contact.name.trim().length < 2) {
+      validationErrors.push("Nama minimal 2 karakter.");
+    }
+
+    const phoneDigits = contact.phone.replace(/\D/g, "");
+
+    if (phoneDigits.length < 10) {
+      validationErrors.push("Nomor telepon minimal 10 digit.");
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+      validationErrors.push("Masukkan alamat email yang valid.");
+    }
+
+    if (deliveryMethod === "shipping") {
+      const requiredFields = [
+        ["adress", "Alamat"],
+        ["postalCode", "Kode pos"],
+        ["city", "Kota"],
+        ["province", "Provinsi"],
+        ["district", "Kecamatan"],
+      ] as const;
+
+      for (const [field, label] of requiredFields) {
+        if (!contact[field]?.trim()) {
+          validationErrors.push(`${label} wajib diisi.`);
+        }
+      }
+    }
+
+    if (validationErrors.length > 0) {
+      validationErrors.forEach((message) => toast.error(message));
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      console.log("🚀 Starting order creation...");
-      
-      // Get user ID if logged in
-      let userId = null;
-      if (session?.user?.email) {
-        try {
-          console.log("🔍 Getting user ID for logged-in user:", session.user.email);
-          const userResponse = await apiClient.get(`/api/users/email/${session.user.email}`);
+      let userId: string | null = null;
+
+      if (isAuthenticated) {
+        // Gunakan ID dari session jika tersedia.
+        // Jika tidak tersedia, gunakan mekanisme pencarian user yang ada.
+        userId = session?.user?.id ?? null;
+
+        if (!userId && session?.user?.email) {
+          const userResponse = await apiClient.get(
+            `/api/users/email/${encodeURIComponent(session.user.email)}`
+          );
+
           if (userResponse.ok) {
             const userData = await userResponse.json();
-            userId = userData.id;
-            console.log("✅ Found user ID:", userId);
-          } else {
-            console.log("❌ Could not find user with email:", session.user.email);
+            userId = userData.id ?? null;
           }
-        } catch (userError) {
-          console.log("⚠️  Error getting user ID:", userError);
+        }
+
+        if (!userId) {
+          throw new Error(
+            "Identitas akun tidak ditemukan. Silakan login kembali."
+          );
         }
       }
-      
-      // Prepare the order data
+
+      // Buat payload dari sumber data yang sudah divalidasi.
       const orderData = {
-        name: checkoutForm.name.trim(),
-        phone: checkoutForm.phone.trim(),
-        email: checkoutForm.email.trim().toLowerCase(),
+        name: contact.name.trim(),
+        phone: contact.phone.trim(),
+        email: contact.email,
 
         deliveryMethod:
           deliveryMethod === "pickup" ? "PICKUP" : "SHIPPING",
 
         adress:
-          deliveryMethod === "shipping"
-            ? checkoutForm.adress.trim()
-            : null,
+          deliveryMethod === "shipping" ? contact.adress.trim() : null,
 
         postalCode:
-          deliveryMethod === "shipping"
-            ? checkoutForm.postalCode.trim()
-            : null,
+          deliveryMethod === "shipping" ? contact.postalCode.trim() : null,
 
         city:
-          deliveryMethod === "shipping"
-            ? checkoutForm.city.trim()
-            : null,
+          deliveryMethod === "shipping" ? contact.city.trim() : null,
 
         province:
-          deliveryMethod === "shipping"
-            ? checkoutForm.province.trim()
-            : null,
+          deliveryMethod === "shipping" ? contact.province.trim() : null,
 
         district:
-          deliveryMethod === "shipping"
-            ? checkoutForm.district.trim()
-            : null,
+          deliveryMethod === "shipping" ? contact.district.trim() : null,
 
         orderNotice: checkoutForm.orderNotice.trim() || null,
         status: "pending",
-        total: total,
-        userId: userId,
+        total,
+        userId,
       };
 
-      console.log("📋 Order data being sent:", orderData);
-
-      // Send order data to server for validation and processing
       const response = await apiClient.post("/api/orders", orderData);
 
-      console.log("📡 API Response received:");
-      console.log("  Status:", response.status);
-      console.log("  Status Text:", response.statusText);
-      console.log("  Response OK:", response.ok);
-      
-      // Check if response is ok before parsing
       if (!response.ok) {
-        console.error("❌ Response not OK:", response.status, response.statusText);
-        const errorText = await response.text();
-        console.error("Error response body:", errorText);
-        
-        // Try to parse as JSON to get detailed error info
+        let errorData: {
+          error?: string;
+          message?: string;
+          details?: string | { field?: string; message?: string }[];
+        } = {};
+
         try {
-          const errorData = JSON.parse(errorText);
-          console.error("Parsed error data:", errorData);
-          
-          // Handle different error types
-          if (response.status === 409) {
-            // Duplicate order error
-            toast.error(errorData.details || errorData.error || "Duplicate order detected");
-            return; // Don't throw, just return to stop execution
-          } else if (errorData.details && Array.isArray(errorData.details)) {
-            // Validation errors
-            errorData.details.forEach((detail: any) => {
-              toast.error(`${detail.field}: ${detail.message}`);
-            });
-          } else if (typeof errorData.details === 'string') {
-            // Single error message in details
-            toast.error(errorData.details);
-          } else {
-            // Fallback error message
-            toast.error(errorData.error || "Order creation failed");
-          }
-        } catch (parseError) {
-          console.error("Could not parse error as JSON:", parseError);
-          toast.error("Order creation failed. Please try again.");
+          errorData = await response.json();
+        } catch {
+          // Respons server mungkin bukan JSON.
         }
-        
-        return; // Stop execution instead of throwing
+
+        if (response.status === 409) {
+          throw new Error(
+            errorData.message ||
+              errorData.error ||
+              "Pesanan duplikat terdeteksi. Silakan coba kembali."
+          );
+        }
+
+        if (Array.isArray(errorData.details)) {
+          errorData.details.forEach((detail) => {
+            toast.error(
+              `${detail.field ? `${detail.field}: ` : ""}${detail.message ?? "Data tidak valid."}`
+            );
+          });
+
+          return;
+        }
+
+        throw new Error(
+          typeof errorData.details === "string"
+            ? errorData.details
+            : errorData.message ||
+                errorData.error ||
+                "Gagal membuat pesanan."
+        );
       }
 
       const data = await response.json();
-      console.log("✅ Parsed response data:", data);
-      
-      const orderId: string = data.id;
-      console.log("🆔 Extracted order ID:", orderId);
+      const orderId: string | undefined = data.id;
 
       if (!orderId) {
-        console.error("❌ Order ID is missing or falsy!");
-        console.error("Full response data:", JSON.stringify(data, null, 2));
-        throw new Error("Order ID not received from server");
+        throw new Error("ID pesanan tidak diterima dari server.");
       }
 
-      console.log("✅ Order ID validation passed, proceeding with product addition...");
-
-      // Add products to order
-      for (let i = 0; i < products.length; i++) {
-        console.log(`🛍️ Adding product ${i + 1}/${products.length}:`, {
+      // Tambahkan setiap produk ke pesanan.
+      for (const product of products) {
+        await addOrderProduct(
           orderId,
-          productId: products[i].id,
-          quantity: products[i].amount
-        });
-        
-        await addOrderProduct(orderId, products[i].id, products[i].amount);
-        console.log(`✅ Product ${i + 1} added successfully`);
+          product.id,
+          product.amount
+        );
       }
 
-      console.log(" All products added successfully!");
-
-      // Clear form and cart
       setCheckoutForm({
         name: "",
         phone: "",
@@ -278,47 +392,22 @@ const CheckoutPage = () => {
         postalCode: "",
         orderNotice: "",
       });
+
       clearCart();
-      
-      // Refresh notification count if user is logged in
-      try {
-        // This will trigger a refresh of notifications in the background
-        window.dispatchEvent(new CustomEvent('orderCompleted'));
-      } catch (error) {
-        console.log('Note: Could not trigger notification refresh');
-      }
-      
-      toast.success("Order created successfully! You will be contacted for payment.");
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
-    } catch (error: any) {
-      console.error("💥 Error in makePurchase:", error);
-      
-      // Handle server validation errors
-      if (error.response?.status === 400) {
-        console.log(" Handling 400 error...");
-        try {
-          const errorData = await error.response.json();
-          console.log("Error data:", errorData);
-          if (errorData.details && Array.isArray(errorData.details)) {
-            // Show specific validation errors
-            errorData.details.forEach((detail: any) => {
-              toast.error(`${detail.field}: ${detail.message}`);
-            });
-          } else {
-            toast.error(errorData.error || "Validation failed");
-          }
-        } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
-          toast.error("Validation failed");
-        }
-      } else if (error.response?.status === 409) {
-        toast.error("Duplicate order detected. Please wait before creating another order.");
-      } else {
-        console.log("🔍 Handling generic error...");
-        toast.error("Failed to create order. Please try again.");
-      }
+
+      window.dispatchEvent(new CustomEvent("orderCompleted"));
+
+      toast.success("Pesanan berhasil dibuat.");
+
+      router.push("/");
+    } catch (error: unknown) {
+      console.error("Error creating order:", error);
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Gagal membuat pesanan. Silakan coba kembali."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -375,6 +464,117 @@ const CheckoutPage = () => {
 
       <main className="relative mx-auto grid max-w-screen-2xl grid-cols-1 gap-x-4 lg:grid-cols-2 lg:px-8 xl:gap-x-6">
         <h1 className="sr-only">Order information</h1>
+
+        {deliveryMethod !== "pickup" && isLoggedIn && (
+          <AddressSelector
+            selectedAddressId={selectedAddressId}
+            onSelect={handleSelectAddress}
+            onAddAddress={() => {
+              // Hubungkan ke modal atau halaman tambah alamat.
+            }}
+          />
+        )}
+
+        {deliveryMethod === "pickup" && isLoggedIn && (
+          <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
+            <div className="h-1 bg-[#02054b]" />
+
+            <div className="flex items-start gap-4 p-5 sm:p-6">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#02054b]/[0.06] text-[#02054b]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.7}
+                  className="h-6 w-6"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 10h18l-2-6H5l-2 6Zm2 0v10h14V10M9 20v-6h6v6"
+                  />
+                </svg>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-bold tracking-tight text-gray-900">
+                  Pengambilan Pesanan di Toko
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-gray-600">
+                  Silakan ambil pesanan Anda secara langsung di toko kami.
+                  Dengan memilih metode pengambilan di toko, Anda tidak
+                  perlu menunggu pengiriman ke alamat tujuan.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {deliveryMethod !== "pickup" && !isLoggedIn && (
+          <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
+            <div className="h-1 bg-[#02054b]" />
+
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:p-6">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#02054b]/[0.06] text-[#02054b]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.7}
+                  className="h-6 w-6"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 11v5m0-8h.01"
+                  />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-base font-bold tracking-tight text-gray-900">
+                    Mohon Maaf, Registrasi Diperlukan
+                  </h3>
+                </div>
+
+                <p className="mt-2 text-sm leading-6 text-gray-600">
+                  Mohon maaf atas ketidaknyamanannya. Untuk menggunakan
+                  metode pengiriman ke alamat tujuan, Anda perlu melakukan
+                  registrasi terlebih dahulu. Setelah registrasi selesai,
+                  Anda dapat melanjutkan proses checkout.
+                </p>
+
+                <div className="mt-4 flex items-start gap-2 rounded-xl bg-gray-50 p-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.8}
+                    className="mt-0.5 h-4 w-4 shrink-0 text-[#02054b]"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8v4l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                  <p className="text-xs leading-5 text-gray-600">
+                    Registrasi hanya perlu dilakukan satu kali untuk
+                    mempermudah proses pemesanan Anda berikutnya.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Order Summary */}
         <section
@@ -495,34 +695,85 @@ const CheckoutPage = () => {
                 </span>
               </label>
 
-              {deliveryMethod === "pickup" ? (
+              
+            {deliveryMethod === "pickup" ? (
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => void makePurchase()}
+                className="w-full rounded-md bg-[#02054b] px-4 py-3
+                  font-semibold text-white hover:bg-blue-950
+                  disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSubmitting ? "Memproses Pesanan..." : "Buat Pesanan"}
+                </button>
+              ) : isLoggedIn ? (
                 <button
                   type="button"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !selectedAddress}
                   onClick={() => void makePurchase()}
                   className="w-full rounded-md bg-[#02054b] px-4 py-3
                     font-semibold text-white hover:bg-blue-950
                     disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isSubmitting ? "Memproses Pesanan..." : "Buat Pesanan"}
+                  {isSubmitting
+                    ? "Memproses Pesanan..."
+                    : !selectedAddress
+                      ? "Pilih Alamat Pengiriman"
+                      : "Buat Pesanan"}
                 </button>
               ) : (
                 <button
                   type="button"
-                  onClick={() => setIsContactModalOpen(true)}
+                  onClick={() => router.push("/register")}
+                  // onClick={() => setIsContactModalOpen(true)}
                   className="w-full rounded-md bg-[#02054b] px-4 py-3
                     font-semibold text-white hover:bg-blue-950"
                 >
-                  Isi Informasi Pengiriman
+                  Registrasi Sekarang
                 </button>
               )}
             </div>
-
           </div>
         </section>
 
-        {!isLoggedIn && (
+        {!isLoggedIn && deliveryMethod === "pickup" && (
           <form className="px-4 sm:px-6 lg:col-start-1 lg:row-start-1 lg:px-0">
+            <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
+              <div className="h-1 bg-[#02054b]" />
+
+              <div className="flex items-start gap-4 p-5 sm:p-6">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#02054b]/[0.06] text-[#02054b]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.7}
+                    className="h-6 w-6"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 10h18l-2-6H5l-2 6Zm2 0v10h14V10M9 20v-6h6v6"
+                    />
+                  </svg>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base font-bold tracking-tight text-gray-900">
+                    Pengambilan Pesanan di Toko
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
+                    Silakan ambil pesanan Anda secara langsung di toko kami.
+                    Dengan memilih metode pengambilan di toko, Anda tidak
+                    perlu menunggu pengiriman ke alamat tujuan.
+                  </p>
+                </div>
+              </div>
+            </div>
           <div className="mx-auto max-w-lg lg:max-w-none">
             {/* Contact Information */}
             <section aria-labelledby="contact-info-heading">
@@ -632,6 +883,8 @@ const CheckoutPage = () => {
                   </div>
                 </div>
             </section>
+
+            
           </div>
         </form>
         )}
@@ -686,10 +939,6 @@ const CheckoutPage = () => {
         {isSessionLoading ? (
           <p className="mt-6 text-sm text-gray-500">
             Memeriksa akun...
-          </p>
-        ) : !isLoggedIn ? (
-          <p className="mt-6 text-sm text-gray-500">
-            Isi informasi kontak untuk melanjutkan pesanan.
           </p>
         ) : null}
 
