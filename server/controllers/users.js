@@ -90,53 +90,99 @@ const createUser = asyncHandler(async (request, response) => {
   });
 });
 
+
 const updateUser = asyncHandler(async (request, response) => {
   const { id } = request.params;
-  const { email, password, role } = request.body;
+  const { name, phone, email, password, role } = request.body;
 
   if (!id) {
     throw new AppError("User ID is required", 400);
   }
 
   const existingUser = await prisma.user.findUnique({
-    where: {
-      id: id,
-    },
+    where: { id },
   });
 
   if (!existingUser) {
     throw new AppError("User not found", 404);
   }
 
-  // Prepare update data
   const updateData = {};
-  if (email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+
+  // Update name
+  if (name !== undefined) {
+    if (typeof name !== "string" || name.trim().length < 3) {
+      throw new AppError("Name must be at least 3 characters long", 400);
+    }
+
+    updateData.name = name.trim();
+  }
+
+  // Update phone
+  if (phone !== undefined) {
+    if (typeof phone !== "string" || phone.trim().length < 8) {
+      throw new AppError(
+        "Phone number must be at least 8 characters long",
+        400
+      );
+    }
+
+    updateData.phone = phone.trim();
+  }
+
+  // Update email
+  if (email !== undefined) {
+    if (typeof email !== "string") {
       throw new AppError("Invalid email format", 400);
     }
-    updateData.email = email;
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(normalizedEmail)) {
+      throw new AppError("Invalid email format", 400);
+    }
+
+    const duplicateEmail = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (duplicateEmail && duplicateEmail.id !== id) {
+      throw new AppError("Email is already in use", 409);
+    }
+
+    updateData.email = normalizedEmail;
   }
-  if (password) {
-    if (password.length < 8) {
+
+  // Update password
+  if (password !== undefined) {
+    if (typeof password !== "string" || password.length < 8) {
       throw new AppError("Password must be at least 8 characters long", 400);
     }
+
     updateData.password = await bcrypt.hash(password, 14);
   }
-  if (role) {
+
+  // Update role
+  if (role !== undefined) {
     updateData.role = role;
   }
 
+  if (Object.keys(updateData).length === 0) {
+    throw new AppError("No valid fields provided for update", 400);
+  }
+
   const updatedUser = await prisma.user.update({
-    where: {
-      id: existingUser.id,
-    },
+    where: { id },
     data: updateData,
   });
 
-  // Exclude password from response
-  return response.status(200).json(excludePassword(updatedUser));
+  return response.status(200).json({
+    message: "User updated successfully",
+    user: excludePassword(updatedUser),
+  });
 });
+
 
 const deleteUser = asyncHandler(async (request, response) => {
   const { id } = request.params;

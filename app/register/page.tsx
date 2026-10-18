@@ -3,13 +3,12 @@
 import RegisterAddressForm, {
   RegisterAddressData,
 } from "@/components/RegisterAddressForm";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import addressApi from "@/lib/addressApi";
-import apiClient from "@/lib/api";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -53,6 +52,22 @@ const RegisterPage = () => {
     }));
 
     if (error) setError("");
+  };
+
+  const handleGoogleRegister = async () => {
+    setError("");
+
+    try {
+      setIsSubmitting(true);
+      await signIn("google", {
+        callbackUrl: "/register/complete-google",
+      });
+    } catch {
+      setIsSubmitting(false);
+      const message = "Unable to start Google registration.";
+      setError(message);
+      toast.error(message);
+    }
   };
 
   const handleSubmit = async (
@@ -213,87 +228,11 @@ const RegisterPage = () => {
 
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-4 sm:px-6 lg:px-8 lg:py-16">
-      <div className="mx-auto grid max-w-8xl overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-xl shadow-gray-900/5 lg:grid-cols-[0.8fr_1.5fr]">
-        {/* Brand panel */}
-        <aside className="relative flex flex-col justify-between overflow-hidden bg-[#02054b] p-8 text-white sm:p-10 lg:p-12">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full border-[40px] border-white/[0.06]"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-white/[0.05] blur-2xl"
-          />
-
-          <div className="relative">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-3 text-xl font-extrabold tracking-[0.12em] text-white"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-lg">
-                H
-              </span>
-              HEKSAGONAL
-            </Link>
-
-            <div className="mt-12 lg:mt-20">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-200">
-                Welcome to HEKSAGONAL
-              </p>
-
-              <h1 className="mt-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-                Create your account.
-                <span className="mt-2 block text-blue-200">
-                  Start your journey with us.
-                </span>
-              </h1>
-
-              <p className="mt-6 max-w-sm text-sm leading-7 text-blue-100/80">
-                Join HEKSAGONAL for a simpler shopping experience.
-                Create your account and save your contact and delivery
-                details for future orders.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative mt-12 border-t border-white/15 pt-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  className="h-5 w-5"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m9 12 2 2 4-4"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm font-semibold">
-                  Your account, your convenience
-                </p>
-                <p className="mt-1 text-xs text-blue-200/80">
-                  A more convenient shopping experience.
-                </p>
-              </div>
-            </div>
-          </div>
-        </aside>
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-xl shadow-gray-900/5">
 
         {/* Registration form */}
-        <section className="min-w-0 px-5 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12">
-          <div className="mx-auto max-w-2xl">
+        <section className="w-full px-5 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12">
+          <div className="w-full">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#02054b]/60">
                 Create an account
@@ -304,6 +243,50 @@ const RegisterPage = () => {
               <p className="mt-2 text-sm leading-6 text-gray-500">
                 Fill in your details below to get started.
               </p>
+              
+              <div className="mt-6 space-y-4">
+                <button
+                  type="button"
+                  onClick={handleGoogleRegister}
+                  className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-4 focus:ring-[#02054b]/10"
+                >
+                  <svg
+                    className="h-5 w-5"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="#EA4335"
+                      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"
+                      transform="translate(0 3)"
+                    />
+                    <path
+                      fill="#4285F4"
+                      d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.73 7.18l7.64 5.93c4.46-4.12 7.13-10.2 7.13-17.58Z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M10.53 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a23.9 23.9 0 0 0 0 21.56l7.98-6.19Z"
+                      transform="translate(0 3)"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.64-5.93c-2.12 1.42-4.84 2.27-8.27 2.27-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"
+                      transform="translate(0 -3)"
+                    />
+                  </svg>
+                  Continue with Google
+                </button>
+
+                <div className="relative flex items-center">
+                  <div className="flex-grow border-t border-gray-200" />
+                  <span className="mx-4 shrink-0 text-xs font-medium uppercase tracking-wider text-gray-400">
+                    Or register with email
+                  </span>
+                  <div className="flex-grow border-t border-gray-200" />
+                </div>
+              </div>
+
             </div>
 
             <form
