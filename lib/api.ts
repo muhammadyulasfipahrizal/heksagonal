@@ -16,7 +16,6 @@ export const apiClient = {
     return fetch(url, { ...defaultOptions, ...options });
   },
   
-  // Convenience methods
   get: (endpoint: string, options?: RequestInit) => 
     apiClient.request(endpoint, { ...options, method: 'GET' }),
     

@@ -38,23 +38,35 @@ const Header = () => {
 
   // getting all wishlist items by user id
   const getWishlistByUserId = async (id: string) => {
-    const response = await apiClient.get(`/api/wishlist/${id}`, {
-      cache: "no-store",
-    });
-    const wishlist = await response.json();
-    const productArray: {
-      id: string;
-      title: string;
-      price: number;
-      image: string;
-      slug:string
-      stockAvailabillity: number;
-    }[] = [];
+    const response = await apiClient.get(
+      `/api/wishlist/${encodeURIComponent(id)}`,
+      { cache: "no-store" }
+    );
 
-    return; // temporary disable wishlist fetching while the issue is being resolved
-    
-    wishlist.map((item: any) => productArray.push({id: item?.product?.id, title: item?.product?.title, price: item?.product?.price, image: item?.product?.mainImage, slug: item?.product?.slug, stockAvailabillity: item?.product?.inStock}));
-    
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result?.message || "Failed to fetch wishlist.");
+    }
+
+    // Backend mengembalikan { message, total, wishlist }.
+    const items = Array.isArray(result)
+      ? result
+      : Array.isArray(result?.wishlist)
+        ? result.wishlist
+        : [];
+
+    const productArray = items
+      .filter((item: any) => item?.product?.id)
+      .map((item: any) => ({
+        id: item.product.id,
+        title: item.product.title,
+        price: item.product.price,
+        image: item.product.mainImage,
+        slug: item.product.slug,
+        stockAvailabillity: item.product.inStock,
+      }));
+
     setWishlist(productArray);
   };
 
@@ -98,7 +110,25 @@ const Header = () => {
           <SearchInput />
           <div className="flex gap-x-10 items-center">
             <NotificationBell />
-            {/* <HeartElement wishQuantity={wishQuantity} /> */}
+            {status === "authenticated" && (
+              <div className="flex flex-row gap-x-10">
+                <HeartElement wishQuantity={wishQuantity} />
+
+                <Link
+                  href="/profile"
+                  aria-label="Profile"
+                  title="Profile"
+                  className={`flex items-center justify-center rounded-full p-2 transition hover:bg-blue-50 hover:text-blue-700 ${
+                    pathname.startsWith("/profile")
+                      ? "text-blue-700"
+                      : "text-gray-700"
+                  }`}
+                >
+                  Profile
+                </Link>
+              </div>
+              
+            )}
             <CartElement />
           </div>
           <CategoryHeader

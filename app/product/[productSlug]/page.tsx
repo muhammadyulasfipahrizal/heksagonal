@@ -4,6 +4,7 @@ import {
 
   ProductTabs,
   SingleProductDynamicFields,
+  AddToWishlistBtn,
   
 } from "@/components";
 import apiClient from "@/lib/api";
@@ -75,6 +76,17 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
             <StockAvailabillity stock={94} inStock={product?.inStock} />
             <SingleProductDynamicFields product={product} />
             <div className="flex flex-col gap-y-2 max-[500px]:items-center">
+              
+              <AddToWishlistBtn
+                product={{
+                  id: product.id,
+                  title: product.title,
+                  price: product.price,
+                  image: product.mainImage,
+                  slug: product.slug,
+                  stockAvailabillity: product.inStock,
+                }}
+              />
              
               <p className="text-lg">
                 SKU: <span className="ml-1">{product?.code}</span>
@@ -136,6 +148,7 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
               </div> */}
             </div>
           </div>
+
         </div>
         <div className="py-16">
           <ProductTabs product={product} />

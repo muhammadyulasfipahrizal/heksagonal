@@ -1,155 +1,222 @@
-// *********************
-// Role of the component: Filters on shop page
-// Name of the component: Filters.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <Filters />
-// Input parameters: no input parameters
-// Output: stock, rating and price filter
-// *********************
 
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSortStore } from "@/app/_zustand/sortStore";
 import { usePaginationStore } from "@/app/_zustand/paginationStore";
 import { formatRupiah } from "@/lib/sanitize";
 
 interface InputCategory {
-  inStock: { text: string, isChecked: boolean },
-  outOfStock: { text: string, isChecked: boolean },
-  priceFilter: { text: string, value: number },
-  ratingFilter: { text: string, value: number },
+  inStock: { text: string; isChecked: boolean };
+  outOfStock: { text: string; isChecked: boolean };
+  priceFilter: { text: string; value: number };
+  ratingFilter: { text: string; value: number };
 }
+
+const DEFAULT_FILTERS: InputCategory = {
+  inStock: { text: "instock", isChecked: true },
+  outOfStock: { text: "outofstock", isChecked: true },
+  priceFilter: { text: "price", value: 100000000 },
+  ratingFilter: { text: "rating", value: 0 },
+};
 
 const Filters = () => {
   const pathname = usePathname();
-  const { replace } = useRouter();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // getting current page number from Zustand store
   const { page } = usePaginationStore();
-
-  const [inputCategory, setInputCategory] = useState<InputCategory>({
-    inStock: { text: "instock", isChecked: true },
-    outOfStock: { text: "outofstock", isChecked: true },
-    priceFilter: { text: "price", value: 3000 },
-    ratingFilter: { text: "rating", value: 0 },
-  });
   const { sortBy } = useSortStore();
 
+  const [inputCategory, setInputCategory] =
+    useState<InputCategory>(DEFAULT_FILTERS);
+
+  const [isApplying, setIsApplying] = useState(false);
+
+  // Initialize filter controls from the current URL.
   useEffect(() => {
-    const params = new URLSearchParams();
-    // setting URL params and after that putting them all in URL
-    params.set("outOfStock", inputCategory.outOfStock.isChecked.toString());
-    params.set("inStock", inputCategory.inStock.isChecked.toString());
-    params.set("rating", inputCategory.ratingFilter.value.toString());
-    params.set("price", inputCategory.priceFilter.value.toString());
+    const params = new URLSearchParams(searchParams.toString());
+
+    const price = Number(params.get("price"));
+    const rating = Number(params.get("rating"));
+
+    setInputCategory({
+      inStock: {
+        text: "instock",
+        isChecked: params.get("inStock") !== "false",
+      },
+      outOfStock: {
+        text: "outofstock",
+        isChecked: params.get("outOfStock") !== "false",
+      },
+      priceFilter: {
+        text: "price",
+        value:
+          params.has("price") && Number.isFinite(price) && price >= 0
+            ? price
+            : 100000000,
+      },
+      ratingFilter: {
+        text: "rating",
+        value:
+          params.has("rating") &&
+          Number.isFinite(rating) &&
+          rating >= 0 &&
+          rating <= 5
+            ? rating
+            : 0,
+      },
+    });
+  }, [searchParams]);
+
+  const handleApplyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    // Preserve categoryId and any other existing parameters.
+    params.set("inStock", String(inputCategory.inStock.isChecked));
+    params.set("outOfStock", String(inputCategory.outOfStock.isChecked));
+    params.set("price", String(inputCategory.priceFilter.value));
+    params.set("rating", String(inputCategory.ratingFilter.value));
     params.set("sort", sortBy);
-    params.set("page", page.toString());
-    replace(`${pathname}?${params}`);
-  }, [inputCategory, sortBy, page]);
+    params.set("page", "1");
+
+    // Reset pagination when filters change.
+    router.push(`${pathname}?${params.toString()}`, {
+      scroll: false,
+    });
+  };
 
   return (
     <div>
-      <h3 className="text-2xl mb-2">Filters</h3>
-      <div className="divider"></div>
+      <h3 className="mb-2 text-2xl">Filters</h3>
+      <div className="divider" />
+
       <div className="flex flex-col gap-y-1">
-        <h3 className="text-xl mb-2">Availability</h3>
+        <h3 className="mb-2 text-xl">Availability</h3>
+
         <div className="form-control">
-          <label className="cursor-pointer flex items-center">
+          <label className="flex cursor-pointer items-center">
             <input
               type="checkbox"
               checked={inputCategory.inStock.isChecked}
               onChange={() =>
-                setInputCategory({
-                  ...inputCategory,
+                setInputCategory((prev) => ({
+                  ...prev,
                   inStock: {
-                    text: "instock",
-                    isChecked: !inputCategory.inStock.isChecked,
+                    ...prev.inStock,
+                    isChecked: !prev.inStock.isChecked,
                   },
-                })
+                }))
               }
               className="checkbox accent-purple-500"
             />
-            <span className="label-text text-lg ml-2 text-black">Stock</span>
+            <span className="label-text ml-2 text-lg text-black">
+              Tersedia
+            </span>
           </label>
         </div>
 
         <div className="form-control">
-          <label className="cursor-pointer flex items-center">
+          <label className="flex cursor-pointer items-center">
             <input
               type="checkbox"
               checked={inputCategory.outOfStock.isChecked}
               onChange={() =>
-                setInputCategory({
-                  ...inputCategory,
+                setInputCategory((prev) => ({
+                  ...prev,
                   outOfStock: {
-                    text: "outofstock",
-                    isChecked: !inputCategory.outOfStock.isChecked,
+                    ...prev.outOfStock,
+                    isChecked: !prev.outOfStock.isChecked,
                   },
-                })
+                }))
               }
               className="checkbox accent-purple-500"
             />
-            <span className="label-text text-lg ml-2 text-black">
-              Out of stock
+            <span className="label-text ml-2 text-lg text-black">
+              Tidak Tersedia
             </span>
           </label>
         </div>
       </div>
 
-      <div className="divider"></div>
+      <div className="divider" />
+
       <div className="flex flex-col gap-y-1">
-        <h3 className="text-xl mb-2">Price</h3>
-        <div>
-          <input
-            type="range"
-            min={0}
-            max={3000}
-            step={10}
-            value={inputCategory.priceFilter.value}
-            className="range accent-purple-500"
-            onChange={(e) =>
-              setInputCategory({
-                ...inputCategory,
-                priceFilter: {
-                  text: "price",
-                  value: Number(e.target.value),
-                },
-              })
-            }
-          />
-          <span>{`Max price: ${formatRupiah(inputCategory.priceFilter.value)}`}</span>
-        </div>
-      </div>
+        <h3 className="mb-2 text-xl">Harga</h3>
 
-      <div className="divider"></div>
-
-      <div>
-        <h3 className="text-xl mb-2">Minimum Rating:</h3>
         <input
           type="range"
           min={0}
-          max="5"
+          max={100000000}
+          step={10}
+          value={inputCategory.priceFilter.value}
+          className="range accent-purple-500"
+          onChange={(e) =>
+            setInputCategory((prev) => ({
+              ...prev,
+              priceFilter: {
+                ...prev.priceFilter,
+                value: Number(e.target.value),
+              },
+            }))
+          }
+        />
+
+        <span>
+          {`Maksimal Harga: ${formatRupiah(inputCategory.priceFilter.value)}`}
+        </span>
+      </div>
+
+      <div className="divider" />
+
+      {/* <div>
+        <h3 className="mb-2 text-xl">Minimum Rating:</h3>
+
+        <input
+          type="range"
+          min={0}
+          max={5}
           value={inputCategory.ratingFilter.value}
           onChange={(e) =>
-            setInputCategory({
-              ...inputCategory,
-              ratingFilter: { text: "rating", value: Number(e.target.value) },
-            })
+            setInputCategory((prev) => ({
+              ...prev,
+              ratingFilter: {
+                ...prev.ratingFilter,
+                value: Number(e.target.value),
+              },
+            }))
           }
           className="range range-info"
-          step="1"
+          step={1}
         />
-        <div className="w-full flex justify-between text-xs px-2">
-          <span>0</span>
-          <span>1</span>
-          <span>2</span>
-          <span>3</span>
-          <span>4</span>
-          <span>5</span>
+
+        <div className="flex w-full justify-between px-2 text-xs">
+          {[0, 1, 2, 3, 4, 5].map((value) => (
+            <span key={value}>{value}</span>
+          ))}
         </div>
+      </div> */}
+
+      <div className="mt-5 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={handleApplyFilters}
+          disabled={isApplying}
+          className="btn w-full border-0 bg-[#02054b] text-white hover:bg-[#15195c] disabled:opacity-60"
+        >
+          Apply Filters
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setInputCategory(DEFAULT_FILTERS);
+          }}
+          className="btn btn-outline w-full"
+        >
+          Reset Filters
+        </button>
       </div>
     </div>
   );

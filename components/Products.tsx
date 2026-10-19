@@ -1,39 +1,60 @@
-// *********************
-// Role of the component: Showing products on the shop page with applied filter and sort
-// Name of the component: Products.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <Products params={params} searchParams={searchParams} />
-// Input parameters: { params, searchParams }: { params: { slug?: string[] }, searchParams: { [key: string]: string | string[] | undefined } }
-// Output: products grid
-// *********************
 
 import React from "react";
 import ProductItem from "./ProductItem";
 import apiClient from "@/lib/api";
 
-const Products = async ({ params, searchParams }: { params: { slug?: string[] }, searchParams: { [key: string]: string | string[] | undefined } }) => {
-  // getting all data from URL slug and preparing everything for sending GET request
+const Products = async ({
+  searchParams,
+}: {
+  params?: { slug?: string[] };
+  searchParams: {
+    [key: string]: string | string[] | undefined;
+  };
+}) => {
   const inStockNum = searchParams?.inStock === "true" ? 1 : 0;
   const outOfStockNum = searchParams?.outOfStock === "true" ? 1 : 0;
-  const page = searchParams?.page ? Number(searchParams?.page) : 1;
+
+  const rawPage = searchParams?.page;
+  const parsedPage =
+    typeof rawPage === "string" ? Number(rawPage) : 1;
+
+  const page =
+    Number.isInteger(parsedPage) && parsedPage > 0
+      ? parsedPage
+      : 1;
+
+  // Default harga maksimal: Rp100.000.000
+  const rawPrice = searchParams?.price;
+  const parsedPrice =
+    typeof rawPrice === "string" && rawPrice.trim() !== ""
+      ? Number(rawPrice)
+      : NaN;
+
+  const maxPrice =
+    Number.isFinite(parsedPrice) && parsedPrice >= 0
+      ? parsedPrice
+      : 100_000_000;
+
+  const rawRating = searchParams?.rating;
+  const parsedRating =
+    typeof rawRating === "string" ? Number(rawRating) : 0;
+
+  const rating = Number.isFinite(parsedRating) ? parsedRating : 0;
 
   let stockMode: string = "lte";
-  
-  // preparing inStock and out of stock filter for GET request
-  // If in stock checkbox is checked, stockMode is "equals"
+
   if (inStockNum === 1) {
     stockMode = "equals";
   }
- // If out of stock checkbox is checked, stockMode is "lt"
+
   if (outOfStockNum === 1) {
     stockMode = "lt";
   }
-   // If in stock and out of stock checkboxes are checked, stockMode is "lte"
+
   if (inStockNum === 1 && outOfStockNum === 1) {
     stockMode = "lte";
   }
-   // If in stock and out of stock checkboxes aren't checked, stockMode is "gt"
+
   if (inStockNum === 0 && outOfStockNum === 0) {
     stockMode = "gt";
   }
@@ -41,39 +62,107 @@ const Products = async ({ params, searchParams }: { params: { slug?: string[] },
   let products = [];
 
   try {
-    // sending API request with filtering, sorting and pagination for getting all products
-    const data = await apiClient.get(`/api/products?filters[price][$lte]=${
-        searchParams?.price || 3000
-      }&filters[rating][$gte]=${
-        Number(searchParams?.rating) || 0
-      }&filters[inStock][$${stockMode}]=1&${
-        params?.slug?.length! > 0
-          ? `filters[category][$equals]=${params?.slug}&`
-          : ""
-      }sort=${searchParams?.sort}&page=${page}`
+    const query = new URLSearchParams();
+
+    // 1. Category filter
+    const rawCategoryId = searchParams?.categoryId;
+    const categoryId =
+      typeof rawCategoryId === "string" ? rawCategoryId : "";
+
+    if (categoryId) {
+      query.set("categoryId", categoryId);
+    }
+
+    // 2. Apply price filter only if explicitly present in URL
+    const rawPrice = searchParams?.price;
+
+    if (typeof rawPrice === "string" && rawPrice.trim() !== "") {
+      const price = Number(rawPrice);
+
+      if (Number.isFinite(price) && price >= 0) {
+        query.set("filters[price][$lte]", String(price));
+      }
+    }
+
+    // 3. Apply rating filter only if explicitly present in URL
+    const rawRating = searchParams?.rating;
+
+    if (typeof rawRating === "string" && rawRating.trim() !== "") {
+      const rating = Number(rawRating);
+
+      if (Number.isFinite(rating) && rating >= 0 && rating <= 5) {
+        query.set("filters[rating][$gte]", String(rating));
+      }
+    }
+
+    // 4. Apply stock filter only if explicitly present in URL
+    const rawInStock = searchParams?.inStock;
+    const rawOutOfStock = searchParams?.outOfStock;
+
+    if (
+      typeof rawInStock === "string" &&
+      typeof rawOutOfStock === "string"
+    ) {
+      const inStock = rawInStock === "true";
+      const outOfStock = rawOutOfStock === "true";
+
+      if (inStock && !outOfStock) {
+        query.set("filters[inStock][$gt]", "0");
+      } else if (!inStock && outOfStock) {
+        query.set("filters[inStock][$equals]", "0");
+      }
+      // Both selected: show all stock statuses, so no stock filter.
+    }
+
+    // 5. Sorting and pagination
+    query.set(
+      "sort",
+      typeof searchParams?.sort === "string"
+        ? searchParams.sort
+        : "defaultSort"
     );
 
+    query.set("page", String(page));
+
+    const data = await apiClient.get(
+      `/api/products?${query.toString()}`
+    );
+
+    
+
     if (!data.ok) {
-      console.error('Failed to fetch products:', data.statusText);
-      products = [];
+      console.error("Failed to fetch products:", data.statusText);
     } else {
       const result = await data.json();
-      products = Array.isArray(result) ? result : [];
+
+      console.log("isi data", result);
+
+      // Mendukung response baru berbentuk object
+      // dan response lama yang berbentuk array.
+      products = Array.isArray(result)
+        ? result
+        : Array.isArray(result?.products)
+          ? result.products
+          : [];
     }
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     products = [];
   }
 
   return (
     <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
       {products.length > 0 ? (
-        products.map((product: any) => (
-          <ProductItem key={product.id} product={product} color="black" />
+        products.map((product) => (
+          <ProductItem
+            key={product.id}
+            product={product}
+            color="black"
+          />
         ))
       ) : (
-        <h3 className="text-3xl mt-5 text-center w-full col-span-full max-[1000px]:text-2xl max-[500px]:text-lg">
-          No products found for specified query
+        <h3 className="col-span-full mt-5 w-full text-center text-xl">
+          No products found
         </h3>
       )}
     </div>

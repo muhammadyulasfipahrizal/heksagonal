@@ -38,8 +38,7 @@ const AddNewProduct = () => {
       !product.merchantId ||
       product.title === "" ||
       product.manufacturer === "" ||
-      product.description == "" ||
-      product.slug === ""
+      product.description == ""
     ) {
       toast.error("Please enter values in input fields");
       return;
@@ -208,7 +207,7 @@ const AddNewProduct = () => {
           </label>
         </div>
 
-        <div>
+        {/* <div>
           <label className="form-control w-full max-w-xs">
             <div className="label">
               <span className="label-text">Product slug:</span>
@@ -225,7 +224,7 @@ const AddNewProduct = () => {
               }
             />
           </label>
-        </div>
+        </div> */}
 
         <div>
           <label className="form-control w-full max-w-xs">

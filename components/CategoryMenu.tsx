@@ -90,7 +90,7 @@ const CategoryMenu = () => {
             <CategoryItem
               title={category.name}
               key={category.id}
-              href={`/shop/${createSlug(category.name)}`}
+              href={`/shop?categoryId=${category.id}`}
             >
               <Image
                 src="/category-placeholder.png"

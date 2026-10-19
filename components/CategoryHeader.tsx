@@ -88,9 +88,9 @@ export default function CategoryHeader({
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
 
-  const handleCategoryClick = (name: string) => {
+  const handleCategoryClick = (id: string) => {
     onClose();
-    router.push(`/shop/${createSlug(name)}`);
+    router.push(`/shop?categoryId=${id}`);
   };
 
   return (
@@ -151,7 +151,7 @@ export default function CategoryHeader({
                 <button
                   key={category.id}
                   type="button"
-                  onClick={() => handleCategoryClick(category.name)}
+                  onClick={() => handleCategoryClick(category.id)}
                   className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-4 text-left transition hover:border-blue-600 hover:bg-blue-50"
                 >
                   <span className="font-medium text-gray-700">
