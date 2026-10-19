@@ -11,6 +11,11 @@ import { formatRupiah } from "@/lib/sanitize";
 import { ContactForm, CheckoutFormData  } from "@/components/ContactForm";
 import AddressSelector from "@/components/AddressSelector";
 
+import PickupStoreSelector, {
+  type PickupStoreId,
+  PICKUP_STORES,
+} from "@/components/PickupStoreSelector";
+
 type CheckoutAddress = {
   id: string;
   userId: string;
@@ -43,6 +48,9 @@ const CheckoutPage = () => {
 
   const [savedAddresses, setSavedAddresses] =
   useState<SavedAddress[]>([]);
+
+  const [selectedStoreId, setSelectedStoreId] =
+    useState<PickupStoreId | "">("");
 
   const [selectedAddressId, setSelectedAddressId] =
     useState("");
@@ -171,6 +179,43 @@ const CheckoutPage = () => {
     const isAuthenticated = sessionStatus === "authenticated";
     const accountEmail = session?.user?.email?.trim().toLowerCase() ?? "";
 
+    let userId: string | null = null;
+    let userPhone = "";
+
+    if (isAuthenticated) {
+      userId = session?.user?.id ?? null;
+
+      if (!userId && session?.user?.email) {
+        const userResponse = await apiClient.get(
+          `/api/users/email/${encodeURIComponent(session.user.email)}`
+        );
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          userId = userData.id ?? null;
+        }
+      }
+
+      if (!userId) {
+        toast.error("Identitas akun tidak ditemukan. Silakan login kembali.");
+        return;
+      }
+
+      // Khusus pickup: ambil nomor telepon dari tabel User.
+      if (deliveryMethod === "pickup") {
+        const userResponse = await apiClient.get(
+          `/api/users/${encodeURIComponent(userId)}`
+        );
+
+        if (!userResponse.ok) {
+          throw new Error("Gagal mengambil informasi akun pengguna.");
+        }
+
+        const userData = await userResponse.json();
+        userPhone = userData.phone?.trim() ?? "";
+      }
+    }
+
     // Untuk pengiriman pengguna login, sumber alamat adalah AddressSelector.
     if (
       deliveryMethod === "shipping" &&
@@ -193,11 +238,13 @@ const CheckoutPage = () => {
             : checkoutForm.name,
 
       phone:
-        deliveryMethod === "shipping" && isAuthenticated
-          ? address?.phone ?? ""
-          : isAuthenticated
-            ? address?.phone || checkoutForm.phone
-            : checkoutForm.phone,
+        deliveryMethod === "pickup" && isAuthenticated
+          ? userPhone
+          : deliveryMethod === "shipping" && isAuthenticated
+            ? address?.phone ?? ""
+            : isAuthenticated
+              ? address?.phone || checkoutForm.phone
+              : checkoutForm.phone,
 
       email: isAuthenticated ? accountEmail : checkoutForm.email.trim().toLowerCase(),
 
@@ -234,9 +281,7 @@ const CheckoutPage = () => {
       validationErrors.push("Nama minimal 2 karakter.");
     }
 
-    const phoneDigits = contact.phone.replace(/\D/g, "");
-
-    if (phoneDigits.length < 10) {
+    if (contact.phone.trim().length < 10) {
       validationErrors.push("Nomor telepon minimal 10 digit.");
     }
 
@@ -318,9 +363,9 @@ const CheckoutPage = () => {
           deliveryMethod === "shipping" ? contact.district.trim() : null,
 
         orderNotice: checkoutForm.orderNotice.trim() || null,
-        status: "pending",
-        total,
-        userId,
+          status: "pending",
+          total,
+          userId,
       };
 
       const response = await apiClient.post("/api/orders", orderData);
@@ -381,6 +426,29 @@ const CheckoutPage = () => {
         );
       }
 
+      if (deliveryMethod === "pickup" && !selectedStoreId) {
+        toast.error("Silakan pilih lokasi toko untuk pengambilan pesanan.");
+        return;
+      }
+
+      if (deliveryMethod === "pickup") {
+        const selectedStore = PICKUP_STORES.find(
+          (store) => store.id === selectedStoreId
+        );
+        sessionStorage.setItem(
+          "pickupContact",
+          JSON.stringify({
+            name: checkoutForm.name.trim(),
+            phone: checkoutForm.phone.trim(),
+            email: checkoutForm.email.trim(),
+            orderNotice: checkoutForm.orderNotice.trim(),
+            orderId: orderId,
+            total: total,
+            selectedStoreName: selectedStore?.name
+          })
+        );
+      }
+
       setCheckoutForm({
         name: "",
         phone: "",
@@ -399,7 +467,12 @@ const CheckoutPage = () => {
 
       toast.success("Pesanan berhasil dibuat.");
 
-      router.push("/");
+      if (deliveryMethod === "shipping") {
+        router.push(`/payment?orderId=${encodeURIComponent(orderId)}`);
+      } else {
+        router.push(`/pickup`);
+      }
+
     } catch (error: unknown) {
       console.error("Error creating order:", error);
 
@@ -867,7 +940,7 @@ const CheckoutPage = () => {
                   </label>
                   <div className="mt-1">
                     <textarea
-                      className="textarea textarea-bordered textarea-lg w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="textarea textarea-bordered min-h-32 w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
                       id="order-notice"
                       name="order-notice"
                       autoComplete="order-notice"
@@ -882,9 +955,12 @@ const CheckoutPage = () => {
                     ></textarea>
                   </div>
                 </div>
+                
+                <PickupStoreSelector
+                  selectedStoreId={selectedStoreId}
+                  onSelect={setSelectedStoreId}
+                />
             </section>
-
-            
           </div>
         </form>
         )}

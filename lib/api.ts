@@ -1,40 +1,51 @@
-import config from './config';
+import config from "./config";
 
-export const apiClient = {
+const apiClient = {
   baseUrl: config.apiBaseUrl,
-  
+
   async request(endpoint: string, options: RequestInit = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
-    
-    const defaultOptions: RequestInit = {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      ...options,
+      credentials: "include",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
-    };
-    
-    return fetch(url, { ...defaultOptions, ...options });
+    });
+
+    return response;
   },
-  
-  get: (endpoint: string, options?: RequestInit) => 
-    apiClient.request(endpoint, { ...options, method: 'GET' }),
-    
-  post: (endpoint: string, data?: any, options?: RequestInit) =>
-    apiClient.request(endpoint, {
+
+  get(endpoint: string, options?: RequestInit) {
+    return this.request(endpoint, {
       ...options,
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    }),
-    
-  put: (endpoint: string, data?: any, options?: RequestInit) =>
-    apiClient.request(endpoint, {
+      method: "GET",
+    });
+  },
+
+  post(endpoint: string, data?: unknown, options?: RequestInit) {
+    return this.request(endpoint, {
       ...options,
-      method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    }),
-    
-  delete: (endpoint: string, options?: RequestInit) =>
-    apiClient.request(endpoint, { ...options, method: 'DELETE' }),
+      method: "POST",
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    });
+  },
+
+  put(endpoint: string, data?: unknown, options?: RequestInit) {
+    return this.request(endpoint, {
+      ...options,
+      method: "PUT",
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    });
+  },
+
+  delete(endpoint: string, options?: RequestInit) {
+    return this.request(endpoint, {
+      ...options,
+      method: "DELETE",
+    });
+  },
 };
 
 export default apiClient;
+export { apiClient };

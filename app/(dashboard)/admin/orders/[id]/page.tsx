@@ -139,6 +139,8 @@ const AdminSingleOrder = () => {
       }
     }
 
+    console.log("Current order status:", order.status);
+
     setIsSaving(true);
 
     try {
@@ -171,12 +173,12 @@ const AdminSingleOrder = () => {
         status: order.status,
       };
 
-      const response = await apiClient.put(`/api/orders/${order.id}`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      console.log('admin order payload', payload);
+
+      const response = await apiClient.put(
+        `/api/orders/${order.id}`,
+        payload
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
@@ -403,6 +405,7 @@ const AdminSingleOrder = () => {
                 updateField("status", e.target.value as OrderStatus)
               }
             >
+              <option value="pending">Pending</option>
               <option value="processing">Processing</option>
               <option value="delivered">Delivered</option>
               <option value="canceled">Canceled</option>

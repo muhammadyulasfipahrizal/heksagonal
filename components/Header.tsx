@@ -126,6 +126,19 @@ const Header = () => {
                 >
                   Profile
                 </Link>
+
+                <Link
+                  href="/orders"
+                  aria-label="Orders"
+                  title="Orders"
+                  className={`flex items-center justify-center rounded-full p-2 transition hover:bg-blue-50 hover:text-blue-700 ${
+                    pathname.startsWith("/orders")
+                      ? "text-blue-700"
+                      : "text-gray-700"
+                  }`}
+                >
+                  My Orders
+                </Link>
               </div>
               
             )}

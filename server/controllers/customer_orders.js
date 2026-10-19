@@ -105,6 +105,7 @@ function getPrismaErrorResponse(error, response, action) {
   });
 }
 
+
 async function createCustomerOrder(request, response) {
   try {
     if (
@@ -128,8 +129,30 @@ async function createCustomerOrder(request, response) {
 
     const data = validation.data;
 
+    // Untuk development: userId dikirim dari frontend.
+    const userId =
+      typeof request.body.userId === "string"
+        ? request.body.userId.trim()
+        : null;
+
+    // Pastikan userId benar-benar merujuk pada user yang ada.
+    if (userId) {
+      const existingUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      });
+
+      if (!existingUser) {
+        return response.status(400).json({
+          error: "Invalid userId",
+          message: "User does not exist",
+        });
+      }
+    }
+
     const order = await prisma.customer_order.create({
       data: {
+        ...(userId ? { userId } : {}),
         name: data.name.trim(),
         phone: data.phone.trim(),
         email: data.email.trim().toLowerCase(),
@@ -145,19 +168,21 @@ async function createCustomerOrder(request, response) {
       },
     });
 
-    // Notification failure must not invalidate the order.
+    // Notifikasi gagal tidak membatalkan pesanan.
     try {
       let user = null;
 
-      if (request.body.userId) {
+      if (userId) {
         user = await prisma.user.findUnique({
-          where: { id: request.body.userId },
+          where: { id: userId },
         });
       }
 
       if (!user) {
         user = await prisma.user.findUnique({
-          where: { email: data.email.trim().toLowerCase() },
+          where: {
+            email: data.email.trim().toLowerCase(),
+          },
         });
       }
 
@@ -170,7 +195,10 @@ async function createCustomerOrder(request, response) {
         );
       }
     } catch (notificationError) {
-      console.error("Failed to create order notification:", notificationError);
+      console.error(
+        "Failed to create order notification:",
+        notificationError
+      );
     }
 
     return response.status(201).json({
@@ -179,9 +207,7 @@ async function createCustomerOrder(request, response) {
       message: "Order created successfully",
     });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error creating order:", error);
-    }
+    console.error("Error creating order:", error);
 
     if (error.code === "P2002") {
       return response.status(409).json({
@@ -199,6 +225,11 @@ async function createCustomerOrder(request, response) {
 async function updateCustomerOrder(request, response) {
   try {
     const { id } = request.params;
+
+    console.log("[UPDATE ORDER] Request received:", {
+      id,
+      statusFromBody: request.body?.status,
+    });
 
     if (!id) {
       return response.status(400).json({
@@ -398,10 +429,92 @@ async function getAllOrders(request, response) {
   }
 }
 
+async function getMyOrders(request, response) {
+  try {
+    const userId =
+      typeof request.query.userId === "string"
+        ? request.query.userId.trim()
+        : "";
+
+    console.log("[GET MY ORDERS] User ID:", userId || "(empty)");
+
+    if (!userId) {
+      return response.status(400).json({
+        error: "Bad Request",
+        message: "userId is required",
+      });
+    }
+
+    const page = Math.max(
+      1,
+      Number.parseInt(request.query.page, 10) || 1
+    );
+
+    const limit = Math.min(
+      50,
+      Math.max(
+        1,
+        Number.parseInt(request.query.limit, 10) || 10
+      )
+    );
+
+    const where = { userId };
+
+    const [orders, total] = await Promise.all([
+      prisma.customer_order.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {
+          dateTime: "desc",
+        },
+        include: {
+          products: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  title: true,
+                  slug: true,
+                  mainImage: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+
+      prisma.customer_order.count({
+        where,
+      }),
+    ]);
+
+    return response.status(200).json({
+      orders,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+
+    return response.status(500).json({
+      error: "Internal server error",
+      message: "Failed to fetch orders",
+    });
+  }
+}
+
+
 module.exports = {
   createCustomerOrder,
   updateCustomerOrder,
   deleteCustomerOrder,
   getCustomerOrder,
   getAllOrders,
+  getMyOrders,
 };
