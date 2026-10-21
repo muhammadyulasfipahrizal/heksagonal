@@ -83,14 +83,21 @@ export default function CategoryHeader({
 
   const createSlug = (name: string) =>
     name
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
 
-  const handleCategoryClick = (id: string) => {
+  const handleCategoryClick = (id: string, name: string) => {
     onClose();
-    router.push(`/shop?categoryId=${id}`);
+
+    const slug = createSlug(name);
+
+    router.push(
+      `/shop/${slug}?categoryId=${encodeURIComponent(id)}`
+    );
   };
 
   return (
@@ -151,7 +158,7 @@ export default function CategoryHeader({
                 <button
                   key={category.id}
                   type="button"
-                  onClick={() => handleCategoryClick(category.id)}
+                  onClick={() => handleCategoryClick(category.id, category.name)}
                   className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-4 text-left transition hover:border-blue-600 hover:bg-blue-50"
                 >
                   <span className="font-medium text-gray-700">

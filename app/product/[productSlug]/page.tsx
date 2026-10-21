@@ -1,20 +1,20 @@
+
 import {
   StockAvailabillity,
-  UrgencyText,
-
   ProductTabs,
   SingleProductDynamicFields,
   AddToWishlistBtn,
-  
 } from "@/components";
+
 import apiClient from "@/lib/api";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import React from "react";
-import { FaSquareFacebook } from "react-icons/fa6";
-import { FaSquareXTwitter } from "react-icons/fa6";
-import { FaSquarePinterest } from "react-icons/fa6";
+import { FaSquareFacebook, FaSquarePinterest, FaSquareXTwitter } from "react-icons/fa6";
 import { formatRupiah, sanitize } from "@/lib/sanitize";
+import type { Metadata } from "next";
+import ProductJsonLd from "./product-json-ld";
+
+const SITE_URL = "https://heksagonal.com";
 
 interface ImageItem {
   imageID: string;
@@ -22,140 +22,279 @@ interface ImageItem {
   image: string;
 }
 
-interface SingleProductPageProps {
-  params: Promise<{  productSlug: string, id: string }>;
+interface Product {
+  id: number | string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  price: number;
+  mainImage?: string | null;
+  inStock: boolean | number;
+  code?: string | null;
+  weight?: number | null;
+  error?: string;
 }
 
-const SingleProductPage = async ({ params }: SingleProductPageProps) => {
-  const paramsAwaited = await params;
-  // sending API request for a single product with a given product slug
-  const data = await apiClient.get(
-    `/api/slugs/${paramsAwaited?.productSlug}`
-  );
-  const product = await data.json();
+interface SingleProductPageProps {
+  params: Promise<{
+    productSlug: string;
+    id: string;
+  }>;
+}
 
-  // sending API request for more than 1 product image if it exists
-  const imagesData = await apiClient.get(
-    `/api/images/${paramsAwaited?.id}`
+async function getProduct(
+  productSlug: string
+): Promise<Product | null> {
+  const response = await apiClient.get(
+    `/api/slugs/${encodeURIComponent(productSlug)}`
   );
-  const images = await imagesData.json();
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch product");
+  }
+
+  const product: Product = await response.json();
 
   if (!product || product.error) {
+    return null;
+  }
+
+  return product;
+}
+
+async function getProductImages(
+  productId: string
+): Promise<ImageItem[]> {
+  const response = await apiClient.get(
+    `/api/images/${encodeURIComponent(productId)}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch product images");
+  }
+
+  return response.json();
+}
+
+function getImageSrc(image?: string | null): string {
+  if (!image) {
+    return "/product_placeholder.jpg";
+  }
+
+  // Support absolute URLs and local public assets.
+  if (/^https?:\/\//i.test(image)) {
+    return image;
+  }
+
+  return `/${image.replace(/^\/+/, "")}`;
+}
+
+export async function generateMetadata({
+  params,
+}: SingleProductPageProps): Promise<Metadata> {
+  const { productSlug } = await params;
+  const product = await getProduct(productSlug);
+
+  if (!product) {
+    return {
+      title: "Produk tidak ditemukan | HEKSAGONAL",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const description =
+    product.description?.replace(/\s+/g, " ").trim().slice(0, 155) ||
+    `Lihat detail, harga, dan informasi ${product.title} di HEKSAGONAL.`;
+
+  const canonicalPath = `/products/${product.slug}`;
+
+  const imageUrl = product.mainImage
+    ? getImageSrc(product.mainImage)
+    : undefined;
+
+  const productUrl = `${SITE_URL}/products/${product.slug}`;
+
+  const image = product.mainImage
+    ? new URL(product.mainImage, SITE_URL).toString()
+    : undefined;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    url: productUrl,
+    ...(product.description
+      ? {
+          description: product.description
+            .replace(/<[^>]*>/g, " ")
+            .replace(/\s+/g, " ")
+            .trim(),
+        }
+      : {}),
+    ...(image ? { image: [image] } : {}),
+    ...(product.code ? { sku: product.code } : {}),
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "IDR",
+      price: product.price,
+      availability: product.inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+    },
+  };
+
+  return {
+    title: product.title,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      type: "website",
+      title: `${product.title} | HEKSAGONAL`,
+      description,
+      url: canonicalPath,
+      siteName: "HEKSAGONAL",
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: product.title }] } : {}),
+    },
+  };
+}
+
+export default async function SingleProductPage({
+  params,
+}: SingleProductPageProps) {
+  const { productSlug, id } = await params;
+
+  const product = await getProduct(productSlug);
+
+  if (!product) {
     notFound();
   }
 
+  const images = await getProductImages(id);
+
+  const mainImageSrc = getImageSrc(product.mainImage);
+
   return (
     <div className="bg-white">
-      <div className="max-w-screen-2xl mx-auto">
-        <div className="flex justify-center gap-x-16 pt-10 max-lg:flex-col items-center gap-y-5 px-5">
+      <ProductJsonLd product={product} />
+      <div className="mx-auto max-w-screen-2xl">
+        <div className="flex items-center justify-center gap-x-16 gap-y-5 px-5 pt-10 max-lg:flex-col">
           <div>
             <Image
-              src={product?.mainImage ? `/${product?.mainImage}` : "/product_placeholder.jpg"}
+              src={mainImageSrc}
               width={500}
               height={500}
-              alt="main image"
-              className="w-auto h-auto"
+              alt={`Foto produk ${product.title}`}
+              className="h-auto w-auto"
+              priority
             />
-            <div className="flex justify-around mt-5 flex-wrap gap-y-1 max-[500px]:justify-center max-[500px]:gap-x-1">
-              {images?.map((imageItem: ImageItem, key: number) => (
+
+            <div className="mt-5 flex flex-wrap justify-around gap-y-1 max-[500px]:justify-center max-[500px]:gap-x-1">
+              {images.map((imageItem) => (
                 <Image
-                  key={imageItem.imageID + key}
-                  src={`/${imageItem.image}`}
+                  key={imageItem.imageID}
+                  src={getImageSrc(imageItem.image)}
                   width={100}
                   height={100}
-                  alt="laptop image"
-                  className="w-auto h-auto"
+                  alt={`Foto tambahan ${product.title}`}
+                  className="h-auto w-auto"
                 />
               ))}
             </div>
           </div>
+
           <div className="flex flex-col gap-y-7 text-black max-[500px]:text-center">
-        
-            <h1 className="text-3xl">{sanitize(product?.title)}</h1>
-            <p className="text-xl font-semibold">{formatRupiah(product?.price)}</p>
-            <StockAvailabillity stock={94} inStock={product?.inStock} />
+            <h1 className="text-3xl">{sanitize(product.title)}</h1>
+
+            <p className="text-xl font-semibold">
+              {formatRupiah(product.price)}
+            </p>
+
+            <StockAvailabillity
+              stock={94}
+              inStock={product.inStock}
+            />
+
             <SingleProductDynamicFields product={product} />
+
             <div className="flex flex-col gap-y-2 max-[500px]:items-center">
-              
               <AddToWishlistBtn
                 product={{
                   id: product.id,
                   title: product.title,
                   price: product.price,
-                  image: product.mainImage,
+                  image: product.mainImage ?? "",
                   slug: product.slug,
                   stockAvailabillity: product.inStock,
                 }}
               />
-             
+
               <p className="text-lg">
-                SKU: <span className="ml-1">{product?.code}</span>
+                SKU: <span className="ml-1">{product.code}</span>
               </p>
+
               <p className="text-lg">
-                Berat: <span className="ml-1">{product?.weight} KG</span>
+                Berat: <span className="ml-1">{product.weight} KG</span>
               </p>
-              <div className="text-lg flex gap-x-2">
+
+              <div className="flex gap-x-2 text-lg">
                 <span>Bagikan:</span>
+
                 <div className="flex items-center gap-x-1 text-2xl">
-                  <FaSquareFacebook />
-                  <FaSquareXTwitter />
-                  <FaSquarePinterest />
+                  <a
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                      `https://domainkamu.com/products/${product.slug}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Bagikan ke Facebook"
+                  >
+                    <FaSquareFacebook />
+                  </a>
+
+                  <a
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                      `https://domainkamu.com/products/${product.slug}`
+                    )}&text=${encodeURIComponent(product.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Bagikan ke X"
+                  >
+                    <FaSquareXTwitter />
+                  </a>
+
+                  <a
+                    href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(
+                      `https://domainkamu.com/products/${product.slug}`
+                    )}&media=${encodeURIComponent(
+                      `https://domainkamu.com${mainImageSrc}`
+                    )}&description=${encodeURIComponent(product.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Bagikan ke Pinterest"
+                  >
+                    <FaSquarePinterest />
+                  </a>
                 </div>
               </div>
-              {/* <div className="flex gap-x-2">
-                <Image
-                  src="/visa.svg"
-                  width={50}
-                  height={50}
-                  alt="visa icon"
-                  className="w-auto h-auto"
-                />
-                <Image
-                  src="/mastercard.svg"
-                  width={50}
-                  height={50}
-                  alt="mastercard icon"
-                  className="h-auto w-auto"
-                />
-                <Image
-                  src="/ae.svg"
-                  width={50}
-                  height={50}
-                  alt="americal express icon"
-                  className="h-auto w-auto"
-                />
-                <Image
-                  src="/paypal.svg"
-                  width={50}
-                  height={50}
-                  alt="paypal icon"
-                  className="w-auto h-auto"
-                />
-                <Image
-                  src="/dinersclub.svg"
-                  width={50}
-                  height={50}
-                  alt="diners club icon"
-                  className="h-auto w-auto"
-                />
-                <Image
-                  src="/discover.svg"
-                  width={50}
-                  height={50}
-                  alt="discover icon"
-                  className="h-auto w-auto"
-                />
-              </div> */}
             </div>
           </div>
-
         </div>
+
         <div className="py-16">
           <ProductTabs product={product} />
         </div>
       </div>
     </div>
   );
-};
-
-export default SingleProductPage;
+}

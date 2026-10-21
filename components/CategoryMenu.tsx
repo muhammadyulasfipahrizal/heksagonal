@@ -61,6 +61,8 @@ const CategoryMenu = () => {
 
   const createSlug = (name: string) =>
     name
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, "-")
@@ -90,7 +92,7 @@ const CategoryMenu = () => {
             <CategoryItem
               title={category.name}
               key={category.id}
-              href={`/shop?categoryId=${category.id}`}
+              href={`/shop/${createSlug(category.name)}?categoryId=${encodeURIComponent(category.id)}`}
             >
               <Image
                 src="/category-placeholder.png"
