@@ -93,6 +93,28 @@ function getImageSrc(image?: string | null): string {
   return `/${image.replace(/^\/+/, "")}`;
 }
 
+function generateKeywords(description?: string | null): string[] {
+  if (!description) return [];
+
+  const stopWords = new Set([
+    "dan", "atau", "yang", "di", "ke", "dari", "untuk",
+    "dengan", "pada", "ini", "itu", "adalah", "dalam",
+    "the", "and", "or", "of", "for", "with", "in", "on",
+  ]);
+
+  return [
+    ...new Set(
+      description
+        .replace(/<[^>]*>/g, " ")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/\s+/g, " ")
+        .toLowerCase()
+        .match(/[\p{L}\p{N}-]+/gu)
+        ?.filter((word) => word.length > 2 && !stopWords.has(word)) ?? [],
+    ),
+  ].slice(0, 15);
+}
+
 export async function generateMetadata({
   params,
 }: SingleProductPageProps): Promise<Metadata> {
@@ -112,6 +134,10 @@ export async function generateMetadata({
   const description =
     product.description?.replace(/\s+/g, " ").trim().slice(0, 155) ||
     `Lihat detail, harga, dan informasi ${product.title} di HEKSAGONAL.`;
+
+  const keywords = generateKeywords(
+  `${product.title} ${description}`,
+  );
 
   const canonicalPath = `/products/${product.slug}`;
 
@@ -155,6 +181,7 @@ export async function generateMetadata({
   return {
     title: product.title,
     description,
+    keywords,
     alternates: {
       canonical: canonicalPath,
     },
