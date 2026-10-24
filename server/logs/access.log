@@ -14767,3 +14767,5 @@
 ::1 - - [24/Oct/2026:08:04:07 +0000] "GET /api/categories HTTP/1.1" 200 2 "-" "node" reqId=70RycRFz userId=anonymous
 ::1 - - [24/Oct/2026:08:04:07 +0000] "GET /api/products?status=active HTTP/1.1" 200 49 "-" "node" reqId=wcnVY7GG userId=anonymous
 ::1 - - [24/Oct/2026:08:04:07 +0000] "GET /api/products HTTP/1.1" 200 49 "-" "node" reqId=YPYgyJkJ userId=anonymous
+::1 - - [24/Oct/2026:08:06:54 +0000] "GET /api/products?status=active HTTP/1.1" 200 49 "-" "node" reqId=Q4rhV4RA userId=anonymous
+::1 - - [24/Oct/2026:08:06:54 +0000] "GET /api/products HTTP/1.1" 200 49 "-" "node" reqId=f6cQymTL userId=anonymous
