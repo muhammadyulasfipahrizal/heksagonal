@@ -964,6 +964,20 @@ const CheckoutPage = () => {
           </div>
         </form>
         )}
+
+        {isLoggedIn && deliveryMethod === "pickup" && (
+          <form className="px-4 sm:px-6 lg:col-start-1 lg:row-start-1 lg:px-0">
+            <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
+              <div className="h-1 bg-[#02054b]" />
+
+                
+                <PickupStoreSelector
+                  selectedStoreId={selectedStoreId}
+                  onSelect={setSelectedStoreId}
+                />
+          </div>
+        </form>
+        )}
         
         {isContactModalOpen && deliveryMethod === "shipping" && (
           <div

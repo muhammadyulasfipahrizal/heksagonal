@@ -26,7 +26,7 @@ const Breadcrumb = () => {
           <Link href="/shop">Shop</Link>
         </li>
         <li>
-          <Link href="/shop">All products</Link>
+          <Link href="/shop">Product</Link>
         </li>
       </ul>
     </div>
