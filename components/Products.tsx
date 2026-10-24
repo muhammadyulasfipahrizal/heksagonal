@@ -2,7 +2,6 @@
 import React from "react";
 import ProductItem from "./ProductItem";
 import apiClient from "@/lib/api";
-import type { Product } from "@prisma/client";
 
 const Products = async ({
   searchParams,

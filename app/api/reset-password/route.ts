@@ -1,7 +1,7 @@
-
 import { createHash } from "crypto";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import prisma from "@/utils/db";
 
 export const runtime = "nodejs";
@@ -9,7 +9,6 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => null);
-
     const { token, password } = body ?? {};
 
     if (
@@ -50,31 +49,33 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 14);
 
-    const updated = await prisma.$transaction(async (tx) => {
-      // Consume the token exactly once.
-      const consumed = await tx.verificationToken.deleteMany({
-        where: {
-          identifier: resetToken.identifier,
-          token: hashedToken,
-          expires: { gt: new Date() },
-        },
-      });
+    const updated = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        // Consume the token exactly once.
+        const consumed = await tx.verificationToken.deleteMany({
+          where: {
+            identifier: resetToken.identifier,
+            token: hashedToken,
+            expires: { gt: new Date() },
+          },
+        });
 
-      if (consumed.count !== 1) {
-        return false;
+        if (consumed.count !== 1) {
+          return false;
+        }
+
+        const result = await tx.user.updateMany({
+          where: { email },
+          data: { password: hashedPassword },
+        });
+
+        if (result.count !== 1) {
+          throw new Error("Reset account no longer exists.");
+        }
+
+        return true;
       }
-
-      const result = await tx.user.updateMany({
-        where: { email },
-        data: { password: hashedPassword },
-      });
-
-      if (result.count !== 1) {
-        throw new Error("Reset account no longer exists.");
-      }
-
-      return true;
-    });
+    );
 
     if (!updated) {
       return NextResponse.json(
@@ -90,7 +91,9 @@ export async function POST(request: Request) {
     console.error("Reset password error:", error);
 
     return NextResponse.json(
-      { message: "Unable to reset your password. Please try again." },
+      {
+        message: "Unable to reset your password. Please try again.",
+      },
       { status: 500 }
     );
   }
