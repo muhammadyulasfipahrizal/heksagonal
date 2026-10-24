@@ -6,6 +6,11 @@ import React, { useEffect, useState } from "react";
 import { formatCategoryName } from "../../../../utils/categoryFormating";
 import apiClient from "@/lib/api";
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 const DashboardCategory = () => {
   const [categories, setCategories] = useState<Category[]>([]);
 

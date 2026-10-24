@@ -22,19 +22,6 @@ interface ImageItem {
   image: string;
 }
 
-interface Product {
-  id: number | string;
-  title: string;
-  slug: string;
-  description?: string | null;
-  price: number;
-  mainImage?: string | null;
-  inStock: boolean | number;
-  code?: string | null;
-  weight?: number | null;
-  error?: string;
-}
-
 interface SingleProductPageProps {
   params: Promise<{
     productSlug: string;
@@ -59,7 +46,7 @@ async function getProduct(
 
   const product: Product = await response.json();
 
-  if (!product || product.error) {
+  if (!product) {
     return null;
   }
 

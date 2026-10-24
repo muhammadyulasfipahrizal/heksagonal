@@ -52,7 +52,12 @@ const CompleteGoogleRegistrationPage = () => {
       try {
         // The API client is expected to have the backend API base URL configured.
         const response = await apiClient.get("/addresses");
-        const payload = response?.data;
+        if (!response.ok) {
+          throw new Error("Failed to fetch addresses");
+        }
+
+        const payload = await response.json();
+
         const addresses = Array.isArray(payload)
           ? payload
           : Array.isArray(payload?.addresses)

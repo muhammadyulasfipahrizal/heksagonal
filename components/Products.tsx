@@ -2,6 +2,7 @@
 import React from "react";
 import ProductItem from "./ProductItem";
 import apiClient from "@/lib/api";
+import type { Product } from "@prisma/client";
 
 const Products = async ({
   searchParams,
@@ -59,7 +60,7 @@ const Products = async ({
     stockMode = "gt";
   }
 
-  let products = [];
+  let products: Product[] = [];
 
   try {
     const query = new URLSearchParams();
@@ -134,6 +135,12 @@ const Products = async ({
       console.error("Failed to fetch products:", data.statusText);
     } else {
       const result = await data.json();
+
+      products = Array.isArray(result)
+        ? result
+        : Array.isArray(result?.products)
+          ? result.products
+          : [];
 
       console.log("isi data", result);
 

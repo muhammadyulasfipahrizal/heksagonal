@@ -24,6 +24,31 @@ const createSlug = (name: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+function extractArray<T>(
+  payload: unknown,
+  key: string
+): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (payload && typeof payload === "object") {
+    const data = payload as Record<string, unknown>;
+
+    if (Array.isArray(data[key])) {
+      return data[key] as T[];
+    }
+
+    if (Array.isArray(data.data)) {
+      return data.data as T[];
+    }
+  }
+
+  throw new Error(
+    `Invalid API response: expected an array or an object containing "${key}" or "data".`
+  );
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -62,37 +87,62 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   if (!productsResponse.ok) {
-    throw new Error("Failed to fetch products for sitemap");
+    throw new Error(
+      `Failed to fetch products for sitemap: HTTP ${productsResponse.status}`
+    );
   }
 
   if (!categoriesResponse.ok) {
-    throw new Error("Failed to fetch categories for sitemap");
+    throw new Error(
+      `Failed to fetch categories for sitemap: HTTP ${categoriesResponse.status}`
+    );
   }
 
-  const products: Product[] = await productsResponse.json();
-  const categories: Category[] = await categoriesResponse.json();
+  const [productsPayload, categoriesPayload]: [unknown, unknown] =
+    await Promise.all([
+      productsResponse.json(),
+      categoriesResponse.json(),
+    ]);
 
-  const productPages: MetadataRoute.Sitemap = products.map((product) => ({
-    url: `${SITE_URL}/products/${product.slug}`,
-    lastModified: product.updatedAt
-      ? new Date(product.updatedAt)
-      : undefined,
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
+  const products = extractArray<Product>(productsPayload, "products");
+  const categories = extractArray<Category>(
+    categoriesPayload,
+    "categories"
+  );
 
-  const categoryPages: MetadataRoute.Sitemap = categories.map((category) => {
-    const slug = createSlug(category.name);
-
-    return {
-      url: `${SITE_URL}/shop/${slug}?categoryId=${encodeURIComponent(category.id)}`,
-      lastModified: category.updatedAt
-        ? new Date(category.updatedAt)
+  const productPages: MetadataRoute.Sitemap = products
+    .filter(
+      (product) =>
+        typeof product.slug === "string" && product.slug.length > 0
+    )
+    .map((product) => ({
+      url: `${SITE_URL}/products/${product.slug}`,
+      lastModified: product.updatedAt
+        ? new Date(product.updatedAt)
         : undefined,
       changeFrequency: "weekly",
-      priority: 0.8,
-    };
-  });
+      priority: 0.7,
+    }));
+
+  const categoryPages: MetadataRoute.Sitemap = categories
+    .filter(
+      (category) =>
+        typeof category.id === "string" &&
+        typeof category.name === "string" &&
+        category.name.length > 0
+    )
+    .map((category) => {
+      const slug = createSlug(category.name);
+
+      return {
+        url: `${SITE_URL}/shop/${slug}?categoryId=${encodeURIComponent(category.id)}`,
+        lastModified: category.updatedAt
+          ? new Date(category.updatedAt)
+          : undefined,
+        changeFrequency: "weekly",
+        priority: 0.8,
+      };
+    });
 
   return [...staticPages, ...productPages, ...categoryPages];
 }

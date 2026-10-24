@@ -1,3 +1,9 @@
+import "next-auth";
+import "next-auth/jwt";
+import type { DefaultSession } from "next-auth";
+
+declare global {
+
 interface Product {
   id: string;
   slug: string;
@@ -10,7 +16,10 @@ interface Product {
   categoryId: string;
   code?: string | null;
   weight?: number | null;
-  category: {name: string}?;
+  category?: {
+    id: string;
+    name: string;
+  };
   inStock: number;
 }
 
@@ -96,20 +105,17 @@ interface WishListItem {
   product: Product;
 }
 
+}
 
 declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      name: string;
-      email: string;
-      image: string;
       role: string;
-    };
+    } & DefaultSession["user"];
   }
 
   interface User {
-    id: string;
     role: string;
   }
 }
@@ -120,3 +126,5 @@ declare module "next-auth/jwt" {
     role: string;
   }
 }
+
+export {};
