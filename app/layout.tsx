@@ -19,31 +19,31 @@ const poppins = Poppins({
 
 const siteUrl = "https://heksagonal.com";
 
-// export const metadata: Metadata = {
-//   metadataBase: new URL(siteUrl),
-//   title: {
-//     default: "HEKSAGONAL - Marketplace",
-//     template: "%s | HEKSAGONAL",
-//   },
-//   description:
-//     "Temukan berbagai produk pilihan di marketplace HEKSAGONAL.",
-//   applicationName: "HEKSAGONAL",
-//   alternates: {
-//     canonical: "/",
-//   },
-//   openGraph: {
-//     type: "website",
-//     siteName: "HEKSAGONAL",
-//     title: "HEKSAGONAL - Marketplace",
-//     description:
-//       "Temukan berbagai produk pilihan di marketplace HEKSAGONAL.",
-//     url: "/",
-//   },
-//   robots: {
-//     index: true,
-//     follow: true,
-//   },
-// };
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "HEKSAGONAL - Marketplace",
+    template: "%s | HEKSAGONAL",
+  },
+  description:
+    "Temukan berbagai produk pilihan di marketplace HEKSAGONAL.",
+  applicationName: "HEKSAGONAL",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "HEKSAGONAL",
+    title: "HEKSAGONAL - Marketplace",
+    description:
+      "Temukan berbagai produk pilihan di marketplace HEKSAGONAL.",
+    url: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default async function RootLayout({
   children,

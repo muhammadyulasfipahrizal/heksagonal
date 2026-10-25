@@ -102,86 +102,86 @@ function generateKeywords(description?: string | null): string[] {
   ].slice(0, 15);
 }
 
-// export async function generateMetadata({
-//   params,
-// }: SingleProductPageProps): Promise<Metadata> {
-//   const { productSlug } = await params;
-//   const product = await getProduct(productSlug);
+export async function generateMetadata({
+  params,
+}: SingleProductPageProps): Promise<Metadata> {
+  const { productSlug } = await params;
+  const product = await getProduct(productSlug);
 
-//   if (!product) {
-//     return {
-//       title: "Produk tidak ditemukan | HEKSAGONAL",
-//       robots: {
-//         index: false,
-//         follow: false,
-//       },
-//     };
-//   }
+  if (!product) {
+    return {
+      title: "Produk tidak ditemukan | HEKSAGONAL",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
 
-//   const description =
-//     product.description?.replace(/\s+/g, " ").trim().slice(0, 155) ||
-//     `Lihat detail, harga, dan informasi ${product.title} di HEKSAGONAL.`;
+  const description =
+    product.description?.replace(/\s+/g, " ").trim().slice(0, 155) ||
+    `Lihat detail, harga, dan informasi ${product.title} di HEKSAGONAL.`;
 
-//   const keywords = generateKeywords(
-//   `${product.title} ${description}`,
-//   );
+  const keywords = generateKeywords(
+  `${product.title} ${description}`,
+  );
 
-//   const canonicalPath = `/products/${product.slug}`;
+  const canonicalPath = `/products/${product.slug}`;
 
-//   const imageUrl = product.mainImage
-//     ? getImageSrc(product.mainImage)
-//     : undefined;
+  const imageUrl = product.mainImage
+    ? getImageSrc(product.mainImage)
+    : undefined;
 
-//   const productUrl = `${SITE_URL}/products/${product.slug}`;
+  const productUrl = `${SITE_URL}/products/${product.slug}`;
 
-//   const image = product.mainImage
-//     ? new URL(product.mainImage, SITE_URL).toString()
-//     : undefined;
+  const image = product.mainImage
+    ? new URL(product.mainImage, SITE_URL).toString()
+    : undefined;
 
-//   const jsonLd = {
-//     "@context": "https://schema.org",
-//     "@type": "Product",
-//     name: product.title,
-//     url: productUrl,
-//     ...(product.description
-//       ? {
-//           description: product.description
-//             .replace(/<[^>]*>/g, " ")
-//             .replace(/\s+/g, " ")
-//             .trim(),
-//         }
-//       : {}),
-//     ...(image ? { image: [image] } : {}),
-//     ...(product.code ? { sku: product.code } : {}),
-//     offers: {
-//       "@type": "Offer",
-//       url: productUrl,
-//       priceCurrency: "IDR",
-//       price: product.price,
-//       availability: product.inStock
-//         ? "https://schema.org/InStock"
-//         : "https://schema.org/OutOfStock",
-//       itemCondition: "https://schema.org/NewCondition",
-//     },
-//   };
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    url: productUrl,
+    ...(product.description
+      ? {
+          description: product.description
+            .replace(/<[^>]*>/g, " ")
+            .replace(/\s+/g, " ")
+            .trim(),
+        }
+      : {}),
+    ...(image ? { image: [image] } : {}),
+    ...(product.code ? { sku: product.code } : {}),
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "IDR",
+      price: product.price,
+      availability: product.inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+    },
+  };
 
-//   return {
-//     title: product.title,
-//     description,
-//     keywords,
-//     alternates: {
-//       canonical: canonicalPath,
-//     },
-//     openGraph: {
-//       type: "website",
-//       title: `${product.title} | HEKSAGONAL`,
-//       description,
-//       url: canonicalPath,
-//       siteName: "HEKSAGONAL",
-//       ...(imageUrl ? { images: [{ url: imageUrl, alt: product.title }] } : {}),
-//     },
-//   };
-// }
+  return {
+    title: product.title,
+    description,
+    keywords,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      type: "website",
+      title: `${product.title} | HEKSAGONAL`,
+      description,
+      url: canonicalPath,
+      siteName: "HEKSAGONAL",
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: product.title }] } : {}),
+    },
+  };
+}
 
 export default async function SingleProductPage({
   params,
