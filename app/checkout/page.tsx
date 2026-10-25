@@ -688,7 +688,7 @@ const CheckoutPage = () => {
                 <dt className="text-gray-600">Subtotal</dt>
                 <dd>{formatRupiah(total)}</dd>
               </div>
-              {deliveryMethod === "shipping" && (
+              {/* {deliveryMethod === "shipping" && (
                 <div className="flex items-center justify-between">
                   <dt className="text-gray-600">Pengiriman</dt>
                   <dd>{formatRupiah(50000)}</dd>
@@ -697,11 +697,11 @@ const CheckoutPage = () => {
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Pajak</dt>
                 <dd>{formatRupiah(total / 10)}</dd>
-              </div>
+              </div> */}
               <div className="flex items-center justify-between border-t border-gray-200 pt-6">
                 <dt className="text-base">Total</dt>
                 <dd className="text-base">
-                  {formatRupiah(total === 0 ? 0 : Math.round(total + total / 10 + 50000))}
+                  {formatRupiah(total)}
                 </dd>
               </div>
             </dl>

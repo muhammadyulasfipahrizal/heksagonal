@@ -165,7 +165,7 @@ export const CartModule = () => {
               {formatRupiah(total)}
             </dd>
           </div>
-          <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+          {/* <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="flex items-center text-sm text-gray-600">
               <span>CHANGE LATER - Estimasi Pengiriman</span>
               <a
@@ -202,13 +202,14 @@ export const CartModule = () => {
             <dd className="text-sm font-medium text-gray-900">
               {formatRupiah(total / 5)}
             </dd>
-          </div>
+          </div> */}
           <div className="flex items-center justify-between border-t border-gray-200 pt-4">
             <dt className="text-base font-medium text-gray-900">
               Total
             </dt>
             <dd className="text-base font-medium text-gray-900">
-              {formatRupiah(total === 0 ? 0 : Math.round(total + total / 5 + 5))}
+              {formatRupiah(total)}
+              {/* {formatRupiah(total === 0 ? 0 : Math.round(total + total / 5 + 5))} */}
             </dd>
           </div>
         </dl>

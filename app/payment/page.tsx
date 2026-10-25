@@ -20,7 +20,7 @@ type Order = {
 
 const BANK_NAME = "BCA";
 const BANK_ACCOUNT_NAME = "HEKSAGONAL";
-const VIRTUAL_ACCOUNT_NUMBER = "1234567890123456";
+const VIRTUAL_ACCOUNT_NUMBER = "763476735";
 
 // Ganti dengan nomor WhatsApp admin, format internasional tanpa tanda +.
 const ADMIN_WHATSAPP_NUMBER = "6285753344206";
@@ -229,7 +229,7 @@ export default function PaymentPage() {
           <div className="space-y-6 p-5 sm:p-7">
             <section>
               <h2 className="text-base font-bold text-gray-900">
-                Informasi Virtual Account
+                Informasi Rekening
               </h2>
 
               <div className="mt-4 rounded-xl border border-gray-200 p-4 sm:p-5">
@@ -254,7 +254,7 @@ export default function PaymentPage() {
 
                 <div className="mt-5">
                   <p className="text-xs text-gray-500">
-                    Nomor Virtual Account
+                    Nomor Rekening
                   </p>
 
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
@@ -283,15 +283,6 @@ export default function PaymentPage() {
                     </button>
                   </div>
                 </div>
-
-                <div className="mt-5 rounded-lg bg-amber-50 p-3">
-                  <p className="text-sm leading-6 text-amber-900">
-                    <strong>Perhatian:</strong> Informasi rekening di atas
-                    masih berupa placeholder. Ganti dengan nomor virtual
-                    account dan nama bank yang benar sebelum digunakan untuk
-                    transaksi nyata.
-                  </p>
-                </div>
               </div>
             </section>
 
@@ -303,7 +294,7 @@ export default function PaymentPage() {
               <ol className="mt-3 space-y-3">
                 {[
                   "Buka aplikasi mobile banking atau internet banking Anda.",
-                  `Transfer ke virtual account ${BANK_NAME} dengan nomor yang tertera di atas.`,
+                  `Transfer ke rekening ${BANK_NAME} dengan nomor yang tertera di atas.`,
                   `Pastikan nominal transfer tepat sebesar ${formatRupiah(Number(order.total))}.`,
                   'Setelah transfer berhasil, tekan tombol "Saya Sudah Bayar" di bawah.',
                 ].map((instruction, index) => (
@@ -334,7 +325,7 @@ export default function PaymentPage() {
 
                 <div>
                   <h3 className="font-semibold text-gray-900">
-                    Konfirmasi pembayaran secara manual
+                    Konfirmasi pembayaran
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
                     Setelah Anda menekan tombol konfirmasi, WhatsApp akan
@@ -364,11 +355,6 @@ export default function PaymentPage() {
               </svg>
               Saya Sudah Bayar
             </button>
-
-            <p className="text-center text-xs leading-5 text-gray-500">
-              Tombol ini akan membuka WhatsApp admin. Pastikan Anda benar-benar
-              telah melakukan transfer sebelum mengirim konfirmasi.
-            </p>
 
             <button
               type="button"

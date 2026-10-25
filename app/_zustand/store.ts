@@ -72,6 +72,8 @@ export const useProductStore = create<State & Actions>()(
           state.products.forEach((item) => {
             amount += item.amount;
             total += item.amount * item.price;
+            console.log("price", item.amount);
+            console.log("price", item.price);
           });
 
           return {

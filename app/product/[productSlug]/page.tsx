@@ -25,7 +25,6 @@ interface ImageItem {
 interface SingleProductPageProps {
   params: Promise<{
     productSlug: string;
-    id: string;
   }>;
 }
 
@@ -186,7 +185,7 @@ export async function generateMetadata({
 export default async function SingleProductPage({
   params,
 }: SingleProductPageProps) {
-  const { productSlug, id } = await params;
+  const { productSlug } = await params;
 
   const product = await getProduct(productSlug);
 
@@ -194,7 +193,7 @@ export default async function SingleProductPage({
     notFound();
   }
 
-  const images = await getProductImages(id);
+  const images = await getProductImages(String(product.id));
 
   const mainImageSrc = getImageSrc(product.mainImage);
 
