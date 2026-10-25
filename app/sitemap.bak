@@ -1,0 +1,150 @@
+
+// import type { MetadataRoute } from "next";
+
+// export const dynamic = "force-dynamic";
+
+// const SITE_URL = "https://heksagonal.com";
+// const API_URL = process.env.API_URL;
+
+// type Product = {
+//   slug: string;
+//   updatedAt?: string;
+// };
+
+// type Category = {
+//   id: string;
+//   name: string;
+//   updatedAt?: string;
+// };
+
+// const createSlug = (name: string) =>
+//   name
+//     .normalize("NFKD")
+//     .replace(/[\u0300-\u036f]/g, "")
+//     .toLowerCase()
+//     .trim()
+//     .replace(/[^a-z0-9]+/g, "-")
+//     .replace(/^-+|-+$/g, "");
+
+// function extractArray<T>(
+//   payload: unknown,
+//   key: string
+// ): T[] {
+//   if (Array.isArray(payload)) {
+//     return payload as T[];
+//   }
+
+//   if (payload && typeof payload === "object") {
+//     const data = payload as Record<string, unknown>;
+
+//     if (Array.isArray(data[key])) {
+//       return data[key] as T[];
+//     }
+
+//     if (Array.isArray(data.data)) {
+//       return data.data as T[];
+//     }
+//   }
+
+//   throw new Error(
+//     `Invalid API response: expected an array or an object containing "${key}" or "data".`
+//   );
+// }
+
+// export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+//   const staticPages: MetadataRoute.Sitemap = [
+//     {
+//       url: SITE_URL,
+//       changeFrequency: "daily",
+//       priority: 1,
+//     },
+//     {
+//       url: `${SITE_URL}/products`,
+//       changeFrequency: "daily",
+//       priority: 0.9,
+//     },
+//     {
+//       url: `${SITE_URL}/shop`,
+//       changeFrequency: "daily",
+//       priority: 0.9,
+//     },
+//     {
+//       url: `${SITE_URL}/categories`,
+//       changeFrequency: "weekly",
+//       priority: 0.8,
+//     },
+//   ];
+
+//   if (!API_URL) {
+//     throw new Error("API_URL is not configured");
+//   }
+
+//   const [productsResponse, categoriesResponse] = await Promise.all([
+//     fetch(`${API_URL}/api/products?status=active`, {
+//       next: { revalidate: 3600 },
+//     }),
+//     fetch(`${API_URL}/api/categories`, {
+//       next: { revalidate: 3600 },
+//     }),
+//   ]);
+
+//   if (!productsResponse.ok) {
+//     throw new Error(
+//       `Failed to fetch products for sitemap: HTTP ${productsResponse.status}`
+//     );
+//   }
+
+//   if (!categoriesResponse.ok) {
+//     throw new Error(
+//       `Failed to fetch categories for sitemap: HTTP ${categoriesResponse.status}`
+//     );
+//   }
+
+//   const [productsPayload, categoriesPayload]: [unknown, unknown] =
+//     await Promise.all([
+//       productsResponse.json(),
+//       categoriesResponse.json(),
+//     ]);
+
+//   const products = extractArray<Product>(productsPayload, "products");
+//   const categories = extractArray<Category>(
+//     categoriesPayload,
+//     "categories"
+//   );
+
+//   const productPages: MetadataRoute.Sitemap = products
+//     .filter(
+//       (product) =>
+//         typeof product.slug === "string" && product.slug.length > 0
+//     )
+//     .map((product) => ({
+//       url: `${SITE_URL}/products/${product.slug}`,
+//       lastModified: product.updatedAt
+//         ? new Date(product.updatedAt)
+//         : undefined,
+//       changeFrequency: "weekly",
+//       priority: 0.7,
+//     }));
+
+//   const categoryPages: MetadataRoute.Sitemap = categories
+//     .filter(
+//       (category) =>
+//         typeof category.id === "string" &&
+//         typeof category.name === "string" &&
+//         category.name.length > 0
+//     )
+//     .map((category) => {
+//       const slug = createSlug(category.name);
+
+//       return {
+//         url: `${SITE_URL}/shop/${slug}?categoryId=${encodeURIComponent(category.id)}`,
+//         lastModified: category.updatedAt
+//           ? new Date(category.updatedAt)
+//           : undefined,
+//         changeFrequency: "weekly",
+//         priority: 0.8,
+//       };
+//     });
+
+//   return [...staticPages, ...productPages, ...categoryPages];
+// }
