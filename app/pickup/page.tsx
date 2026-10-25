@@ -7,6 +7,7 @@ import { formatRupiah } from "@/lib/sanitize";
 import PickupStoreSelector, {
   type PickupStoreId,
 } from "@/components/PickupStoreSelector";
+import toast from "react-hot-toast";
 
 type PickupContact = {
   name: string;
@@ -19,6 +20,13 @@ type PickupContact = {
 };
 
 const ADMIN_WHATSAPP = "6281234567890";
+
+const BANK_NAME = "BCA";
+const BANK_ACCOUNT_NAME = "HEKSAGONAL";
+const VIRTUAL_ACCOUNT_NUMBER = "763476735";
+
+// Ganti dengan nomor WhatsApp admin, format internasional tanpa tanda +.
+const ADMIN_WHATSAPP_NUMBER = "6285753344206";
 
 export default function PickupPage() {
   const [contact, setContact] = useState<PickupContact | null>(null);
@@ -159,7 +167,7 @@ export default function PickupPage() {
 
             <div className="p-6 sm:p-8">
               <h2 className="text-lg font-bold text-gray-900">
-                Ringkasan Pembayaran
+                Petunjuk Pembayaran
               </h2>
 
               <p className="mt-1 text-sm text-gray-500">
@@ -184,6 +192,45 @@ export default function PickupPage() {
                 <p className="mt-1 font-semibold text-gray-900">
                   {contact.selectedStoreName}
                 </p>
+              </div>
+
+              <div className="mt-4 rounded-xl border border-gray-200 p-4">
+                <p className="text-sm text-gray-500">
+                  Tujuan Pembayaran
+                </p>
+
+                <div className="mt-4 rounded-xl">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-gray-500">Bank tujuan</p>
+                      <p className="mt-1 text-lg font-bold text-gray-900">
+                        {BANK_NAME}
+                      </p>
+                    </div>
+                    <span className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700">
+                      Rekening Bank
+                    </span>
+                  </div>
+
+                  <div className="mt-3 border-t border-gray-100">
+                    <p className="text-xs text-gray-500">Nama penerima</p>
+                    <p className="mt-1 font-semibold text-gray-900">
+                      {BANK_ACCOUNT_NAME}
+                    </p>
+                  </div>
+
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-500">
+                      Nomor Rekening
+                    </p>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="break-all text-xl font-bold tracking-wider text-[#02054b]">
+                        {VIRTUAL_ACCOUNT_NUMBER}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4 flex items-center justify-between gap-4 rounded-xl bg-blue-50 p-5">
