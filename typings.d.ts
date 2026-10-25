@@ -12,6 +12,7 @@ interface Product {
   rating: number;
   description: string;
   mainImage: string;
+  keywords: string;
   manufacturer: string;
   categoryId: string;
   code?: string | null;

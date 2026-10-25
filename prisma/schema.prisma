@@ -19,8 +19,9 @@ model Product {
   inStock         Int                      @default(1)
   categoryId      String
   merchantId      String
+  keywords        String?
   code            String?
-  weight          Int?
+  variants        ProductVariant[]
   category        Category                 @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   merchant        Merchant                 @relation(fields: [merchantId], references: [id])
   Wishlist        Wishlist[]

@@ -253,44 +253,28 @@ export default function PickupPage() {
                   Instruksi Pembayaran
                 </h3>
 
-                <ol className="mt-4 space-y-4">
-                  <li className="flex gap-3">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-[#02054b]">
-                      1
-                    </span>
-                    <p className="text-sm leading-6 text-gray-600">
-                      Hubungi admin melalui WhatsApp menggunakan tombol
-                      di bawah untuk meminta instruksi pembayaran.
-                    </p>
-                  </li>
-
-                  <li className="flex gap-3">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-[#02054b]">
-                      2
-                    </span>
-                    <p className="text-sm leading-6 text-gray-600">
-                      Lakukan pembayaran sesuai metode dan rekening
-                      atau instruksi resmi yang diberikan admin.
-                    </p>
-                  </li>
-
-                  <li className="flex gap-3">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-[#02054b]">
-                      3
-                    </span>
-                    <p className="text-sm leading-6 text-gray-600">
-                      Kirim bukti pembayaran kepada admin dan tunggu
-                      konfirmasi pembayaran sebelum mengambil pesanan.
-                    </p>
-                  </li>
+                <ol className="mt-3 space-y-3">
+                  {[
+                    "Buka aplikasi mobile banking atau internet banking Anda.",
+                    `Transfer ke rekening ${BANK_NAME} dengan nomor yang tertera di atas.`,
+                    `Pastikan nominal transfer tepat sebesar ${formatRupiah(Number(contact.total))}.`,
+                    'Setelah transfer berhasil, tekan tombol "Saya Sudah Bayar" di bawah.',
+                  ].map((instruction, index) => (
+                    <li key={instruction} className="flex gap-3 text-sm leading-6 text-gray-600">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#02054b]/10 text-xs font-bold text-[#02054b]">
+                        {index + 1}
+                      </span>
+                      <span>{instruction}</span>
+                    </li>
+                  ))}
                 </ol>
               </div>
 
               <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
                 <p className="text-sm leading-6 text-amber-900">
                   <strong>Perhatian:</strong> Jangan melakukan pembayaran
-                  ke rekening yang belum dikonfirmasi oleh admin.
-                  Pastikan pembayaran telah diverifikasi sebelum datang
+                  ke rekening selain rekening yang tertera pada website ini.
+                  Pastikan pembayaran telah diverifikasi oleh admin sebelum datang
                   ke toko.
                 </p>
               </div>
@@ -330,8 +314,8 @@ export default function PickupPage() {
                     1. Konfirmasi Pembayaran
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Hubungi admin untuk mendapatkan instruksi pembayaran
-                    dan konfirmasi nominal pesanan.
+                     Lakukan pembayaran sesuai metode dan rekening
+                      atau instruksi resmi yang diberikan admin.
                   </p>
                 </div>
 
@@ -340,8 +324,8 @@ export default function PickupPage() {
                     2. Tunggu Konfirmasi Admin
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Pastikan pembayaran telah diverifikasi dan admin
-                    mengonfirmasi bahwa pesanan siap diambil.
+                    Konfirmasi pembayaran kepada admin melalui WhatsApp menggunakan tombol
+                      di bawah "Hubungi Admin"
                   </p>
                 </div>
 
@@ -380,7 +364,7 @@ export default function PickupPage() {
                     <path d="M20.52 3.48A11.82 11.82 0 0 0 12.08 0C5.5 0 .15 5.35.15 11.93c0 2.1.55 4.15 1.6 5.96L0 24l6.27-1.64a11.9 11.9 0 0 0 5.8 1.48h.01c6.57 0 11.92-5.35 11.92-11.93 0-3.18-1.24-6.17-3.48-8.43ZM12.08 21.8h-.01a9.9 9.9 0 0 1-5.04-1.38l-.36-.21-3.72.97.99-3.63-.23-.37a9.85 9.85 0 0 1-1.52-5.25c0-5.46 4.44-9.9 9.9-9.9a9.83 9.83 0 0 1 7 2.9 9.84 9.84 0 0 1 2.9 7c0 5.46-4.45 9.9-9.91 9.9Zm5.43-7.42c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.47-2.4-1.5-.88-.79-1.48-1.77-1.65-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.08-.79.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.09 4.49.71.31 1.26.5 1.69.64.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2.01-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35Z" />
                   </svg>
 
-                  Hubungi Admin & Bayar
+                  Hubungi Admin
                 </button>
 
                 <p className="mt-3 text-center text-xs leading-5 text-gray-500">
