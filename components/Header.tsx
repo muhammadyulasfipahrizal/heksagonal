@@ -181,10 +181,10 @@ const Header = () => {
                   <Link href="/admin">Dashboard</Link>
                 </li>
                 <li>
-                  <a>Profile</a>
+                  <Link href="/#">Profile</Link>
                 </li>
                 <li onClick={handleLogout}>
-                  <a href="#">Logout</a>
+                  <p>Logout</p>
                 </li>
               </ul>
             </div>
