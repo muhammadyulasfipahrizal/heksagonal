@@ -18,19 +18,20 @@ import Link from "next/link";
 
 type ProductVariant = {
   id: string;
-  sku: string | null;
+  productId: string;
   title: string | null;
-  price: number;
+  price: number | null;
   stock: number;
   image: string | null;
-  description: string;
-  attributes: Record<string, unknown>;
   isDefault: boolean;
   isActive: boolean;
+  description: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
-type ProductWithVariants = Product & {
-  variants?: ProductVariant[];
+type ProductWithVariants = Omit<Product, "variants"> & {
+  variants: ProductVariant[];
   ratingValue?: number | null;
   ratingCount?: number | null;
 };
@@ -53,11 +54,11 @@ function getImageSrc(image?: string | null) {
 function getVariantLabel(variant: ProductVariant) {
   if (variant.title?.trim()) return variant.title.trim();
 
-  const attributes = Object.entries(variant.attributes ?? {})
-    .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
-    .map(([key, value]) => `${key}: ${String(value)}`);
+  // const attributes = Object.entries(variant.attributes ?? {})
+  //   .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
+  //   .map(([key, value]) => `${key}: ${String(value)}`);
 
-  return attributes.join(" · ") || variant.sku || "Varian produk";
+  // return attributes.join(" · ") || variant.sku || "Varian produk";
 }
 
 export default function ProductVariantSelector({
@@ -94,7 +95,7 @@ export default function ProductVariantSelector({
           : 0
         : product.inStock,
     mainImage: selectedVariant?.image || product.mainImage,
-    code: selectedVariant?.sku ?? null,
+    // code: selectedVariant?.sku ?? null,
   } as Product;
 
   const defaultImage = getImageSrc(
@@ -113,14 +114,14 @@ export default function ProductVariantSelector({
     return [...new Set(candidates.filter(Boolean).map(getImageSrc))];
   }, [selectedVariant?.image, product.mainImage, images]);
 
-  const attributeEntries = Object.entries(
-    selectedVariant?.attributes ?? {}
-  ).filter(
-    ([, value]) =>
-      value !== null &&
-      value !== undefined &&
-      String(value).trim() !== ""
-  );
+  // const attributeEntries = Object.entries(
+  //   selectedVariant?.attributes ?? {}
+  // ).filter(
+  //   ([, value]) =>
+  //     value !== null &&
+  //     value !== undefined &&
+  //     String(value).trim() !== ""
+  // );
 
   const stock = selectedVariant?.stock;
   const isAvailable =
@@ -142,13 +143,9 @@ export default function ProductVariantSelector({
     <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
       {/* Breadcrumb */}
       <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-gray-500">
-        <a href="/" className="transition hover:text-gray-900">
-          Beranda
-        </a>
+        <Link href="/">Kembali ke beranda</Link>
         <span>/</span>
-        <a href="/products" className="transition hover:text-gray-900">
-          Produk
-        </a>
+        <Link href="/products">Produk</Link>
         <span>/</span>
         <span className="line-clamp-1 font-medium text-gray-800">
           {sanitize(product.title)}
@@ -353,7 +350,7 @@ export default function ProductVariantSelector({
                             {getVariantLabel(variant)}
                           </p>
                           <p className="mt-2 text-base font-bold text-gray-950">
-                            {formatRupiah(variant.price)}
+                            {formatRupiah(variant.price ?? product.price ?? 0)}
                           </p>
                           <p
                             className={`mt-1 text-xs ${
@@ -437,7 +434,16 @@ export default function ProductVariantSelector({
           <div className="border-b border-gray-200 py-6">
             <SingleProductDynamicFields
               product={selectedProduct}
-              selectedVariant={selectedVariant}
+              selectedVariant={
+                selectedVariant
+                  ? {
+                      id: selectedVariant.id,
+                      title: selectedVariant.title,
+                      price: selectedVariant.price ?? product.price ?? 0,
+                      image: selectedVariant.image,
+                    }
+                  : null
+              }
             />
           </div>
 

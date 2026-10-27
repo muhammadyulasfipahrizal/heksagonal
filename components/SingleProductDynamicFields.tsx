@@ -40,6 +40,7 @@ const SingleProductDynamicFields = ({
           <BuyNowSingleProductBtn
             quantityCount={quantityCount}
             product={product}
+            selectedVariant={selectedVariant}
           />
         </div>
       )}

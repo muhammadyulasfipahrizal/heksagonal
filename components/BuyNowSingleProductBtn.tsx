@@ -1,42 +1,56 @@
-// *********************
-// Role of the component: Buy Now button that adds product to the cart and redirects to the checkout page
-// Name of the component: BuyNowSingleProductBtn.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <BuyNowSingleProductBtn product={product} quantityCount={quantityCount} />
-// Input parameters: SingleProductBtnProps interface
-// Output: Button with buy now functionality
-// *********************
-
 "use client";
+
 import { useProductStore } from "@/app/_zustand/store";
 import React from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
+type SelectedVariant = {
+  id: string;
+  title: string | null;
+  price: number;
+  image: string | null;
+};
+
+type BuyNowSingleProductBtnProps = {
+  product: Product;
+  quantityCount: number;
+  selectedVariant?: SelectedVariant | null;
+};
+
 const BuyNowSingleProductBtn = ({
   product,
   quantityCount,
-}: SingleProductBtnProps) => {
+  selectedVariant = null,
+}: BuyNowSingleProductBtnProps) => {
   const router = useRouter();
   const { addToCart, calculateTotals } = useProductStore();
 
   const handleAddToCart = () => {
+    const price = selectedVariant?.price ?? product.price ?? 0;
+
     addToCart({
-      id: product?.id.toString(),
-      title: product?.title,
-      price: product?.price,
-      image: product?.mainImage,
+      id: selectedVariant
+        ? `${product.id}:${selectedVariant.id}`
+        : product.id.toString(),
+      productId: product.id.toString(),
+      variantId: selectedVariant?.id ?? null,
+      variantTitle: selectedVariant?.title ?? null,
+      title: product.title,
+      price,
+      image: selectedVariant?.image || product.mainImage,
       amount: quantityCount,
     });
+
     calculateTotals();
     toast.success("Product added to the cart");
     router.push("/checkout");
   };
+
   return (
     <button
       onClick={handleAddToCart}
-      className="btn w-[200px] text-lg border border-blue-500 hover:border-blue-500 border-1 font-normal bg-[#02054b] text-white hover:bg-white hover:scale-110 hover:text-[#02054b] transition-all uppercase ease-in max-[500px]:w-full"
+      className="btn w-[200px] border border-blue-500 bg-[#02054b] text-lg font-normal uppercase text-white transition-all ease-in hover:scale-110 hover:border-blue-500 hover:bg-white hover:text-[#02054b] max-[500px]:w-full"
     >
       Beli Sekarang
     </button>

@@ -9,19 +9,20 @@ const SITE_URL = "https://heksagonal.com";
 
 type ProductVariant = {
   id: string;
-  sku: string | null;
+  productId: string;
   title: string | null;
-  price: number;
+  price: number | null;
   stock: number;
   image: string | null;
-  description: string;
-  attributes: Record<string, unknown>;
   isDefault: boolean;
   isActive: boolean;
+  description: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
-type ProductWithVariants = Product & {
-  variants?: ProductVariant[];
+type ProductWithVariants = Omit<Product, "variants"> & {
+  variants: ProductVariant[];
   ratingValue?: number | null;
   ratingCount?: number | null;
 };
@@ -217,7 +218,6 @@ export default async function SingleProductPage({
     price: getProductPrice(product),
     inStock: isProductAvailable(product) ? 1 : 0,
     mainImage: defaultVariant?.image || product.mainImage,
-    code: defaultVariant?.sku ?? null,
     ratingValue: product.ratingValue ?? null,
     ratingCount: product.ratingCount ?? null,
   };

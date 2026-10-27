@@ -325,7 +325,7 @@ export default function PickupPage() {
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-gray-600">
                     Konfirmasi pembayaran kepada admin melalui WhatsApp menggunakan tombol
-                      di bawah "Hubungi Admin"
+                     Hubungi Admin
                   </p>
                 </div>
 

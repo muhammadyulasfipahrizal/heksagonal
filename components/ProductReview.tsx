@@ -263,6 +263,8 @@ const handleDelete = async () => {
   return (
     <main className="mx-auto w-full max-w-7xl px-4 sm:px-6">
       <section className="mt-10 border-t border-gray-200 pt-8">
+        {userId && (
+
         <div className="mb-6">
           <div className="mb-8 rounded-lg border border-gray-200 p-4 sm:p-6">
           <h3 className="mb-4 font-semibold text-gray-900">
@@ -432,7 +434,9 @@ const handleDelete = async () => {
               </div>
             </form>
           )}
+          </div>
         </div>
+        )}
         {ratingValue !== null && ratingValue >= 4 && (
             <>
                 <div className="flex flex-row justify-between">
@@ -467,7 +471,6 @@ const handleDelete = async () => {
             </>
             )}
 
-        </div>
 
         {error && (
           <p

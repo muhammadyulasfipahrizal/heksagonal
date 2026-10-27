@@ -12,15 +12,15 @@ model Product {
   slug            String                   @unique
   title           String
   mainImage       String
-  price           Int                      @default(0)
   rating          Int                      @default(0)
-  description     String                   @db.LongText
-  manufacturer    String
-  inStock         Int                      @default(1)
+  description     String?                   @db.LongText
+  manufacturer    String?
+  inStock         Int?                      @default(1)
   categoryId      String
   merchantId      String
   keywords        String?
   code            String?
+  reviews         ProductReview[]
   variants        ProductVariant[]
   category        Category                 @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   merchant        Merchant                 @relation(fields: [merchantId], references: [id])
@@ -35,22 +35,42 @@ model Product {
 model ProductVariant {
   id        String   @id @default(uuid())
   productId String
-  sku       String?  @unique
   title     String?
-  price     Int
+  price     Int?
   stock     Int      @default(0)
   image     String?
-  attributes Json
   isDefault Boolean  @default(false)
   isActive  Boolean  @default(true)
+  description     String?                   @db.LongText
 
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems  customer_order_product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([productId])
 }
+
+
+model ProductReview {
+  id        String   @id @default(uuid())
+  productId String
+  userId    String
+  rating    Int
+  title     String?  @db.VarChar(200)
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId, rating])
+  @@index([userId])
+}
+
 
 model Image {
   imageID   String @id @default(uuid())
@@ -73,6 +93,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  reviews         ProductReview[]
 
   addresses Address[]
   orders    Customer_order[]
@@ -169,12 +190,17 @@ model customer_order_product {
   id              String         @id @default(uuid())
   customerOrderId String
   productId       String
+  variantId       String?
   quantity        Int
+  price           Int?
+
   customerOrder   Customer_order @relation(fields: [customerOrderId], references: [id])
   product         Product        @relation(fields: [productId], references: [id])
+  variant         ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
 
   @@index([customerOrderId], map: "customer_order_product_customerOrderId_fkey")
   @@index([productId], map: "customer_order_product_productId_fkey")
+  @@index([variantId])
 }
 
 model Category {
