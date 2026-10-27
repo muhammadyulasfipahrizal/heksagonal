@@ -36,7 +36,7 @@ const ProductTabs = ({ product }: { product: Product }) => {
         </h2>
       </div> */}
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3 lg:gap-8">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 lg:gap-8">
         {/* Description */}
         <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-5 sm:p-7 lg:col-span-2">
           <div className="mb-5 flex items-start gap-3">
@@ -90,7 +90,7 @@ const ProductTabs = ({ product }: { product: Product }) => {
         </div>
 
         {/* Product information */}
-        <aside className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+        {/* <aside className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white">
           <div className="border-b border-gray-200 px-5 py-5">
             <h3 className="text-lg font-semibold text-gray-950">
               Informasi produk
@@ -117,7 +117,7 @@ const ProductTabs = ({ product }: { product: Product }) => {
               </div>
             ))}
           </dl>
-        </aside>
+        </aside> */}
       </div>
     </section>
   );
