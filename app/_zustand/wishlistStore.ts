@@ -1,4 +1,22 @@
+
 import { create } from "zustand";
+
+type WishlistVariant = {
+  id: string;
+  title: string | null;
+  price: number;
+  image: string | null;
+  isDefault: boolean;
+};
+
+type ProductInWishlist = {
+  id: string;
+  title: string;
+  mainImage: string;
+  slug: string;
+  stockAvailabillity: number;
+  variants: WishlistVariant[];
+};
 
 export type State = {
   wishlist: ProductInWishlist[];
@@ -14,34 +32,43 @@ export type Actions = {
 export const useWishlistStore = create<State & Actions>((set) => ({
   wishlist: [],
   wishQuantity: 0,
+
   addToWishlist: (product) => {
     set((state) => {
-      const productInWishlist = state.wishlist.find(
-        (item) => product.id === item.id
+      const exists = state.wishlist.some(
+        (item) => item.id === product.id
       );
 
-      if (productInWishlist === undefined) {
-        return { wishlist: [...state.wishlist, product], wishQuantity: state.wishlist.length };
-      } else {
-        return { wishlist: [...state.wishlist], wishQuantity: state.wishlist.length };
+      if (exists) {
+        return state;
       }
+
+      const wishlist = [...state.wishlist, product];
+
+      return {
+        wishlist,
+        wishQuantity: wishlist.length,
+      };
     });
   },
+
   removeFromWishlist: (id) => {
     set((state) => {
-      const productInWishlist = state.wishlist.find((item) => id === item.id);
+      const wishlist = state.wishlist.filter(
+        (item) => item.id !== id
+      );
 
-      if (productInWishlist === undefined) {
-        return { wishlist: [...state.wishlist], wishQuantity: state.wishlist.length };
-      } else {
-        const newWishlist = state.wishlist.filter((item) => item.id !== id);
-        return { wishlist: [...newWishlist], wishQuantity: state.wishlist.length };
-      }
+      return {
+        wishlist,
+        wishQuantity: wishlist.length,
+      };
     });
   },
-  setWishlist: (wishlist: ProductInWishlist[]) => {
-    set((state) => {      
-      return { wishlist: [...wishlist], wishQuantity: wishlist.length };
+
+  setWishlist: (wishlist) => {
+    set({
+      wishlist: [...wishlist],
+      wishQuantity: wishlist.length,
     });
   },
 }));

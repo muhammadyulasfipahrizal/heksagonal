@@ -1,13 +1,19 @@
+
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 export type ProductInCart = {
   id: string;
+  productId: string;
+  variantId: string | null;
   title: string;
+  variantTitle: string | null;
   price: number;
   image: string;
   amount: number;
 };
+
+type CartData = Pick<State, "products" | "allQuantity" | "total">;
 
 export type State = {
   products: ProductInCart[];
@@ -23,87 +29,69 @@ export type Actions = {
   clearCart: () => void;
 };
 
+const calculateCart = (products: ProductInCart[]) => ({
+  allQuantity: products.reduce((sum, item) => sum + item.amount, 0),
+  total: products.reduce(
+    (sum, item) => sum + item.amount * item.price,
+    0
+  ),
+});
+
 export const useProductStore = create<State & Actions>()(
   persist(
     (set) => ({
       products: [],
       allQuantity: 0,
       total: 0,
+
       addToCart: (newProduct) => {
         set((state) => {
-          const cartItem = state.products.find(
+          const existingItem = state.products.find(
             (item) => item.id === newProduct.id
           );
-          if (!cartItem) {
-            return { products: [...state.products, newProduct] };
-          } else {
-            state.products.map((product) => {
-              if (product.id === cartItem.id) {
-                product.amount += newProduct.amount;
-              }
-            });
-          }
-          return { products: [...state.products] };
+
+          const products = existingItem
+            ? state.products.map((item) =>
+                item.id === newProduct.id
+                  ? { ...item, amount: item.amount + newProduct.amount }
+                  : item
+              )
+            : [...state.products, newProduct];
+
+          return { products, ...calculateCart(products) };
         });
       },
-      clearCart: () => {
-        set((state: any) => {
-          
-          return {
-            products: [],
-            allQuantity: 0,
-            total: 0,
-          };
-        });
-      },
+
       removeFromCart: (id) => {
         set((state) => {
-          state.products = state.products.filter(
-            (product: ProductInCart) => product.id !== id
+          const products = state.products.filter((item) => item.id !== id);
+          return { products, ...calculateCart(products) };
+        });
+      },
+
+      updateCartAmount: (id, quantity) => {
+        set((state) => {
+          const products = state.products.map((item) =>
+            item.id === id
+              ? { ...item, amount: Math.max(1, quantity) }
+              : item
           );
-          return { products: state.products };
+
+          return { products, ...calculateCart(products) };
         });
       },
 
       calculateTotals: () => {
-        set((state) => {
-          let amount = 0;
-          let total = 0;
-          state.products.forEach((item) => {
-            amount += item.amount;
-            total += item.amount * item.price;
-            console.log("price", item.amount);
-            console.log("price", item.price);
-          });
-
-          return {
-            products: state.products,
-            allQuantity: amount,
-            total: total,
-          };
-        });
+        set((state) => calculateCart(state.products));
       },
-      updateCartAmount: (id, amount) => {
-        set((state) => {
-          const cartItem = state.products.find((item) => item.id === id);
 
-          if (!cartItem) {
-            return { products: [...state.products] };
-          } else {
-            state.products.map((product) => {
-              if (product.id === cartItem.id) {
-                product.amount = amount;
-              }
-            });
-          }
-
-          return { products: [...state.products] };
-        });
+      clearCart: () => {
+        set({ products: [], allQuantity: 0, total: 0 });
       },
     }),
     {
-      name: "products-storage", // name of the item in the storage (must be unique)
-      storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
+      name: "products-storage",
+      storage: createJSONStorage(() => sessionStorage),
     }
   )
 );

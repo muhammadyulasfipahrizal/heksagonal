@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ProductJsonLd from "./product-json-ld";
 import ProductVariantSelector from "@/components/product-variant-selector";
+import ProductReview from "@/components/ProductReview";
 
 const SITE_URL = "https://heksagonal.com";
 
@@ -13,6 +14,7 @@ type ProductVariant = {
   price: number;
   stock: number;
   image: string | null;
+  description: string;
   attributes: Record<string, unknown>;
   isDefault: boolean;
   isActive: boolean;
@@ -20,6 +22,8 @@ type ProductVariant = {
 
 type ProductWithVariants = Product & {
   variants?: ProductVariant[];
+  ratingValue?: number | null;
+  ratingCount?: number | null;
 };
 
 interface ImageItem {
@@ -214,7 +218,9 @@ export default async function SingleProductPage({
     inStock: isProductAvailable(product) ? 1 : 0,
     mainImage: defaultVariant?.image || product.mainImage,
     code: defaultVariant?.sku ?? null,
-  } as Product;
+    ratingValue: product.ratingValue ?? null,
+    ratingCount: product.ratingCount ?? null,
+  };
 
   return (
     <div className="bg-white">
@@ -224,6 +230,8 @@ export default async function SingleProductPage({
         product={product}
         images={images}
       />
+
+      <ProductReview productId={product.id} />
     </div>
   );
 }

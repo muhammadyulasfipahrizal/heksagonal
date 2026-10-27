@@ -29,6 +29,8 @@ const WishItem = ({
   const { removeFromWishlist } = useWishlistStore();
   const [loading, setLoading] = useState(false);
 
+  console.log("wishlist price", price);
+
   const handleRemove = async () => {
     if (loading) return;
 

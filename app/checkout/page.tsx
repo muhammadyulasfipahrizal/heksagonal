@@ -421,7 +421,8 @@ const CheckoutPage = () => {
       for (const product of products) {
         await addOrderProduct(
           orderId,
-          product.id,
+          product.productId,
+          product.variantId,
           product.amount
         );
       }
@@ -485,41 +486,30 @@ const CheckoutPage = () => {
       setIsSubmitting(false);
     }
   };
-
+  
   const addOrderProduct = async (
     orderId: string,
     productId: string,
+    variantId: string | null,
     productQuantity: number
   ) => {
-    try {
-      console.log("️ Adding product to order:", {
-        customerOrderId: orderId,
-        productId,
-        quantity: productQuantity
-      });
-      
-      const response = await apiClient.post("/api/order-product", {
-        customerOrderId: orderId,
-        productId: productId,
-        quantity: productQuantity,
-      });
+    const response = await apiClient.post("/api/order-product", {
+      customerOrderId: orderId,
+      productId,
+      variantId,
+      quantity: productQuantity,
+    });
 
-      console.log("📡 Product order response:", response);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("❌ Product order failed:", response.status, errorText);
-        throw new Error(`Product order failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("✅ Product order successful:", data);
-      
-    } catch (error) {
-      console.error("💥 Error creating product order:", error);
-      throw error;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Product order failed: ${response.status} ${errorText}`
+      );
     }
+
+    return response.json();
   };
+
 
   useEffect(() => {
     if (products.length === 0) {

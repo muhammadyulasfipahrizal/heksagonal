@@ -14,6 +14,7 @@ import {
   FaSquareXTwitter,
 } from "react-icons/fa6";
 import { formatRupiah, sanitize } from "@/lib/sanitize";
+import Link from "next/link";
 
 type ProductVariant = {
   id: string;
@@ -22,6 +23,7 @@ type ProductVariant = {
   price: number;
   stock: number;
   image: string | null;
+  description: string;
   attributes: Record<string, unknown>;
   isDefault: boolean;
   isActive: boolean;
@@ -29,6 +31,8 @@ type ProductVariant = {
 
 type ProductWithVariants = Product & {
   variants?: ProductVariant[];
+  ratingValue?: number | null;
+  ratingCount?: number | null;
 };
 
 interface ProductVariantSelectorProps {
@@ -81,7 +85,8 @@ export default function ProductVariantSelector({
 
   const selectedProduct = {
     ...product,
-    price: selectedVariant?.price ?? product.price,
+    price: selectedVariant?.price,
+    description: selectedVariant?.description,
     inStock:
       selectedVariant != null
         ? selectedVariant.stock > 0
@@ -148,6 +153,31 @@ export default function ProductVariantSelector({
         <span className="line-clamp-1 font-medium text-gray-800">
           {sanitize(product.title)}
         </span>
+        
+        {typeof product.ratingValue === "number" &&
+          Number.isFinite(product.ratingValue) &&
+          product.ratingValue >= 1 &&
+          product.ratingValue <= 5 &&
+          typeof product.ratingCount === "number" &&
+          product.ratingCount > 0 && (
+            <div className="mt-3 flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="text-lg tracking-wide text-yellow-500"
+              >
+                ★
+              </span>
+
+              <span className="text-sm font-semibold text-gray-900">
+                {product.ratingValue.toFixed(1)} / 5
+              </span>
+
+              <span className="text-sm text-gray-500">
+                ({product.ratingCount} penilaian)
+              </span>
+            </div>
+          )}
+
       </nav>
 
       {/* Product overview */}
@@ -216,21 +246,21 @@ export default function ProductVariantSelector({
               {sanitize(product.title)}
             </h1>
 
-            {product.manufacturer && (
+            {/* {product.manufacturer && (
               <p className="mt-3 text-sm text-gray-500">
                 Merek:{" "}
                 <span className="font-medium text-gray-800">
                   {product.manufacturer}
                 </span>
               </p>
-            )}
+            )} */}
 
             <div className="mt-6 rounded-xl bg-gray-50 px-4 py-5 sm:px-5">
               <p className="mb-1 text-sm text-gray-500">Harga produk</p>
               <p className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">
                 {formatRupiah(selectedProduct.price)}
               </p>
-              <div className="mt-3">
+              <div className="mt-3 flex flex-row justify-between">
                 <span
                   className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
                     isAvailable
@@ -238,15 +268,49 @@ export default function ProductVariantSelector({
                       : "bg-red-50 text-red-700"
                   }`}
                 >
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      isAvailable ? "bg-green-500" : "bg-red-500"
+                  {typeof stock === "number" && (
+                    <div
+                    className={`inline-flex w-fit items-center gap-2 rounded-full py-2 text-sm font-medium ${
+                        stock > 0
+                        ? "bg-green-50 text-green-700"
+                        : "bg-red-50 text-red-700"
                     }`}
-                  />
-                  {isAvailable ? "Tersedia" : "Stok habis"}
+                    >
+                    <span
+                        className={`h-2 w-2 rounded-full ${
+                        stock > 0 ? "bg-green-500" : "bg-red-500"
+                        }`}
+                    />
+
+                    {stock > 0 ? `Stok: ${stock} unit` : "Stok habis"}
+                    </div>
+                )}
                 </span>
-              </div>
+
+                <div className="flex items-center gap-3">
+                    <AddToWishlistBtn
+                      product={{
+                        id: product.id,
+                        title: product.title,
+                        mainImage: product.mainImage ?? "",
+                        slug: product.slug,
+                        stockAvailabillity: selectedProduct.inStock,
+                        variants: [
+                          {
+                            id: selectedProduct.id,
+                            title: selectedProduct.title ?? null,
+                            price: selectedProduct.price,
+                            image: selectedProduct.mainImage ?? null,
+                            isDefault: true,
+                          },
+                        ],
+                      }}
+                    />
+                </div>
             </div>
+          </div>
+
+              
           </div>
 
           {/* Variant selection */}
@@ -337,39 +401,9 @@ export default function ProductVariantSelector({
           )}
 
           {/* Stock and attributes */}
-          <div className="flex flex-col gap-y-3 border-b border-gray-200 py-6">
+          {/* <div className="flex flex-col gap-y-3 border-b border-gray-200 py-6">
             <div className="flex flex-col gap-4 rounded-xl bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-
-                    <AddToWishlistBtn
-                    product={{
-                        id: product.id,
-                        title: product.title,
-                        price: selectedProduct.price,
-                        image: selectedProduct.mainImage ?? "",
-                        slug: product.slug,
-                        stockAvailabillity: selectedProduct.inStock,
-                    }}
-                    />
-                </div>
-
-                {typeof stock === "number" && (
-                    <div
-                    className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-2 text-sm font-medium ${
-                        stock > 0
-                        ? "bg-green-50 text-green-700"
-                        : "bg-red-50 text-red-700"
-                    }`}
-                    >
-                    <span
-                        className={`h-2 w-2 rounded-full ${
-                        stock > 0 ? "bg-green-500" : "bg-red-500"
-                        }`}
-                    />
-
-                    {stock > 0 ? `Stok: ${stock} unit` : "Stok habis"}
-                    </div>
-                )}
+                
                 </div>
 
             {attributeEntries.length > 0 && (
@@ -397,11 +431,14 @@ export default function ProductVariantSelector({
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Dynamic product fields */}
           <div className="border-b border-gray-200 py-6">
-            <SingleProductDynamicFields product={selectedProduct} />
+            <SingleProductDynamicFields
+              product={selectedProduct}
+              selectedVariant={selectedVariant}
+            />
           </div>
 
           {/* Wishlist and SKU */}
@@ -429,7 +466,7 @@ export default function ProductVariantSelector({
           <div className="flex flex-wrap items-center gap-3 border-t border-gray-200 pt-5">
             <span className="text-sm text-gray-500">Bagikan produk:</span>
 
-            <a
+            <Link
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`}
               target="_blank"
               rel="noreferrer"
@@ -437,9 +474,9 @@ export default function ProductVariantSelector({
               className="text-gray-400 transition hover:text-blue-600"
             >
               <FaSquareFacebook size={23} />
-            </a>
+            </Link>
 
-            <a
+            <Link
               href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(productUrl)}&media=${encodeURIComponent(shareImageUrl)}&description=${encodeURIComponent(sanitize(product.title))}`}
               target="_blank"
               rel="noreferrer"
@@ -447,9 +484,9 @@ export default function ProductVariantSelector({
               className="text-gray-400 transition hover:text-red-600"
             >
               <FaSquarePinterest size={23} />
-            </a>
+            </Link>
 
-            <a
+            <Link
               href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(productUrl)}&text=${encodeURIComponent(sanitize(product.title))}`}
               target="_blank"
               rel="noreferrer"
@@ -457,15 +494,16 @@ export default function ProductVariantSelector({
               className="text-gray-400 transition hover:text-gray-900"
             >
               <FaSquareXTwitter size={23} />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Product details tabs */}
-      <section className="mt-12 border-t border-gray-200 pt-8 sm:mt-16">
+      <section className="mt-12 sm:mt-16">
         <ProductTabs product={selectedProduct} />
       </section>
+
     </main>
   );
 }

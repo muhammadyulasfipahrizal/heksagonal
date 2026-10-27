@@ -22,6 +22,7 @@ type ProductVariantForm = {
   stock: number;
   image: string;
   attributesText: string;
+  description: string;
   isDefault: boolean;
   isActive: boolean;
 };
@@ -45,6 +46,7 @@ type ProductVariantResponse = {
   price: number;
   stock: number;
   image: string | null;
+  description: string;
   attributes: Record<string, unknown>;
   isDefault: boolean;
   isActive: boolean;
@@ -62,6 +64,7 @@ const createVariant = (isDefault = false): ProductVariantForm => ({
   price: 0,
   stock: 0,
   image: "",
+  description: "",
   attributesText: "{}",
   isDefault,
   isActive: true,
@@ -194,6 +197,7 @@ const DashboardProductDetails = () => {
             price: Number(variant.price),
             stock: Number(variant.stock),
             image: variant.image ?? "",
+            description: variant.description ?? "",
             attributesText: JSON.stringify(
               variant.attributes ?? {},
               null,
@@ -282,8 +286,6 @@ const DashboardProductDetails = () => {
   const updateProduct = async () => {
     if (
       !product.title.trim() ||
-      !product.manufacturer.trim() ||
-      !product.description.trim() ||
       !product.mainImage.trim() ||
       !product.categoryId
     ) {
@@ -315,6 +317,7 @@ const DashboardProductDetails = () => {
       title: string | null;
       price: number;
       stock: number;
+      description: string,
       image: string | null;
       attributes: Record<string, unknown>;
       isDefault: boolean;
@@ -359,6 +362,7 @@ const DashboardProductDetails = () => {
           title: variant.title.trim() || null,
           price: variant.price,
           stock: variant.stock,
+          description: variant.description,
           image: variant.image.trim() || null,
           attributes: attributes as Record<string, unknown>,
           isDefault: variant.isDefault,
@@ -511,7 +515,7 @@ const DashboardProductDetails = () => {
           </label>
 
           <label className="form-control w-full max-w-xl">
-            <span className={labelClass}>Manufacturer *</span>
+            <span className={labelClass}>Manufacturer optional</span>
             <input
               className={fieldClass}
               value={product.manufacturer}
@@ -595,20 +599,6 @@ const DashboardProductDetails = () => {
               }
             />
           </label>
-
-          <label className="form-control w-full">
-            <span className={labelClass}>Product description *</span>
-            <textarea
-              className="textarea textarea-bordered h-40"
-              value={product.description}
-              onChange={(e) =>
-                setProduct((current) => ({
-                  ...current,
-                  description: e.target.value,
-                }))
-              }
-            />
-          </label>
         </section>
 
         {/* Variants */}
@@ -676,7 +666,7 @@ const DashboardProductDetails = () => {
                 />
               </label>
 
-              <label className="form-control">
+              {/* <label className="form-control">
                 <span className={labelClass}>SKU (optional)</span>
                 <input
                   className={fieldClass}
@@ -688,7 +678,7 @@ const DashboardProductDetails = () => {
                   }
                   placeholder="Example: PRODUCT-RED-5KG"
                 />
-              </label>
+              </label> */}
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <label className="form-control">
@@ -767,20 +757,17 @@ const DashboardProductDetails = () => {
               )}
 
               <label className="form-control">
-                <span className={labelClass}>Attributes (JSON) *</span>
+                <span className={labelClass}>Variant description</span>
+
                 <textarea
-                  className="textarea textarea-bordered h-32 font-mono text-sm"
-                  value={variant.attributesText}
+                  className="textarea textarea-bordered h-40"
+                  value={variant.description}
                   onChange={(e) =>
                     updateVariant(variant.localId, {
-                      attributesText: e.target.value,
+                      description: e.target.value,
                     })
                   }
-                  spellCheck={false}
                 />
-                <span className="mt-1 text-xs text-gray-500">
-                  Example: {"{"}"color": "Red", "weight": "5 kg"{"}"}
-                </span>
               </label>
 
               <label className="flex cursor-pointer items-center gap-3">

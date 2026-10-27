@@ -90,14 +90,24 @@ export const CartModule = () => {
                 <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
                   <div>
                     <div className="flex justify-between">
-                      <h3 className="text-sm">
-                        <Link
-                          href={`#`}
-                          className="font-medium text-gray-700 hover:text-gray-800"
-                        >
-                          {sanitize(product.title)}
-                        </Link>
-                      </h3>
+                       <h3 className="text-sm">
+                          <Link
+                            href="#"
+                            className="font-medium text-gray-700 hover:text-gray-800"
+                          >
+                            {sanitize(product.title)}
+                          </Link>
+                        </h3>
+
+                        {product.variantTitle && (
+                          <p className="mt-1 text-sm text-gray-500">
+                            Varian: {sanitize(product.variantTitle)}
+                          </p>
+                        )}
+
+                        <p className="mt-1 text-sm font-medium text-gray-900">
+                          {formatRupiah(product.price)}
+                        </p>
                     </div>
                     {/* <div className="mt-1 flex text-sm">
                         <p className="text-gray-500">{product.color}</p>

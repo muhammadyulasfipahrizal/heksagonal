@@ -1,13 +1,3 @@
-// *********************
-// Role of the component: Product item component 
-// Name of the component: ProductItem.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <ProductItem product={product} color={color} />
-// Input parameters: { product: Product; color: string; }
-// Output: Product item component that contains product image, title, link to the single product page, price, button...
-// *********************
-
 import Image from "next/image";
 import React from "react";
 import Link from "next/link";
@@ -21,6 +11,24 @@ const ProductItem = ({
   product: Product;
   color: string;
 }) => {
+  const variants = Array.isArray(product.variants)
+    ? product.variants
+    : [];
+
+  const cheapestVariant = variants.reduce<
+    (typeof variants)[number] | undefined
+  >((cheapest, variant) => {
+    if (variant.price == null) return cheapest;
+
+    if (!cheapest || variant.price < cheapest.price) {
+      return variant;
+    }
+
+    return cheapest;
+  }, undefined);
+
+  const displayPrice = cheapestVariant?.price ?? product.price;
+
   return (
     <div className="flex flex-col items-center gap-y-2">
       <Link href={`/product/${product.slug}`}>
@@ -30,23 +38,25 @@ const ProductItem = ({
               ? `/${product.mainImage}`
               : "/product_placeholder.jpg"
           }
-          width="0"
-          height="0"
+          width={0}
+          height={0}
           sizes="100vw"
           className="w-auto h-[300px]"
           alt={sanitize(product?.title) || "Product image"}
         />
       </Link>
+
       <Link
         href={`/product/${product.slug}`}
         className={
           color === "black"
-            ? `text-xl text-black font-normal mt-2 uppercase`
-            : `text-xl text-white font-normal mt-2 uppercase`
+            ? "text-xl text-black font-normal mt-2 uppercase"
+            : "text-xl text-white font-normal mt-2 uppercase"
         }
       >
         {sanitize(product.title)}
       </Link>
+
       <p
         className={
           color === "black"
@@ -54,13 +64,12 @@ const ProductItem = ({
             : "text-lg text-white font-semibold"
         }
       >
-        {formatRupiah(product.price)}
+        {formatRupiah(displayPrice)}
       </p>
 
-  
       <Link
-        href={`/product/${product?.slug}`}
-        className="block flex justify-center items-center w-full uppercase bg-white px-0 py-2 text-base border border-black border-gray-300 font-bold text-[#02054b] shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
+        href={`/product/${product.slug}`}
+        className="flex w-full items-center justify-center border border-gray-300 bg-white px-0 py-2 text-base font-bold uppercase text-[#02054b] shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2"
       >
         <p>Lihat Produk</p>
       </Link>

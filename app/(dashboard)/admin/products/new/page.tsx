@@ -18,6 +18,7 @@ type ProductVariantForm = {
   image: string;
   attributesText: string;
   isDefault: boolean;
+  description: string;
   isActive: boolean;
 };
 
@@ -26,7 +27,6 @@ type ProductForm = {
   title: string;
   manufacturer: string;
   mainImage: string;
-  description: string;
   keywords: string;
   slug: string;
   categoryId: string;
@@ -36,6 +36,7 @@ const createVariant = (isDefault = false): ProductVariantForm => ({
   localId: crypto.randomUUID(),
   sku: "",
   title: "",
+  description: "",
   price: 0,
   stock: 0,
   image: "",
@@ -49,7 +50,6 @@ const initialProduct: ProductForm = {
   title: "",
   manufacturer: "",
   mainImage: "",
-  description: "",
   keywords: "",
   slug: "",
   categoryId: "",
@@ -111,8 +111,6 @@ const AddNewProduct = () => {
       !product.merchantId ||
       !product.categoryId ||
       !product.title.trim() ||
-      !product.manufacturer.trim() ||
-      !product.description.trim() ||
       !product.mainImage
     ) {
       toast.error("Please complete all required product fields.");
@@ -145,6 +143,7 @@ const AddNewProduct = () => {
       price: number;
       stock: number;
       image: string | null;
+      description: string;
       attributes: Record<string, unknown>;
       isDefault: boolean;
       isActive: boolean;
@@ -188,6 +187,7 @@ const AddNewProduct = () => {
           title: variant.title.trim() || null,
           price: variant.price,
           stock: variant.stock,
+          description: variant.description,
           image: variant.image || null,
           attributes: attributes as Record<string, unknown>,
           isDefault: variant.isDefault,
@@ -425,7 +425,7 @@ const AddNewProduct = () => {
           </label>
 
           <label className="form-control w-full max-w-xl">
-            <span className={labelClass}>Manufacturer *</span>
+            <span className={labelClass}>Manufacturer optional</span>
             <input
               className={fieldClass}
               value={product.manufacturer}
@@ -489,22 +489,7 @@ const AddNewProduct = () => {
             />
           </label>
 
-          <label className="form-control w-full max-w-xl">
-            <span className={labelClass}>
-              Product description *
-            </span>
-            <textarea
-              className="textarea textarea-bordered h-32"
-              value={product.description}
-              onChange={(e) =>
-                setProduct({
-                  ...product,
-                  description: e.target.value,
-                })
-              }
-              placeholder="Describe the product..."
-            />
-          </label>
+          
         </section>
 
         {/* Product variants */}
@@ -514,10 +499,6 @@ const AddNewProduct = () => {
               <h2 className="text-xl font-semibold">
                 Product variants
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Configure the price, stock, SKU, and custom
-                attributes for each purchasable variant.
-              </p>
             </div>
 
             <button
@@ -570,7 +551,7 @@ const AddNewProduct = () => {
                 />
               </label>
 
-              <label className="form-control">
+              {/* <label className="form-control">
                 <span className={labelClass}>
                   SKU (optional)
                 </span>
@@ -584,7 +565,7 @@ const AddNewProduct = () => {
                   }
                   placeholder="Example: CABLE-RED-100M"
                 />
-              </label>
+              </label> */}
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <label className="form-control">
@@ -668,6 +649,23 @@ const AddNewProduct = () => {
 
               <label className="form-control">
                 <span className={labelClass}>
+                  Description
+                </span>
+
+                <textarea
+                    className="textarea textarea-bordered h-32"
+                    value={variant.description}
+                    onChange={(e) =>
+                    updateVariant(variant.localId, {
+                      description: e.target.value,
+                    })
+                  }
+                    placeholder="Describe the product..."
+                  />
+              </label>
+
+              {/* <label className="form-control">
+                <span className={labelClass}>
                   Attributes (JSON) *
                 </span>
                 <textarea
@@ -684,7 +682,7 @@ const AddNewProduct = () => {
                   Example: {"{"}"color": "Red", "length": "100 m"
                   {"}"}
                 </span>
-              </label>
+              </label> */}
 
               <label className="flex cursor-pointer items-center gap-3">
                 <input

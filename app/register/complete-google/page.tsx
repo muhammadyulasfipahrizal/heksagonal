@@ -1,5 +1,6 @@
 "use client";
 
+import { useProductStore } from "@/app/_zustand/store";
 import RegisterAddressForm, {
   RegisterAddressData,
 } from "@/components/RegisterAddressForm";
@@ -29,6 +30,8 @@ const CompleteGoogleRegistrationPage = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
   const user = session?.user as SessionUser | undefined;
+
+  const { allQuantity } = useProductStore();
 
   const [address, setAddress] = useState<RegisterAddressData>(emptyAddress);
   const [recipientName, setRecipientName] = useState(user?.name ?? "");
@@ -67,7 +70,11 @@ const CompleteGoogleRegistrationPage = () => {
               : [];
 
         if (!cancelled && addresses.length > 0) {
-          router.replace("/");
+          if (allQuantity > 0) {
+            router.replace("/checkout")
+          } else {
+            router.replace("/");
+          }
           return;
         }
       } catch {
@@ -86,119 +93,137 @@ const CompleteGoogleRegistrationPage = () => {
   }, [status, user?.name, router]);
 
   
-    const handleSubmit = async (
-        event: React.FormEvent<HTMLFormElement>
-        ) => {
-        event.preventDefault();
-        setError("");
+  const handleSubmit = async (
+      event: React.FormEvent<HTMLFormElement>
+      ) => {
+      event.preventDefault();
+      setError("");
 
-        if (!user?.id) {
-            const message =
-            "Your account session is missing its user ID. Please sign in again.";
-            setError(message);
-            toast.error(message);
-            return;
-        }
+      if (!user?.id) {
+          const message =
+          "Your account session is missing its user ID. Please sign in again.";
+          setError(message);
+          toast.error(message);
+          return;
+      }
 
-        if (!recipientName.trim()) {
-            const message = "Please enter the recipient name.";
-            setError(message);
-            toast.error(message);
-            return;
-        }
+      if (!recipientName.trim()) {
+          const message = "Please enter the recipient name.";
+          setError(message);
+          toast.error(message);
+          return;
+      }
 
-        if (
-            !address.phone.trim() ||
-            !address.adress.trim() ||
-            !address.province ||
-            !address.city ||
-            !address.district ||
-            !address.postalCode.trim()
-        ) {
-            const message = "Please complete all phone and address details.";
-            setError(message);
-            toast.error(message);
-            return;
-        }
+      if (
+          !address.phone.trim() ||
+          !address.adress.trim() ||
+          !address.province ||
+          !address.city ||
+          !address.district ||
+          !address.postalCode.trim()
+      ) {
+          const message = "Please complete all phone and address details.";
+          setError(message);
+          toast.error(message);
+          return;
+      }
 
-        setIsSubmitting(true);
+      setIsSubmitting(true);
 
-        try {
-            const phone = address.phone.trim();
+      try {
+          const phone = address.phone.trim();
 
-            // 1. Update phone number in the User table.
-            const userResponse = await apiClient.put(`/api/users/${user.id}`, {
-                phone: address.phone.trim(),
-            });
+          // 1. Update phone number in the User table.
+          const userResponse = await apiClient.put(`/api/users/${user.id}`, {
+              phone: address.phone.trim(),
+          });
 
-            const responseText = await userResponse.text();
+          const responseText = await userResponse.text();
 
-            let responseData: any;
+          let responseData: any;
 
-            try {
-            responseData = responseText ? JSON.parse(responseText) : null;
-            } catch {
-            responseData = responseText;
-            }
+          try {
+          responseData = responseText ? JSON.parse(responseText) : null;
+          } catch {
+          responseData = responseText;
+          }
 
-            if (!userResponse.ok) {
-            console.error("Update user gagal:", {
-                status: userResponse.status,
-                statusText: userResponse.statusText,
-                data: responseData,
+          if (!userResponse.ok) {
+          console.error("Update user gagal:", {
+              status: userResponse.status,
+              statusText: userResponse.statusText,
+              data: responseData,
+              userId: user.id,
+          });
+
+          throw new Error(
+              responseData?.message ||
+              responseData?.error ||
+              `Gagal memperbarui nomor telepon (HTTP ${userResponse.status}).`
+          );
+          }
+
+          // 2. Save the default delivery address.
+          const response = await addressApi.post({
+              userId: user.id,
+              recipientName: recipientName.trim(),
+              phone,
+              label: "Rumah",
+              adress: address.adress.trim(),
+              postalCode: address.postalCode.trim(),
+              city: address.city,
+              province: address.province,
+              district: address.district,
+              isDefault: true,
+          });
+
+          try {
+            await fetch("/api/registration-success", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
                 userId: user.id,
+              }),
             });
+          } catch (emailError) {
+            console.error("Failed to send confirmation email:", emailError);
+          }
 
-            throw new Error(
-                responseData?.message ||
-                responseData?.error ||
-                `Gagal memperbarui nomor telepon (HTTP ${userResponse.status}).`
-            );
-            }
+          toast.success(
+          response?.data?.message ??
+              "Your profile and address are complete."
+          );
 
-            // 2. Save the default delivery address.
-            const response = await addressApi.post({
-                userId: user.id,
-                recipientName: recipientName.trim(),
-                phone,
-                label: "Rumah",
-                adress: address.adress.trim(),
-                postalCode: address.postalCode.trim(),
-                city: address.city,
-                province: address.province,
-                district: address.district,
-                isDefault: true,
-            });
-
-            toast.success(
-            response?.data?.message ??
-                "Your profile and address are complete."
-            );
-
+          if (allQuantity > 0) {
+            router.replace("/checkout")
+          } else {
             router.replace("/");
-        } catch (err: unknown) {
-            const apiError = err as {
-            message?: string;
-            response?: {
-                data?: {
-                message?: string;
-                error?: string;
-                };
-            };
-            };
+          }
+      } catch (err: unknown) {
+          const apiError = err as {
+          message?: string;
+          response?: {
+              data?: {
+              message?: string;
+              error?: string;
+              };
+          };
+          };
 
-            const message =
-            apiError.response?.data?.message ??
-            apiError.response?.data?.error ??
-            apiError.message ??
-            "Unable to save your profile and address. Please try again.";
+          const message =
+          apiError.response?.data?.message ??
+          apiError.response?.data?.error ??
+          apiError.message ??
+          "Unable to save your profile and address. Please try again.";
 
-            setError(message);
-            toast.error(message);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+          setError(message);
+          toast.error(message);
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
 
 
   if (status === "loading" || isChecking) {

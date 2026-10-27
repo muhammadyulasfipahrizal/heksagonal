@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import addressApi from "@/lib/addressApi";
+import { useProductStore } from "../_zustand/store";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -16,6 +17,8 @@ const RegisterPage = () => {
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { allQuantity } = useProductStore();
 
   const [form, setForm] = useState({
     name: "",
@@ -106,12 +109,12 @@ const RegisterPage = () => {
       return;
     }
 
-    if (!form.acceptTerms) {
-      const message = "Please accept the terms and privacy policy.";
-      setError(message);
-      toast.error(message);
-      return;
-    }
+    // if (!form.acceptTerms) {
+    //   const message = "Please accept the terms and privacy policy.";
+    //   setError(message);
+    //   toast.error(message);
+    //   return;
+    // }
 
     if (
       !address.phone.trim() ||
@@ -184,12 +187,33 @@ const RegisterPage = () => {
         isDefault: true,
       });
 
+      try {
+        await fetch("/api/registration-success", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userId,
+          }),
+        });
+      } catch (emailError) {
+        console.error("Failed to send confirmation email:", emailError);
+      }
+
       toast.success(
         addressResponse?.message ??
           "Account and address created successfully!"
       );
 
-      router.push("/login");
+      console.log("checkout", allQuantity);
+
+      if (allQuantity > 0) {
+        router.push("/checkout")
+      } else {
+        router.push("/");
+      }
+
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -434,7 +458,7 @@ const RegisterPage = () => {
               </div>
 
               {/* Terms */}
-              <div>
+              {/* <div>
                 <label className="flex cursor-pointer items-start gap-3">
                   <input
                     id="acceptTerms"
@@ -464,7 +488,7 @@ const RegisterPage = () => {
                     .
                   </span>
                 </label>
-              </div>
+              </div> */}
 
               {error && (
                 <div

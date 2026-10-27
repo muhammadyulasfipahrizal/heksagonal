@@ -56,3 +56,107 @@ export async function sendPasswordResetEmail(
     `,
   });
 }
+
+
+
+export async function sendUserLoginNotificationEmail(
+  adminEmail: string,
+  user: {
+    name: string;
+    email: string;
+    phone: string;
+  }
+) {
+  const from = process.env.SMTP_FROM;
+
+  if (
+    !process.env.SMTP_HOST ||
+    !process.env.SMTP_USER ||
+    !process.env.SMTP_PASS ||
+    !from
+  ) {
+    throw new Error("SMTP configuration is incomplete.");
+  }
+
+  const name = user.name || "Not provided";
+  const email = user.email;
+  const phone = user.phone || "Not provided";
+
+  await transporter.sendMail({
+    from,
+    to: adminEmail,
+    subject: `HEKSAGONAL - User Registration Notification: ${name}`,
+    text: [
+      "Hello Admin,",
+      "",
+      "A user has successfully register to HEKSAGONAL.",
+      "",
+      "User Details:",
+      `Name: ${name}`,
+      `Email: ${email}`,
+      `Phone: ${phone}`,
+      "",
+      "This is an automated notification from HEKSAGONAL.",
+    ].join("\n"),
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 560px; margin: auto; color: #111827; line-height: 1.6;">
+        <h2 style="color: #02054b;">User Registration Notification</h2>
+
+        <p>Hello Admin,</p>
+
+        <p>
+          A user has successfully logged in to
+          <strong>HEKSAGONAL</strong>.
+        </p>
+
+        <h3 style="color: #02054b;">User Details</h3>
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">
+              Name
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">
+              ${escapeHtml(name)}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">
+              Email
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">
+              ${escapeHtml(email)}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">
+              Phone
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">
+              ${escapeHtml(phone)}
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin-top: 24px; color: #6b7280; font-size: 13px;">
+          This is an automated notification from HEKSAGONAL.
+        </p>
+      </div>
+    `,
+  });
+}
+
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+
+    return entities[char];
+  });
+}

@@ -27,7 +27,6 @@ export const WishlistModule = () => {
         setLoading(true);
         setError("");
 
-        // Get the current user's ID.
         const userResponse = await apiClient.get(
           `/api/users/email/${encodeURIComponent(session.user.email!)}`,
           { cache: "no-store" }
@@ -43,7 +42,6 @@ export const WishlistModule = () => {
           throw new Error("User account was not found.");
         }
 
-        // Fetch wishlist records for this user.
         const response = await apiClient.get(
           `/api/wishlist/${encodeURIComponent(userData.id)}`,
           { cache: "no-store" }
@@ -57,7 +55,6 @@ export const WishlistModule = () => {
           );
         }
 
-        // Support both an array response and { wishlist: [...] }.
         const items = Array.isArray(result)
           ? result
           : Array.isArray(result?.wishlist)
@@ -66,14 +63,28 @@ export const WishlistModule = () => {
 
         const productArray = items
           .filter((item: any) => item?.product?.id)
-          .map((item: any) => ({
-            id: item.product.id,
-            title: item.product.title,
-            price: item.product.price,
-            image: item.product.mainImage,
-            slug: item.product.slug,
-            stockAvailabillity: item.product.inStock,
-          }));
+          .map((item: any) => {
+            const product = item.product;
+
+            const variants = Array.isArray(product.variants)
+              ? product.variants.map((variant: any) => ({
+                  id: String(variant.id),
+                  title: variant.title ?? null,
+                  price: Number(variant.price ?? 0),
+                  image: variant.image ?? null,
+                  isDefault: Boolean(variant.isDefault),
+                }))
+              : [];
+
+            return {
+              id: String(product.id),
+              title: product.title ?? "",
+              mainImage: product.mainImage ?? "",
+              slug: product.slug ?? "",
+              stockAvailabillity: Number(product.inStock ?? 0),
+              variants,
+            };
+          });
 
         if (!cancelled) {
           setWishlist(productArray);
@@ -156,17 +167,27 @@ export const WishlistModule = () => {
           </thead>
 
           <tbody>
-            {wishlist.map((item) => (
-              <WishItem
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                price={item.price}
-                image={item.image}
-                slug={item.slug}
-                stockAvailabillity={item.stockAvailabillity}
-              />
-            ))}
+            {wishlist.map((item) => {
+              const variants = Array.isArray(item.variants)
+                ? item.variants
+                : [];
+
+              const defaultVariant =
+                variants.find((variant) => variant.isDefault) ??
+                variants[0];
+
+              return (
+                <WishItem
+                  key={item.id}
+                  id={item.id}
+                  title={item.title}
+                  price={defaultVariant?.price ?? 0}
+                  image={defaultVariant?.image ?? item.mainImage}
+                  slug={item.slug}
+                  stockAvailabillity={item.stockAvailabillity}
+                />
+              );
+            })}
           </tbody>
         </table>
       </div>

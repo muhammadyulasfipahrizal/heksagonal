@@ -13,24 +13,30 @@ import toast from "react-hot-toast";
 type DeliveryMethod = "PICKUP" | "SHIPPING";
 type OrderStatus = "processing" | "delivered" | "canceled";
 
+
+interface OrderVariant {
+  id: string;
+  title: string | null;
+  price: number | null;
+  image: string | null;
+}
+
 interface OrderProduct {
   id: string;
   customerOrderId: string;
   productId: string;
+  variantId: string | null;
   quantity: number;
+  price: number | null;
   product: {
     id: string;
     slug: string;
     title: string;
-    mainImage: string;
-    price: number;
-    rating: number;
-    description: string;
-    manufacturer: string;
-    inStock: number;
-    categoryId: string;
+    mainImage: string | null;
   };
+  variant: OrderVariant | null;
 }
+
 
 interface Order {
   id: string;
@@ -265,12 +271,6 @@ const AdminSingleOrder = () => {
   };
 
   const subtotal = order.total;
-  const tax = Math.round(subtotal / 5);
-  const shipping =
-    order.deliveryMethod === "SHIPPING" && subtotal > 0
-      ? SHIPPING_COST
-      : 0;
-  const grandTotal = subtotal + tax + shipping;
 
   return (
     <div className="mx-auto flex max-w-screen-2xl justify-start bg-white xl:h-full max-xl:flex-col max-xl:gap-y-5">
@@ -430,50 +430,68 @@ const AdminSingleOrder = () => {
           {orderProducts.length === 0 ? (
             <p>No products found for this order.</p>
           ) : (
-            orderProducts.map((item) => (
-              <div
-                className="flex items-center gap-x-4"
-                key={item.id}
-              >
-                <Image
-                  src={
-                    item.product.mainImage
-                      ? `/${item.product.mainImage}`
-                      : "/product_placeholder.jpg"
-                  }
-                  alt={item.product.title}
-                  width={50}
-                  height={50}
-                  className="h-[50px] w-[50px] object-contain"
-                />
+            
+            orderProducts.map((item) => {
+              const productImage =
+                item.variant?.image?.trim() ||
+                item.product.mainImage?.trim() ||
+                "";
 
-                <div>
-                  <Link
-                    href={`/product/${item.product.slug}`}
-                    className="hover:underline"
-                  >
-                    {item.product.title}
-                  </Link>
-                  <p>
-                    {formatRupiah(item.product.price)} × {item.quantity} items
-                  </p>
+              const imageSrc = productImage
+                ? productImage.startsWith("http://") ||
+                  productImage.startsWith("https://") ||
+                  productImage.startsWith("/")
+                  ? productImage
+                  : `/${productImage}`
+                : "/product_placeholder.jpg";
+
+              const itemPrice = item.price ?? item.variant?.price ?? 0;
+
+              return (
+                <div
+                  className="flex items-center gap-x-4"
+                  key={item.id}
+                >
+                  <Image
+                    src={imageSrc}
+                    alt={item.product.title}
+                    width={50}
+                    height={50}
+                    className="h-[50px] w-[50px] object-contain"
+                    unoptimized={imageSrc.startsWith("http")}
+                  />
+
+                  <div>
+                    <Link
+                      href={`/product/${item.product.slug}`}
+                      className="hover:underline"
+                    >
+                      {item.product.title}
+                    </Link>
+
+                    {item.variant && (
+                      <p className="text-sm text-gray-600">
+                        Variant: {item.variant.title || "Default variant"}
+                      </p>
+                    )}
+
+                    <p>
+                      {formatRupiah(itemPrice)} × {item.quantity} items
+                    </p>
+
+                    <p className="font-medium">
+                      Total item: {formatRupiah(itemPrice * item.quantity)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
+
           )}
 
           <div className="mt-6 flex flex-col gap-y-2">
             <p className="text-xl">
               Subtotal: {formatRupiah(subtotal)}
-            </p>
-            <p className="text-xl">
-              Tax 20%: {formatRupiah(tax)}
-            </p>
-            <p className="text-xl">
-              Shipping: {formatRupiah(shipping)}
-            </p>
-            <p className="text-3xl font-semibold">
-              Total: {formatRupiah(grandTotal)}
             </p>
           </div>
         </section>

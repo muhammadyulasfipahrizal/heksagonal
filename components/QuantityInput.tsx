@@ -48,7 +48,7 @@ const QuantityInput = ({quantityCount, setQuantityCount} : QuantityInputProps) =
           id="Quantity"
           disabled={true}
           value={quantityCount}
-          className="h-10 w-24 rounded border-gray-200 sm:text-sm"
+          className="h-10 w-24 rounded border-gray-200 text-center sm:text-sm"
         />
 
         <button

@@ -1,40 +1,61 @@
-// *********************
-// Role of the component: Button for adding product to the cart on the single product page
-// Name of the component: AddToCartSingleProductBtn.tsx
-// Developer: Aleksandar Kuzmanovic
-// Version: 1.0
-// Component call: <AddToCartSingleProductBtn product={product} quantityCount={quantityCount}  />
-// Input parameters: SingleProductBtnProps interface
-// Output: Button with adding to cart functionality
-// *********************
+
 "use client";
 
-
-
-import React from "react";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
 
+type SelectedVariant = {
+  id: string;
+  title: string | null;
+  price: number;
+  image: string | null;
+};
 
+type Props = {
+  product: {
+    id: string;
+    title: string;
+    price: number;
+    mainImage: string;
+  };
+  quantityCount: number;
+  selectedVariant: SelectedVariant | null;
+};
 
-const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtnProps) => {
-  const { addToCart, calculateTotals } = useProductStore();
+const AddToCartSingleProductBtn = ({
+  product,
+  quantityCount,
+  selectedVariant,
+}: Props) => {
+  const addToCart = useProductStore((state) => state.addToCart);
 
   const handleAddToCart = () => {
+    if (!selectedVariant) {
+      toast.error("Silakan pilih varian produk terlebih dahulu.");
+      return;
+    }
+
+    const cartItemId = `${product.id}:${selectedVariant.id}`;
+
     addToCart({
-      id: product?.id.toString(),
-      title: product?.title,
-      price: product?.price,
-      image: product?.mainImage,
-      amount: quantityCount
+      id: cartItemId,
+      productId: product.id,
+      variantId: selectedVariant.id,
+      title: product.title,
+      variantTitle: selectedVariant.title,
+      price: selectedVariant.price,
+      image: selectedVariant.image || product.mainImage,
+      amount: quantityCount,
     });
-    calculateTotals();
+
     toast.success("Product added to the cart");
   };
+
   return (
     <button
+      type="button"
       onClick={handleAddToCart}
-      className="btn w-[250px] text-lg border border-gray-300 border-1 font-normal bg-white text-[#02054b] hover:bg-[#02054b] hover:text-white hover:border-blue-500 hover:scale-110 transition-all uppercase ease-in max-[500px]:w-full"
+      className="btn w-[250px] text-lg border border-gray-300 font-normal bg-white text-[#02054b] hover:bg-[#02054b] hover:text-white hover:border-blue-500 hover:scale-110 transition-all uppercase ease-in max-[500px]:w-full"
     >
       Tambah Keranjang
     </button>

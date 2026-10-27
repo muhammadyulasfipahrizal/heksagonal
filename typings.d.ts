@@ -4,6 +4,14 @@ import type { DefaultSession } from "next-auth";
 
 declare global {
 
+interface ProductVariant {
+  id: string;
+  title: string | null;
+  price: number;
+  image: string | null;
+  isDefault: boolean;
+}
+
 interface Product {
   id: string;
   slug: string;
@@ -22,6 +30,7 @@ interface Product {
     name: string;
   };
   inStock: number;
+  variants: ProductVariant[];
 }
 
 interface Merchant {
@@ -43,13 +52,21 @@ interface SingleProductPageProps {
   };
 }
 
+type WishlistVariant = {
+  id: string;
+  title: string | null;
+  price: number;
+  image: string | null;
+  isDefault: boolean;
+};
+
 type ProductInWishlist = {
   id: string;
   title: string;
-  price: number;
-  image: string;
+  mainImage: string;
   slug: string;
   stockAvailabillity: number;
+  variants: WishlistVariant[];
 };
 
 interface OtherImages {

@@ -41,6 +41,12 @@ const DashboardSidebar = () => {
           <span className="font-normal">Produk</span>
         </div>
       </Link>
+      <Link href="/admin/review">
+        <div className="flex gap-x-2 w-full hover:bg-[#01043D] cursor-pointer items-center py-6 pl-5 text-xl text-white">
+          <MdCategory className="text-2xl" />{" "}
+          <span className="font-normal">Review</span>
+        </div>
+      </Link>
       <Link href="/admin/bulk-upload">
         <div className="flex gap-x-2 w-full hover:bg-[#01043D] cursor-pointer items-center py-6 pl-5 text-xl text-white">
           <FaFileUpload className="text-2xl" />{" "}

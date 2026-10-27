@@ -6,13 +6,40 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import apiClient from "@/lib/api";
 
+type OrderVariant = {
+  id: string;
+  title: string | null;
+  price: number;
+  image: string | null;
+  isDefault: boolean;
+};
+
 type OrderProduct = {
   id: string;
   title: string;
   slug: string;
   mainImage: string | null;
   price: number;
+  variants: OrderVariant[];
+};
+
+type OrderItem = {
+  id: string;
+  productId: string;
+  variantId: string | null;
   quantity: number;
+  price: number | null;
+  product: {
+    id: string;
+    title: string;
+    mainImage: string;
+  };
+  variant: {
+    id: string;
+    title: string | null;
+    price: number;
+    image: string | null;
+  } | null;
 };
 
 type Order = {
@@ -30,11 +57,7 @@ type Order = {
   total: number;
   status: string;
   dateTime: string;
-  products: {
-    id: string;
-    quantity: number;
-    product: OrderProduct;
-  }[];
+  products: OrderItem[];
 };
 
 type Pagination = {
@@ -192,6 +215,8 @@ export default function OrdersPage() {
         `/api/orders/my-orders?${params.toString()}`,
         { credentials: "include" }
       );
+
+      console.log("Orders API response:", response);
 
       const result = await parseResponse(response);
 
@@ -370,25 +395,42 @@ export default function OrdersPage() {
                   </h3>
 
                   <div className="space-y-4">
+                    
                     {(order.products ?? []).map((item) => {
                       const product = item.product;
+                      const variant = item.variant;
+
+                      console.log("variant", variant);
 
                       if (!product) return null;
+
+                      const unitPrice = Number(
+                        item.price ?? variant?.price ?? 0
+                      );
+
+                      const subtotal = unitPrice * item.quantity;
+                      const productImage = variant?.image?.trim();
 
                       return (
                         <div key={item.id} className="flex gap-4">
                           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-24 sm:w-24">
-                            {product.mainImage ? (
+                            {productImage ? (
                               <Image
-                                src={`/${product?.mainImage}`}
-                                alt={product.title}
+                                src={
+                                  productImage.startsWith("http://") ||
+                                  productImage.startsWith("https://") ||
+                                  productImage.startsWith("/")
+                                    ? productImage
+                                    : `/${productImage}`
+                                }
+                                alt={`${product.title}${variant?.title ? ` - ${variant.title}` : ""}`}
                                 fill
                                 sizes="96px"
                                 className="object-contain p-2"
                               />
                             ) : (
-                              <div className="flex h-full items-center justify-center text-xs text-gray-400">
-                                No Image
+                              <div className="flex h-full items-center justify-center px-1 text-center text-xs text-gray-400">
+                                No Variant Image
                               </div>
                             )}
                           </div>
@@ -398,20 +440,24 @@ export default function OrdersPage() {
                               {product.title}
                             </p>
 
+                            {variant?.title && (
+                              <p className="mt-1 text-sm text-gray-500">
+                                Varian: {variant.title}
+                              </p>
+                            )}
+
                             <p className="mt-1 text-sm text-gray-500">
-                              {formatPrice(Number(product.price))} ×{" "}
-                              {item.quantity}
+                              {formatPrice(unitPrice)} × {item.quantity}
                             </p>
 
                             <p className="mt-2 font-semibold text-[#02054b]">
-                              {formatPrice(
-                                Number(product.price) * item.quantity
-                              )}
+                              {formatPrice(subtotal)}
                             </p>
                           </div>
                         </div>
                       );
                     })}
+
                   </div>
                 </section>
 
