@@ -355,7 +355,7 @@ const handleDelete = async () => {
                 </div>
               </div>
 
-              <div>
+              {/* <div>
                 <label
                   htmlFor="review-title"
                   className="mb-1 block text-sm font-medium text-gray-700"
@@ -377,7 +377,7 @@ const handleDelete = async () => {
                   placeholder="Contoh: Produk berkualitas"
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
                 />
-              </div>
+              </div> */}
 
               <div>
                 <label

@@ -1,5 +1,7 @@
 "use client";
 
+import { getImageSrc } from "@/lib/utils";
+
 export type PickupStoreId = "balikpapan" | "samarinda";
 
 export type PickupStore = {
@@ -134,7 +136,7 @@ export default function PickupStoreSelector({
 
           <iframe
             title={`Peta ${selectedStore.name}`}
-            src={selectedStore.embedUrl}
+            src={getImageSrc(selectedStore.embedUrl)}
             width="100%"
             height="300"
             style={{ border: 0 }}

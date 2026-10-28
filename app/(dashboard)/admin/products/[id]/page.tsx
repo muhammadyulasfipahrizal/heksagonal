@@ -4,6 +4,7 @@
 import { DashboardSidebar } from "@/components";
 import apiClient from "@/lib/api";
 import { sanitizeFormData } from "@/lib/form-sanitize";
+import { getImageSrc } from "@/lib/utils";
 import {
   convertCategoryNameToURLFriendly as convertSlugToURLFriendly,
   formatCategoryName,
@@ -80,16 +81,6 @@ const emptyProduct: ProductForm = {
   categoryId: "",
   merchantId: "",
   rating: 0,
-};
-
-const getImageSrc = (image?: string | null) => {
-  if (!image) return "/product_placeholder.jpg";
-
-  if (/^https?:\/\//i.test(image)) {
-    return image;
-  }
-
-  return `/${image.replace(/^\/+/, "")}`;
 };
 
 const getErrorMessage = (

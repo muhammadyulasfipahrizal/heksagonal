@@ -72,7 +72,7 @@ const ShopPage = async ({
         return false;
       });
 
-      categoryName = category?.name ?? "";
+      categoryName = category?.name.replace(/\s*\([^)]*\)/g, "").trim() ?? "";
     } else {
       console.error(
         "Failed to fetch categories:",

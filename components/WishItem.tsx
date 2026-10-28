@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useWishlistStore } from "@/app/_zustand/wishlistStore";
 import apiClient from "@/lib/api";
+import { getImageSrc } from "@/lib/utils";
 
 type WishItemProps = {
   id: string;
@@ -112,7 +113,7 @@ const WishItem = ({
         >
           {image ? (
             <Image
-              src={image}
+              src={getImageSrc(image)}
               alt={title}
               width={80}
               height={80}

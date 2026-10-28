@@ -8,6 +8,7 @@ import { sanitizeFormData } from "@/lib/form-sanitize";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { getImageSrc } from "@/lib/utils";
 
 type ProductVariantForm = {
   localId: string;
@@ -462,7 +463,7 @@ const AddNewProduct = () => {
           {product.mainImage && (
             <div>
               <Image
-                src={`/${product.mainImage}`}
+                src={getImageSrc(`/${product.mainImage}`)}
                 alt={product.title || "Product"}
                 width={120}
                 height={120}
@@ -634,7 +635,7 @@ const AddNewProduct = () => {
                 {variant.image && (
                   <div className="mt-2">
                     <Image
-                      src={`/${variant.image}`}
+                      src={getImageSrc(`/${variant.image}`)}
                       alt={variant.title || `Variant ${index + 1}`}
                       width={80}
                       height={80}

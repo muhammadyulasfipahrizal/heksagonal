@@ -8,7 +8,7 @@
 // Output: Incentives section
 // *********************
 
-import { incentives } from '@/lib/utils'
+import { getImageSrc, incentives } from '@/lib/utils'
 import Image from 'next/image'
 import React from 'react'
 
@@ -22,7 +22,7 @@ const Incentives = () => {
           <div key={incentive.name} className="text-center sm:flex sm:text-left lg:block lg:text-center">
             <div className="sm:flex-shrink-0">
               <div className="flow-root">
-                <Image width={48} height={48} className="mx-auto" src={incentive.imageSrc} alt={incentive.name} />
+                <Image width={48} height={48} className="mx-auto" src={getImageSrc(incentive.imageSrc)} alt={incentive.name} />
               </div>
             </div>
             <div className="mt-3 sm:ml-3 sm:mt-0 lg:ml-0 lg:mt-3">

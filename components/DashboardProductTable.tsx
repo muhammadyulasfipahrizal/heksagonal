@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import CustomButton from "./CustomButton";
 import apiClient from "@/lib/api";
 import { formatRupiah, sanitize } from "@/lib/sanitize";
+import { getImageSrc } from "@/lib/utils";
 
 type ProductVariant = {
   id: string;
@@ -186,16 +187,8 @@ const DashboardProductTable = () => {
                             <Image
                               fill
                               sizes="48px"
-                              src={
-                                product.mainImage
-                                  ? product.mainImage.startsWith("http")
-                                    ? product.mainImage
-                                    : `/${product.mainImage.replace(/^\/+/, "")}`
-                                  : "/product_placeholder.jpg"
-                              }
-                              alt={
-                                sanitize(product.title) || "Product image"
-                              }
+                              src={getImageSrc(product.mainImage)}
+                              alt={sanitize(product.title) || "Product image"}
                               className="object-cover"
                             />
                           </div>

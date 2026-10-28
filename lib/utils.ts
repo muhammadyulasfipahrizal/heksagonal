@@ -221,3 +221,20 @@ export const isValidCreditCardCVVOrCVC = (input: string) => {
   const regex = /^[0-9]{3,4}$/;
   return regex.test(input);
 };
+
+export const getImageSrc = (image?: string | null) => {
+  if (!image) {
+    return "/product_placeholder.jpg";
+  }
+
+  const trimmedImage = image.trim();
+
+  if (
+    trimmedImage.startsWith("https://") ||
+    trimmedImage.startsWith("http://")
+  ) {
+    return trimmedImage;
+  }
+
+  return `/${trimmedImage.replace(/^\/+/, "")}`;
+};

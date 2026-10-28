@@ -15,6 +15,7 @@ import PickupStoreSelector, {
   type PickupStoreId,
   PICKUP_STORES,
 } from "@/components/PickupStoreSelector";
+import { getImageSrc } from "@/lib/utils";
 
 type CheckoutAddress = {
   id: string;
@@ -656,7 +657,7 @@ const CheckoutPage = () => {
               {products.map((product) => (
                 <li key={product?.id} className="flex items-start space-x-4 py-6">
                   <Image
-                    src={product?.image ? `/${product?.image}` : "/product_placeholder.jpg"}
+                    src={getImageSrc(product?.image ? `/${product?.image}` : "/product_placeholder.jpg")}
                     alt={product?.title}
                     width={80}
                     height={80}

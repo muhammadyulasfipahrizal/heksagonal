@@ -162,7 +162,7 @@ export default function CategoryHeader({
                   className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-4 text-left transition hover:border-blue-600 hover:bg-blue-50"
                 >
                   <span className="font-medium text-gray-700">
-                    {category.name}
+                    {category.name.replace(/\s*\([^)]*\)/g, "").trim()}
                   </span>
 
                   <span className="text-lg text-gray-400">

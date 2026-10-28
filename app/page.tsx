@@ -1,12 +1,11 @@
-import { CategoryMenu, Hero, Incentives, IntroducingSection, Newsletter, ProductsSection } from "@/components";
+import { CategoryMenu, Hero, ProductsSection } from "@/components";
 
 export default function Home() {
   return (
-    <>
-    <Hero />
-    {/* <IntroducingSection /> */}
-    <CategoryMenu />
-    <ProductsSection />
-    </>
+    <main className="min-h-screen bg-white">
+      <Hero />
+      <CategoryMenu />
+      <ProductsSection />
+    </main>
   );
 }

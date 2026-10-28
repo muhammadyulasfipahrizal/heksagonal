@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import apiClient from "@/lib/api";
+import { getImageSrc } from "@/lib/utils";
 
 type OrderVariant = {
   id: string;
@@ -416,13 +417,13 @@ export default function OrdersPage() {
                           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-24 sm:w-24">
                             {productImage ? (
                               <Image
-                                src={
+                                src={getImageSrc(
                                   productImage.startsWith("http://") ||
                                   productImage.startsWith("https://") ||
                                   productImage.startsWith("/")
                                     ? productImage
                                     : `/${productImage}`
-                                }
+                                )}
                                 alt={`${product.title}${variant?.title ? ` - ${variant.title}` : ""}`}
                                 fill
                                 sizes="96px"

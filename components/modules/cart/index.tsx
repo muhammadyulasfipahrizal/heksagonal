@@ -8,6 +8,7 @@ import { FaCheck, FaCircleQuestion, FaClock, FaXmark } from "react-icons/fa6";
 import QuantityInputCart from "@/components/QuantityInputCart";
 import { formatRupiah, sanitize } from "@/lib/sanitize";
   import { useRouter } from "next/navigation";
+import { getImageSrc } from "@/lib/utils";
 
 export const CartModule = () => {
 
@@ -80,7 +81,7 @@ export const CartModule = () => {
                 <Image
                   width={192}
                   height={192}
-                  src={product?.image ? `/${product.image}` : "/product_placeholder.jpg"}
+                  src={getImageSrc(product?.image ? `${product.image}` : "/product_placeholder.jpg")}
                   alt="laptop image"
                   className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
                 />

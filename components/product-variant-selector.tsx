@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa6";
 import { formatRupiah, sanitize } from "@/lib/sanitize";
 import Link from "next/link";
+import { getImageSrc } from "@/lib/utils";
 
 type ProductVariant = {
   id: string;
@@ -43,12 +44,6 @@ interface ProductVariantSelectorProps {
     productID: string;
     image: string;
   }[];
-}
-
-function getImageSrc(image?: string | null) {
-  if (!image) return "/product_placeholder.jpg";
-  if (/^https?:\/\//i.test(image)) return image;
-  return `/${image.replace(/^\/+/, "")}`;
 }
 
 function getVariantLabel(variant: ProductVariant) {
@@ -184,7 +179,7 @@ export default function ProductVariantSelector({
           <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-5 sm:p-8">
             <Image
               key={selectedImage}
-              src={selectedImage}
+              src={getImageSrc(selectedImage)}
               alt={sanitize(product.title)}
               fill
               priority
@@ -219,7 +214,7 @@ export default function ProductVariantSelector({
                     }`}
                   >
                     <Image
-                      src={image}
+                      src={getImageSrc(image)}
                       alt={`Gambar produk ${index + 1}`}
                       fill
                       sizes="96px"

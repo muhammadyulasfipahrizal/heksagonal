@@ -3,7 +3,7 @@
 import { DashboardSidebar } from "@/components";
 import apiClient from "@/lib/api";
 import { formatRupiah } from "@/lib/sanitize";
-import { isValidEmailAddressFormat, isValidNameOrLastname } from "@/lib/utils";
+import { getImageSrc, isValidEmailAddressFormat, isValidNameOrLastname } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -442,7 +442,7 @@ const AdminSingleOrder = () => {
                   productImage.startsWith("https://") ||
                   productImage.startsWith("/")
                   ? productImage
-                  : `/${productImage}`
+                  : `${productImage}`
                 : "/product_placeholder.jpg";
 
               const itemPrice = item.price ?? item.variant?.price ?? 0;
@@ -453,7 +453,7 @@ const AdminSingleOrder = () => {
                   key={item.id}
                 >
                   <Image
-                    src={imageSrc}
+                    src={getImageSrc(imageSrc)}
                     alt={item.product.title}
                     width={50}
                     height={50}

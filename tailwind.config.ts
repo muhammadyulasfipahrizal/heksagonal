@@ -1,4 +1,8 @@
+
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography";
+import forms from "@tailwindcss/forms";
+import daisyui from "daisyui";
 
 const config: Config = {
   content: [
@@ -9,10 +13,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'custom-yellow':'#FED700',
-      }
+        "custom-yellow": "#FED700",
+      },
     },
-  },  
-  plugins: [require("@tailwindcss/typography"), require("@tailwindcss/forms"), require("daisyui")],
+  },
+  plugins: [typography, forms, daisyui],
 };
+
 export default config;
