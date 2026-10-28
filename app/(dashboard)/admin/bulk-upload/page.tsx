@@ -164,8 +164,9 @@ const BulkUploadPage = () => {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("merchantId", selectedMerchantId);
+      
 
-      const response = await fetch("http://localhost:3001/api/bulk-upload", {
+      const response = await fetch(`${process.env.API_URL}/api/bulk-upload`, {
         method: "POST",
         body: formData,
       });
