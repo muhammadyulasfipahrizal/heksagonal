@@ -9,6 +9,7 @@
 // *********************
 
 "use client";
+import apiClient from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -53,7 +54,7 @@ const BulkUploadHistory = () => {
   const fetchBatchHistory = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.API_URL}/api/bulk-upload`);
+      const response = await apiClient.get(`/api/bulk-upload`);
 
       if (response.ok) {
         const data = await response.json();
@@ -82,12 +83,8 @@ const BulkUploadHistory = () => {
     setShowDeleteModal(false);
 
     try {
-      const response = await fetch(
-        `${process.env.API_URL}/api/bulk-upload/${batchToDelete.id}?deleteProducts=${deleteProducts}`,
-        {
-          method: "DELETE",
-        }
-      );
+
+      const response = await apiClient.delete(`/api/bulk-upload/${batchToDelete.id}?deleteProducts=${deleteProducts}`);
 
       // Check if response has content before parsing JSON
       let data = null;
