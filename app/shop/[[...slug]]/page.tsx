@@ -9,9 +9,9 @@ import {
   Products,
   SortBy,
 } from "@/components";
-import React from "react";
 import { sanitize } from "@/lib/sanitize";
 import apiClient from "@/lib/api";
+import FilterToggle from "@/components/ShopMobileControls";
 
 type Category = {
   id: string;
@@ -94,24 +94,37 @@ const ShopPage = async ({
     Number(awaitedSearchParams.page) || 1
   );
 
+
   return (
-    <div className="text-black bg-white">
-      <div className="max-w-screen-2xl mx-auto px-10 max-sm:px-5">
-        <Breadcrumb />
+    <div className="mx-3 min-h-screen bg-white text-black lg:mx-8 lg:my-10">
+      <div className="mx-auto w-full max-w-screen-2xl">
+        {/* Heading khusus mobile: berada di atas filter */}
+        <h2 className="mb-4 min-w-0 break-words text-xl font-bold uppercase lg:hidden">
+          {sanitize(heading)}
+        </h2>
 
-        <div className="grid grid-cols-[200px_1fr] gap-x-10 max-md:grid-cols-1 max-md:gap-y-5">
-          <Filters />
+        <div className="grid min-w-0 grid-cols-1 md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
+          {/* Sidebar Filter */}
+          <aside className="min-w-0">
+            <FilterToggle>
+              <Filters />
+            </FilterToggle>
+          </aside>
 
-          <div>
-            <div className="flex justify-between items-center max-lg:flex-col max-lg:gap-y-5">
-              <h2 className="text-2xl font-bold max-sm:text-xl max-[400px]:text-lg uppercase">
+          {/* Konten utama */}
+          <section className="min-w-0">
+            <div className="flex min-w-0 flex-col gap-4 sm:gap-5 lg:flex-row lg:items-center lg:justify-between">
+              {/* Heading khusus desktop */}
+              <h2 className="hidden min-w-0 break-words text-xl font-bold uppercase sm:text-2xl lg:block">
                 {sanitize(heading)}
               </h2>
 
-              <SortBy />
+              <div className="w-full lg:w-auto lg:shrink-0">
+                <SortBy />
+              </div>
             </div>
 
-            <div className="divider"></div>
+            <div className="divider my-3 sm:my-4" />
 
             <Products
               params={awaitedParams}
@@ -119,7 +132,7 @@ const ShopPage = async ({
             />
 
             <Pagination currentPage={currentPage} />
-          </div>
+          </section>
         </div>
       </div>
     </div>

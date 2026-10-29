@@ -261,13 +261,12 @@ const handleDelete = async () => {
 };
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 sm:px-6">
-      <section className="mt-10 border-t border-gray-200 pt-8">
+    <main className="mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8">
+      <section className="mt-8 border-t border-gray-200 pt-6 sm:mt-10 sm:pt-8 ">
         {userId && (
 
-        <div className="mb-6">
-          <div className="mb-8 rounded-lg border border-gray-200 p-4 sm:p-6">
-          <h3 className="mb-4 font-semibold text-gray-900">
+        <div className="mb-6 rounded-xl border border-gray-200 p-3 sm:mb-8 sm:rounded-lg sm:p-6">
+          <h3 className="mb-4 text-base font-semibold text-gray-900">
             {editing
               ? "Edit Review Kamu"
               : myReview
@@ -355,30 +354,6 @@ const handleDelete = async () => {
                 </div>
               </div>
 
-              {/* <div>
-                <label
-                  htmlFor="review-title"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Judul (opsional)
-                </label>
-
-                <input
-                  id="review-title"
-                  type="text"
-                  maxLength={200}
-                  value={form.title}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      title: event.target.value,
-                    }))
-                  }
-                  placeholder="Contoh: Produk berkualitas"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
-                />
-              </div> */}
-
               <div>
                 <label
                   htmlFor="review-comment"
@@ -400,7 +375,7 @@ const handleDelete = async () => {
                     }))
                   }
                   placeholder="Ceritakan pengalaman kamu menggunakan produk ini..."
-                  className="w-full resize-y rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
+                  className="min-h-28 w-full resize-y rounded-lg border border-gray-300 px-3 py-2.5 text-sm leading-6 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
                 />
 
                 <p className="mt-1 text-right text-xs text-gray-400">
@@ -408,11 +383,11 @@ const handleDelete = async () => {
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-3">
                 <button
                   type="submit"
                   disabled={saving || sessionStatus === "loading"}
-                  className="rounded-md bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                 >
                   {saving
                     ? "Menyimpan..."
@@ -426,7 +401,7 @@ const handleDelete = async () => {
                     type="button"
                     onClick={handleCancelEdit}
                     disabled={saving}
-                    className="rounded-md border border-gray-300 px-5 py-2.5 text-sm font-medium hover:bg-gray-50"
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium transition hover:bg-gray-50 disabled:opacity-50 sm:w-auto"
                   >
                     Batal
                   </button>
@@ -435,41 +410,41 @@ const handleDelete = async () => {
             </form>
           )}
           </div>
-        </div>
         )}
         {ratingValue !== null && ratingValue >= 4 && (
-            <>
-                <div className="flex flex-row justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">
-                    Ulasan Produk
+            <div className="mb-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 sm:text-xl">
+                  Ulasan Produk
                 </h2>
 
-                <h3 className="mb-4 font-semibold text-gray-900">
-                    Semua Review ({ratingCount})
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Semua Review ({ratingCount})
                 </h3>
-                </div>
+              </div>
 
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-xl font-semibold text-gray-900">
-                    {ratingValue.toFixed(1)}
+              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="text-xl font-semibold text-gray-900 sm:text-2xl">
+                  {ratingValue.toFixed(1)}
                 </span>
 
-                <span className="text-yellow-500" aria-label="Rating bintang">
-                    {"★".repeat(Math.max(0, Math.min(5, Math.round(ratingValue))))}
-
-                    <span className="text-gray-300">
+                <span className="text-lg text-yellow-500" aria-label="Rating bintang">
+                  {"★".repeat(
+                    Math.max(0, Math.min(5, Math.round(ratingValue)))
+                  )}
+                  <span className="text-gray-300">
                     {"★".repeat(
-                        5 - Math.max(0, Math.min(5, Math.round(ratingValue)))
+                      5 - Math.max(0, Math.min(5, Math.round(ratingValue)))
                     )}
-                    </span>
+                  </span>
                 </span>
 
-                <span className="text-sm text-gray-500">
-                    {ratingCount} ulasan
+                <span className="text-xs text-gray-500 sm:text-sm">
+                  {ratingCount} ulasan
                 </span>
-                </div>
-            </>
-            )}
+              </div>
+            </div>
+          )}
 
 
         {error && (
@@ -482,26 +457,26 @@ const handleDelete = async () => {
         )}
 
         {message && (
-            <div
-                role="status"
-                aria-live="polite"
-                className="fixed right-4 top-4 z-50 flex items-center gap-3 rounded-lg border border-green-200 bg-white px-4 py-3 text-sm text-green-700 shadow-lg"
+          <div
+            role="status"
+            aria-live="polite"
+            className="fixed inset-x-3 top-3 z-50 mx-auto flex max-w-md items-center gap-3 rounded-xl border border-green-200 bg-white p-3 text-sm text-green-700 shadow-lg sm:inset-x-auto sm:right-4 sm:top-4 sm:p-4"
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100">
+              ✓
+            </span>
+
+            <p className="min-w-0 flex-1 break-words">{message}</p>
+
+            <button
+              type="button"
+              onClick={() => setMessage("")}
+              aria-label="Tutup notifikasi"
+              className="shrink-0 p-1 text-gray-400 hover:text-gray-700"
             >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
-                ✓
-                </span>
-
-                <p>{message}</p>
-
-                <button
-                type="button"
-                onClick={() => setMessage("")}
-                aria-label="Tutup notifikasi"
-                className="ml-2 text-gray-400 hover:text-gray-700"
-                >
-                ✕
-                </button>
-            </div>
+              ✕
+            </button>
+          </div>
         )}
 
         
@@ -516,58 +491,53 @@ const handleDelete = async () => {
               memberikan ulasan!
             </p>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="min-w-0 divide-y divide-gray-200">
               {reviews
                 .filter((review) => review.rating >= 4)
                 .map((review) => (
-                <article key={review.id} className="py-5">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-medium text-gray-900">
-                      {review.user?.name || "Pengguna"}
-                    </p>
+                  <article key={review.id} className="min-w-0 py-5">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                      <p className="break-words text-sm font-medium text-gray-900 sm:text-base">
+                        {review.user?.name || "Pengguna"}
+                      </p>
 
-                    <time
-                      dateTime={review.createdAt}
-                      className="text-xs text-gray-500"
-                    >
-                      {new Date(review.createdAt).toLocaleDateString(
-                        "id-ID",
-                        {
+                      <time
+                        dateTime={review.createdAt}
+                        className="text-xs text-gray-500"
+                      >
+                        {new Date(review.createdAt).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
-                        }
-                      )}
-                    </time>
-                  </div>
+                        })}
+                      </time>
+                    </div>
 
-                  <div
-                    className="mt-1 text-sm text-yellow-500"
-                    aria-label={`Rating ${review.rating} dari 5`}
-                  >
-                    {"★".repeat(
-                      Math.max(0, Math.min(5, review.rating))
+                    <div
+                      className="mt-2 text-sm text-yellow-500"
+                      aria-label={`Rating ${review.rating} dari 5`}
+                    >
+                      {"★".repeat(Math.max(0, Math.min(5, review.rating)))}
+                      <span className="text-gray-300">
+                        {"★".repeat(
+                          5 - Math.max(0, Math.min(5, review.rating))
+                        )}
+                      </span>
+                    </div>
+
+                    {review.title && (
+                      <h4 className="mt-2 break-words text-sm font-medium text-gray-800 sm:text-base">
+                        {review.title}
+                      </h4>
                     )}
-                    <span className="text-gray-300">
-                      {"★".repeat(
-                        5 - Math.max(0, Math.min(5, review.rating))
-                      )}
-                    </span>
-                  </div>
 
-                  {review.title && (
-                    <h4 className="mt-2 font-medium text-gray-800">
-                      {review.title}
-                    </h4>
-                  )}
-
-                  {review.comment && (
-                    <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-gray-600">
-                      {review.comment}
-                    </p>
-                  )}
-                </article>
-              ))}
+                    {review.comment && (
+                      <p className="mt-1 break-words whitespace-pre-wrap text-sm leading-6 text-gray-600">
+                        {review.comment}
+                      </p>
+                    )}
+                  </article>
+                ))}
             </div>
           )}
         </div>

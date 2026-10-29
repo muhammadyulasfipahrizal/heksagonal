@@ -49,8 +49,19 @@ const BuyNowSingleProductBtn = ({
 
   return (
     <button
+      type="button"
       onClick={handleAddToCart}
-      className="btn w-[200px] border border-blue-500 bg-[#02054b] text-lg font-normal uppercase text-white transition-all ease-in hover:scale-110 hover:border-blue-500 hover:bg-white hover:text-[#02054b] max-[500px]:w-full"
+      className="
+        btn min-h-12 h-auto w-full min-w-0 rounded-lg
+        border border-[#02054b] bg-[#02054b] px-4 py-3
+        text-sm font-semibold uppercase leading-tight
+        text-white shadow-none
+        transition-colors duration-200
+        hover:border-[#02054b] hover:bg-white hover:text-[#02054b]
+        focus-visible:outline-none focus-visible:ring-2
+        focus-visible:ring-[#02054b] focus-visible:ring-offset-2
+        sm:text-base
+      "
     >
       Beli Sekarang
     </button>

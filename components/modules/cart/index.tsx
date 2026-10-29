@@ -65,176 +65,154 @@ export const CartModule = () => {
 
   return (
 
-    <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
-      <section aria-labelledby="cart-heading" className="lg:col-span-7">
-        <h2 id="cart-heading" className="sr-only">
-          Items in your shopping cart
-        </h2>
+    <form className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
+  {/* Cart items */}
+  <section aria-labelledby="cart-heading" className="min-w-0 lg:col-span-7">
+    <h2 id="cart-heading" className="sr-only">
+      Items in your shopping cart
+    </h2>
 
-        <ul
-          role="list"
-          className="divide-y divide-gray-200 border-b border-t border-gray-200"
-        >
-          {products.map((product) => (
-            <li key={product.id} className="flex py-6 sm:py-10">
-              <div className="flex-shrink-0">
-                <Image
-                  width={192}
-                  height={192}
-                  src={getImageSrc(product?.image ? `${product.image}` : "/product_placeholder.jpg")}
-                  alt="laptop image"
-                  className="h-24 w-24 rounded-md object-cover object-center sm:h-48 sm:w-48"
-                />
-              </div>
+    {products.length > 0 ? (
+      <ul
+        role="list"
+        className="divide-y divide-gray-200 border-y border-gray-200"
+      >
+        {products.map((product) => (
+          <li
+            key={product.id}
+            className="flex min-w-0 gap-3 py-5 sm:gap-5 sm:py-7"
+          >
+            {/* Product image */}
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-32 sm:w-32 lg:h-36 lg:w-36">
+              <Image
+                width={192}
+                height={192}
+                src={getImageSrc(
+                  product?.image
+                    ? `${product.image}`
+                    : "/product_placeholder.jpg"
+                )}
+                alt={product.title}
+                className="h-full w-full object-contain p-2 sm:p-3"
+              />
+            </div>
 
-              <div className="ml-4 flex flex-1 flex-col justify-between sm:ml-6">
-                <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
-                  <div>
-                    <div className="flex justify-between">
-                       <h3 className="text-sm">
-                          <Link
-                            href="#"
-                            className="font-medium text-gray-700 hover:text-gray-800"
-                          >
-                            {sanitize(product.title)}
-                          </Link>
-                        </h3>
+            {/* Product information */}
+            <div className="flex min-w-0 flex-1 flex-col">
+              <div className="flex min-w-0 items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <h3 className="break-words text-sm font-semibold leading-5 text-gray-900 sm:text-base sm:leading-6">
+                    <Link
+                      href="#"
+                      className="transition-colors hover:text-[#02054b]"
+                    >
+                      {sanitize(product.title)}
+                    </Link>
+                  </h3>
 
-                        {product.variantTitle && (
-                          <p className="mt-1 text-sm text-gray-500">
-                            Varian: {sanitize(product.variantTitle)}
-                          </p>
-                        )}
-
-                        <p className="mt-1 text-sm font-medium text-gray-900">
-                          {formatRupiah(product.price)}
-                        </p>
-                    </div>
-                    {/* <div className="mt-1 flex text-sm">
-                        <p className="text-gray-500">{product.color}</p>
-                        {product.size ? (
-                          <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">{product.size}</p>
-                        ) : null}
-                      </div> */}
-                    <p className="mt-1 text-sm font-medium text-gray-900">
-                      {formatRupiah(product.price)}
+                  {product.variantTitle && (
+                    <p className="mt-1 break-words text-xs text-gray-500 sm:text-sm">
+                      Varian: {sanitize(product.variantTitle)}
                     </p>
-                  </div>
-
-                  <div className="mt-4 sm:mt-0 sm:pr-9">
-                    <QuantityInputCart product={product} />
-                    <div className="absolute right-0 top-0">
-                      <button
-                        onClick={() => handleRemoveItem(product.id)}
-                        type="button"
-                        className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500"
-                      >
-                        <span className="sr-only">Remove</span>
-                        <FaXmark className="h-5 w-5" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
-                <p className="mt-4 flex space-x-2 text-sm text-gray-700">
-                  {1 ? (
-                    <FaCheck
-                      className="h-5 w-5 flex-shrink-0 text-green-500"
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <FaClock
-                      className="h-5 w-5 flex-shrink-0 text-gray-300"
-                      aria-hidden="true"
-                    />
-                  )}
-
-                  <span>{1 ? "Tersedia" : `Ships in 3 days`}</span>
-                </p>
+                {/* Remove item */}
+                <button
+                  onClick={() => handleRemoveItem(product.id)}
+                  type="button"
+                  aria-label={`Hapus ${product.title} dari keranjang`}
+                  className="-mr-1 inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+                >
+                  <FaXmark className="size-4" aria-hidden="true" />
+                </button>
               </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+
+              {/* Price */}
+              <p className="mt-2 break-words text-sm font-bold text-[#02054b] sm:text-base">
+                {formatRupiah(product.price)}
+              </p>
+
+              {/* Quantity and availability */}
+              <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-4">
+                <div className="min-w-0">
+                  <p className="mb-1 flex items-center gap-1.5 text-xs text-green-700 sm:text-sm">
+                    <FaCheck
+                      className="size-4 shrink-0"
+                      aria-hidden="true"
+                    />
+                    Tersedia
+                  </p>
+
+                  <QuantityInputCart product={product} />
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <div className="rounded-xl border border-dashed border-gray-300 px-4 py-12 text-center sm:py-16">
+        <h2 className="text-lg font-semibold text-gray-900">
+          Keranjang kamu masih kosong
+        </h2>
+        <p className="mt-2 text-sm text-gray-500">
+          Yuk, temukan produk yang kamu butuhkan.
+        </p>
+        <Link
+          href="/shop"
+          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#02054b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#111b75]"
+        >
+          Mulai Belanja
+        </Link>
+      </div>
+    )}
+  </section>
+
 
       {/* Order summary */}
       <section
-        aria-labelledby="summary-heading"
-        className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8"
-      >
-        <h2
-          id="summary-heading"
-          className="text-lg font-medium text-gray-900"
-        >
-          Ringkasan Order
-        </h2>
+  aria-labelledby="summary-heading"
+  className="min-w-0 rounded-xl border border-gray-200 bg-gray-50 p-4 sm:rounded-2xl sm:p-6 lg:sticky lg:top-6 lg:col-span-5 lg:p-7"
+>
+  <h2
+    id="summary-heading"
+    className="text-lg font-bold text-gray-900 sm:text-xl"
+  >
+    Ringkasan Order
+  </h2>
 
-        <dl className="mt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <dt className="text-sm text-gray-600">Subtotal</dt>
-            <dd className="text-sm font-medium text-gray-900">
-              {formatRupiah(total)}
-            </dd>
-          </div>
-          {/* <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-            <dt className="flex items-center text-sm text-gray-600">
-              <span>CHANGE LATER - Estimasi Pengiriman</span>
-              <a
-                href="#"
-                className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
-              >
-                <span className="sr-only">
-                  Learn more about how shipping is calculated
-                </span>
-                <FaCircleQuestion
-                  className="h-5 w-5"
-                  aria-hidden="true"
-                />
-              </a>
-            </dt>
-            <dd className="text-sm font-medium text-gray-900">Rp. 5.000</dd>
-          </div>
-          <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-            <dt className="flex text-sm text-gray-600">
-              <span>Estimasi Pajak</span>
-              <a
-                href="#"
-                className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
-              >
-                <span className="sr-only">
-                  Learn more about how tax is calculated
-                </span>
-                <FaCircleQuestion
-                  className="h-5 w-5"
-                  aria-hidden="true"
-                />
-              </a>
-            </dt>
-            <dd className="text-sm font-medium text-gray-900">
-              {formatRupiah(total / 5)}
-            </dd>
-          </div> */}
-          <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-            <dt className="text-base font-medium text-gray-900">
-              Total
-            </dt>
-            <dd className="text-base font-medium text-gray-900">
-              {formatRupiah(total)}
-              {/* {formatRupiah(total === 0 ? 0 : Math.round(total + total / 5 + 5))} */}
-            </dd>
-          </div>
-        </dl>
-        {products.length > 0 && (
-          <div className="mt-6">
-            <Link
-              href="/checkout"
-              className="block flex justify-center items-center w-full uppercase bg-white px-4 py-3 text-base border border-black border-gray-300 font-bold text-[#02054b] shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
-            >
-              <span>Checkout</span>
-            </Link>
-          </div>
-        )}
-      </section>
+  <dl className="mt-5 space-y-4 sm:mt-6">
+    <div className="flex items-start justify-between gap-4">
+      <dt className="text-sm text-gray-600">Subtotal</dt>
+      <dd className="break-words text-right text-sm font-medium text-gray-900">
+        {formatRupiah(total)}
+      </dd>
+    </div>
+
+    <div className="flex items-start justify-between gap-4 border-t border-gray-200 pt-4">
+      <dt className="text-base font-semibold text-gray-900">Total</dt>
+      <dd className="break-words text-right text-base font-bold text-[#02054b] sm:text-lg">
+        {formatRupiah(total)}
+      </dd>
+    </div>
+  </dl>
+
+  {products.length > 0 && (
+    <div className="mt-6">
+      <Link
+        href="/checkout"
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-[#02054b] bg-[#02054b] px-4 py-3 text-sm font-bold uppercase text-white transition-colors hover:bg-white hover:text-[#02054b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02054b] focus-visible:ring-offset-2 sm:text-base"
+      >
+        Checkout
+      </Link>
+    </div>
+  )}
+
+  <p className="mt-4 text-center text-xs leading-5 text-gray-500">
+    Biaya pengiriman akan diperhitungkan sesuai detail pesanan.
+  </p>
+</section>
     </form>
 
   )

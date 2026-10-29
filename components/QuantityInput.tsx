@@ -31,32 +31,37 @@ const QuantityInput = ({quantityCount, setQuantityCount} : QuantityInputProps) =
   };
 
   return (
-    <div className="flex items-center gap-x-4 max-[500px]:justify-center">
-      <p className="text-xl">Quantity: </p>
+    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+      <p className="text-sm font-medium text-gray-700 sm:text-base">
+        Jumlah produk
+      </p>
 
-      <div className="flex items-center gap-1">
+      <div className="inline-flex w-fit items-center overflow-hidden rounded-lg border border-gray-300 bg-white">
         <button
           type="button"
-          className="size-10 leading-10 text-gray-600 transition hover:opacity-75 flex justify-center items-center border"
+          aria-label="Kurangi jumlah produk"
+          className="flex h-11 w-11 shrink-0 items-center justify-center text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
           onClick={() => handleQuantityChange("minus")}
         >
-          <FaMinus />
+          <FaMinus aria-hidden="true" className="text-xs" />
         </button>
 
         <input
           type="number"
           id="Quantity"
-          disabled={true}
+          aria-label="Jumlah produk"
+          disabled
           value={quantityCount}
-          className="h-10 w-24 rounded border-gray-200 text-center sm:text-sm"
+          className="h-11 w-14 border-x border-y-0 border-gray-300 bg-white p-0 text-center text-sm font-semibold text-gray-900 disabled:opacity-100 sm:w-16"
         />
 
         <button
           type="button"
-          className="size-10 leading-10 text-gray-600 transition hover:opacity-75 flex justify-center items-center border"
+          aria-label="Tambah jumlah produk"
+          className="flex h-11 w-11 shrink-0 items-center justify-center text-gray-600 transition hover:bg-gray-100"
           onClick={() => handleQuantityChange("plus")}
         >
-          <FaPlus />
+          <FaPlus aria-hidden="true" className="text-xs" />
         </button>
       </div>
     </div>

@@ -69,35 +69,27 @@ const CategoryMenu = () => {
   }, []);
 
   return (
-    <section className="bg-white px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-      <div className="mx-auto max-w-screen-2xl">
-        <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-600">
+    <section className="bg-white px-3 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+      <div className="mx-auto max-w-container">
+        <div className="mb-6 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-600 sm:text-xs sm:tracking-[0.22em]">
               Temukan kebutuhan Anda
             </p>
 
-            <h2 className="text-3xl font-extrabold tracking-tight text-[#02054b] sm:text-4xl">
+            <h2 className="text-2xl font-extrabold leading-tight tracking-tight text-[#02054b] sm:text-3xl lg:text-4xl">
               Belanja berdasarkan kategori
             </h2>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
-              Jelajahi berbagai produk dan perlengkapan untuk mendukung
-              kebutuhan bisnis serta industri Anda.
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:mt-3 sm:text-base">
+              Jelajahi berbagai produk dan perlengkapan untuk mendukung kebutuhan
+              bisnis serta industri Anda.
             </p>
           </div>
-
-          {/* <Link
-            href="/shop"
-            className="inline-flex w-fit items-center gap-2 text-sm font-bold text-[#02054b] transition hover:text-amber-600"
-          >
-            Lihat semua produk
-            <span aria-hidden="true">→</span>
-          </Link> */}
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5">
             {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}
@@ -125,32 +117,62 @@ const CategoryMenu = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5">
             {categories.map((category) => (
               <Link
                 key={category.id}
                 href={`/shop/${createSlug(category.name)}?categoryId=${encodeURIComponent(category.id)}`}
-                className="group rounded-2xl border border-slate-200 bg-white p-3 transition duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg hover:shadow-slate-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 sm:p-4"
-              >
-                <div className="relative mb-4 flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-slate-50 p-5 transition-colors group-hover:bg-amber-50">
+                 className="
+                    group min-w-0 rounded-xl border border-slate-200
+                    bg-white p-2.5
+                    transition duration-300
+                    hover:-translate-y-1 hover:border-amber-300
+                    hover:shadow-lg hover:shadow-slate-200/60
+                    focus-visible:outline-none focus-visible:ring-2
+                    focus-visible:ring-amber-500
+                    sm:rounded-2xl sm:p-4
+                  "
+                >
+                <div className="
+                  relative mb-3 flex aspect-[4/3]
+                  items-center justify-center overflow-hidden
+                  rounded-lg bg-slate-50 p-3
+                  transition-colors group-hover:bg-amber-50
+                  sm:mb-4 sm:rounded-xl sm:p-5
+                ">
                   <Image
                     src="https://cdn.scenesku.com/resources/car-care.webp?w=1000"
                     width={96}
                     height={96}
                     alt=""
                     aria-hidden="true"
-                    className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
+                    className="
+                      h-full w-full object-contain
+                      transition-transform duration-300
+                      group-hover:scale-110
+                    "
                   />
                 </div>
 
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-800 transition-colors group-hover:text-[#02054b] sm:text-base">
+                <div className="flex min-w-0 items-start justify-between gap-1.5 sm:items-center sm:gap-2">
+                  <h3 className="
+                    min-w-0 flex-1 break-words
+                    text-xs font-bold leading-4 text-slate-800
+                    transition-colors group-hover:text-[#02054b]
+                    sm:text-sm sm:leading-5
+                    lg:text-base
+                  ">
                      {category.name.replace(/\s*\([^)]*\)/g, "").trim()}
                   </h3>
 
                   <span
                     aria-hidden="true"
-                    className="shrink-0 text-lg text-slate-400 transition-all group-hover:translate-x-1 group-hover:text-amber-600"
+                    className="
+                      hidden shrink-0 text-lg text-slate-400
+                      transition-all group-hover:translate-x-1
+                      group-hover:text-amber-600
+                      sm:inline
+                    "
                   >
                     →
                   </span>

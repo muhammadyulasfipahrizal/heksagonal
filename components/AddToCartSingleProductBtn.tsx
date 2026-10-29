@@ -55,7 +55,17 @@ const AddToCartSingleProductBtn = ({
     <button
       type="button"
       onClick={handleAddToCart}
-      className="btn w-[250px] text-lg border border-gray-300 font-normal bg-white text-[#02054b] hover:bg-[#02054b] hover:text-white hover:border-blue-500 hover:scale-110 transition-all uppercase ease-in max-[500px]:w-full"
+      className="
+        btn min-h-12 h-auto w-full min-w-0 rounded-lg
+        border border-gray-300 bg-white px-4 py-3
+        text-sm font-semibold uppercase leading-tight
+        text-[#02054b] shadow-none
+        transition-colors duration-200
+        hover:border-[#02054b] hover:bg-[#02054b] hover:text-white
+        focus-visible:outline-none focus-visible:ring-2
+        focus-visible:ring-[#02054b] focus-visible:ring-offset-2
+        sm:text-base
+      "
     >
       Tambah Keranjang
     </button>

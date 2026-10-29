@@ -157,19 +157,19 @@ const Products = async ({
   }
 
   return (
-    <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
+    <div className="grid min-w-0 grid-cols-1 items-stretch gap-4 min-[480px]:grid-cols-2 sm:gap-5 xl:grid-cols-3">
       {products.length > 0 ? (
         products.map((product) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            color="black"
-          />
+          <div key={product.id} className="min-w-0">
+            <ProductItem product={product} color="black" />
+          </div>
         ))
       ) : (
-        <h3 className="col-span-full mt-5 w-full text-center text-xl">
-          No products found
-        </h3>
+        <div className="col-span-full rounded-xl border border-dashed border-gray-300 px-4 py-12 text-center">
+          <p className="text-base font-semibold text-gray-800 sm:text-lg">
+            Produk tidak ditemukan
+          </p>
+        </div>
       )}
     </div>
   );

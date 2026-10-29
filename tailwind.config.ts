@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 import typography from "@tailwindcss/typography";
 import forms from "@tailwindcss/forms";
@@ -14,6 +13,10 @@ const config: Config = {
     extend: {
       colors: {
         "custom-yellow": "#FED700",
+        "brand-navy": "#02054b",
+      },
+      maxWidth: {
+        container: "1536px",
       },
     },
   },

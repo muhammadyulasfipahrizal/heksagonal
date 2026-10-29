@@ -25,31 +25,40 @@ const Pagination = ({ currentPage }: PaginationProps) => {
   };
 
   return (
-    <div className="join flex justify-center py-16">
-      <button
-        className="join-item btn btn-lg bg-[#02054b] text-white hover:bg-white hover:text-[#02054b] disabled:opacity-50"
-        onClick={() => changePage(currentPage - 1)}
-        disabled={currentPage <= 1}
-        aria-label="Previous page"
-      >
-        «
-      </button>
+    <nav
+      aria-label="Pagination produk"
+      className="flex justify-center py-8 sm:py-12 lg:py-16"
+    >
+      <div className="join">
+        <button
+          type="button"
+          className="join-item btn btn-md min-h-11 min-w-11 border-[#02054b] bg-[#02054b] px-3 text-white hover:bg-white hover:text-[#02054b] disabled:cursor-not-allowed disabled:opacity-40 sm:btn-lg"
+          onClick={() => changePage(currentPage - 1)}
+          disabled={currentPage <= 1}
+          aria-label="Halaman sebelumnya"
+        >
+          «
+        </button>
 
-      <button
-        type="button"
-        className="join-item btn btn-lg bg-[#02054b] text-white hover:bg-white hover:text-[#02054b]"
-      >
-        Page {currentPage}
-      </button>
+        <button
+          type="button"
+          aria-current="page"
+          className="join-item btn btn-md min-h-11 border-[#02054b] bg-[#02054b] px-4 text-white hover:bg-[#15195c] sm:btn-lg"
+          disabled
+        >
+          Halaman {currentPage}
+        </button>
 
-      <button
-        className="join-item btn btn-lg bg-[#02054b] text-white hover:bg-white hover:text-[#02054b]"
-        onClick={() => changePage(currentPage + 1)}
-        aria-label="Next page"
-      >
-        »
-      </button>
-    </div>
+        <button
+          type="button"
+          className="join-item btn btn-md min-h-11 min-w-11 border-[#02054b] bg-[#02054b] px-3 text-white hover:bg-white hover:text-[#02054b] sm:btn-lg"
+          onClick={() => changePage(currentPage + 1)}
+          aria-label="Halaman berikutnya"
+        >
+          »
+        </button>
+      </div>
+    </nav>
   );
 };
 

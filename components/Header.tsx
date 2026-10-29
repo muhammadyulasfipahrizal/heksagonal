@@ -15,7 +15,7 @@ import HeaderTop from "./HeaderTop";
 import Image from "next/image";
 import SearchInput from "./SearchInput";
 import Link from "next/link";
-import { FaBell } from "react-icons/fa6";
+import { FaUser, FaBoxOpen } from "react-icons/fa";
 
 import CartElement from "./CartElement";
 import NotificationBell from "./NotificationBell";
@@ -93,98 +93,244 @@ const Header = () => {
   return (
     <header className="bg-white">
       <HeaderTop />
-      {pathname.startsWith("/admin") === false && (
-        <div className="h-32 bg-white flex items-center justify-between px-16 max-[1320px]:px-16 max-md:px-6 max-lg:flex-col max-lg:gap-y-7 max-lg:justify-center max-lg:h-60 max-w-screen-2xl mx-auto">
-          <Link href="/">
-            <img src="/logo_heksagonal.png" width={300} height={300} alt="heksagonal logo" className="relative right-5 max-[1023px]:w-56" />
-          </Link>
-          <button
-            type="button"
-            onClick={() => setIsCategoryOpen(true)}
-            className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-3 font-medium text-gray-700 transition hover:border-blue-600 hover:bg-blue-50"
+
+      {/* =========================
+          CUSTOMER HEADER
+      ========================== */}
+      {!pathname.startsWith("/admin") && (
+        <div className="mx-auto max-w-screen-2xl bg-white">
+          <div
+            className="
+              flex flex-col gap-4
+              px-3 py-4 lg:mt-4
+              sm:gap-5 sm:px-6 sm:py-5
+              lg:flex-row lg:items-center lg:justify-between
+              lg:gap-5 lg:px-8 lg:py-0
+              xl:px-12
+            "
           >
-            <span className="text-xl">☰</span>
-            <span>Kategori</span>
-          </button>
+            {/* Logo + Cart - Mobile Top Row */}
+            <div className="flex w-full items-center justify-between gap-3 lg:w-auto lg:shrink-0">
+              <Link
+                href="/"
+                aria-label="HEKSAGONAL - Beranda"
+                className="inline-flex min-w-0 items-center"
+              >
+                <Image
+                  src="/logo_heksagonal.png"
+                  width={300}
+                  height={100}
+                  alt="HEKSAGONAL"
+                  priority
+                  className="
+                    h-auto w-40 object-contain
+                    sm:w-48
+                    lg:w-52
+                    xl:w-60
+                  "
+                />
+              </Link>
 
-          <SearchInput />
-          <div className="flex gap-x-10 items-center">
-            <NotificationBell />
-            {status === "authenticated" && (
-              <div className="flex flex-row gap-x-10">
-                <HeartElement wishQuantity={wishQuantity} />
-
-                <Link
-                  href="/profile"
-                  aria-label="Profile"
-                  title="Profile"
-                  className={`flex items-center justify-center rounded-full p-2 transition hover:bg-blue-50 hover:text-blue-700 ${
-                    pathname.startsWith("/profile")
-                      ? "text-blue-700"
-                      : "text-gray-700"
-                  }`}
-                >
-                  Profile
-                </Link>
-
-                <Link
-                  href="/orders"
-                  aria-label="Orders"
-                  title="Orders"
-                  className={`flex items-center justify-center rounded-full p-2 transition hover:bg-blue-50 hover:text-blue-700 ${
-                    pathname.startsWith("/orders")
-                      ? "text-blue-700"
-                      : "text-gray-700"
-                  }`}
-                >
-                  My Orders
-                </Link>
+              {/* Cart on mobile */}
+              <div className="flex shrink-0 items-center lg:hidden">
+                <CartElement />
               </div>
-              
-            )}
-            <CartElement />
+            </div>
+
+            {/* Search */}
+            <div className="w-full min-w-0 lg:flex-1">
+              <SearchInput />
+            </div>
+
+            {/* Navigation + Actions */}
+            <div
+              className="
+                flex w-full min-w-0 flex-wrap
+                items-center justify-between gap-3
+                lg:w-auto lg:shrink-0 lg:justify-end lg:gap-4
+                xl:gap-5
+              "
+            >
+              {/* Category Button */}
+              <button
+                type="button"
+                onClick={() => setIsCategoryOpen(true)}
+                aria-label="Buka kategori produk"
+                className="
+                  inline-flex min-h-10 shrink-0
+                  items-center justify-center gap-2
+                  rounded-lg border border-gray-200
+                  px-3 py-2 text-sm font-semibold
+                  text-gray-700 transition
+                  hover:border-blue-600 hover:bg-blue-50
+                  focus-visible:outline-none
+                  focus-visible:ring-2 focus-visible:ring-blue-500
+                  sm:px-4
+                "
+              >
+                <span aria-hidden="true" className="text-lg">
+                  ☰
+                </span>
+                <span>Kategori</span>
+              </button>
+
+              {/* User Actions */}
+              <div
+                className="
+                  flex min-w-0 flex-1 flex-wrap
+                  items-center justify-end gap-2
+                  sm:gap-3
+                  lg:flex-none lg:gap-3
+                  xl:gap-3
+                "
+              >
+                <NotificationBell />
+
+                {status === "authenticated" && (
+                  <>
+                    <HeartElement wishQuantity={wishQuantity} />
+
+                    {/* Profile */}
+                    <Link
+                      href="/profile"
+                      aria-label="Profile"
+                      title="Profile"
+                      className={`
+                        inline-flex size-10 shrink-0 items-center justify-center
+                        rounded-lg transition-colors
+                        hover:bg-blue-50 hover:text-blue-700
+                        ${
+                          pathname.startsWith("/profile")
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }
+                      `}
+                    >
+                      <FaUser className="size-5" aria-hidden="true" />
+                    </Link>
+
+                    {/* My Orders */}
+                    <Link
+                      href="/orders"
+                      aria-label="My Orders"
+                      title="My Orders"
+                      className={`
+                        inline-flex size-10 shrink-0 items-center justify-center
+                        rounded-lg transition-colors
+                        hover:bg-blue-50 hover:text-blue-700
+                        ${
+                          pathname.startsWith("/orders")
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700"
+                        }
+                      `}
+                    >
+                      <FaBoxOpen className="size-6" aria-hidden="true" />
+                    </Link>
+                  </>
+                )}
+
+                {/* Cart on tablet and desktop */}
+                <div className="hidden shrink-0 items-center lg:flex">
+                  <CartElement />
+                </div>
+              </div>
+              </div>
+            </div>
+
+            {/* Category Modal / Drawer */}
+            <CategoryHeader
+              isOpen={isCategoryOpen}
+              onClose={() => setIsCategoryOpen(false)}
+            />
           </div>
-          <CategoryHeader
-            isOpen={isCategoryOpen}
-            onClose={() => setIsCategoryOpen(false)}
-          />
-        </div>
       )}
-      {pathname.startsWith("/admin") === true && (
-        <div className="flex justify-between h-32 bg-white items-center px-16 max-[1320px]:px-10  max-w-screen-2xl mx-auto max-[400px]:px-5">
-          <Link href="/">
+
+      {/* =========================
+          ADMIN HEADER
+      ========================== */}
+      {pathname.startsWith("/admin") && (
+        <div
+          className="
+            mx-auto flex min-h-20 max-w-screen-2xl
+            items-center justify-between gap-4
+            bg-white px-4 py-4
+            sm:px-6 sm:py-5
+            lg:min-h-32 lg:px-10
+            xl:px-16
+          "
+        >
+          {/* Admin Logo */}
+          <Link
+            href="/"
+            aria-label="HEKSAGONAL - Beranda"
+            className="inline-flex min-w-0 items-center"
+          >
             <Image
               src="/logo_heksagonal.png"
-              width={130}
-              height={130}
-              alt="heksagonal logo"
-              className="w-56 h-auto"
+              width={300}
+              height={100}
+              alt="HEKSAGONAL"
+              priority
+              className="
+                h-auto w-36 object-contain
+                sm:w-44
+                lg:w-56
+              "
             />
           </Link>
-          <div className="flex gap-x-5 items-center">
+
+          {/* Admin Actions */}
+          <div className="flex shrink-0 items-center gap-3 sm:gap-5">
             <NotificationBell />
+
             <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="w-10">
+              <button
+                type="button"
+                tabIndex={0}
+                aria-label="Buka menu akun admin"
+                className="
+                  flex h-10 w-10 items-center justify-center
+                  overflow-hidden rounded-full
+                  ring-2 ring-transparent transition
+                  hover:ring-blue-500
+                  focus-visible:outline-none
+                  focus-visible:ring-2 focus-visible:ring-blue-500
+                  sm:h-11 sm:w-11
+                "
+              >
                 <Image
                   src="/randomuser.jpg"
-                  alt="random profile photo"
-                  width={30}
-                  height={30}
-                  className="w-full h-full rounded-full"
+                  alt="Foto profil admin"
+                  width={44}
+                  height={44}
+                  className="h-full w-full object-cover"
                 />
-              </div>
+              </button>
+
               <ul
                 tabIndex={0}
-                className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                className="
+                  menu dropdown-content z-50 mt-3
+                  w-52 rounded-xl border border-gray-100
+                  bg-base-100 p-2 shadow-xl
+                "
               >
                 <li>
                   <Link href="/admin">Dashboard</Link>
                 </li>
+
                 <li>
                   <Link href="/#">Profile</Link>
                 </li>
-                <li onClick={handleLogout}>
-                  <p>Logout</p>
+
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => handleLogout()}
+                  >
+                    Logout
+                  </button>
                 </li>
               </ul>
             </div>

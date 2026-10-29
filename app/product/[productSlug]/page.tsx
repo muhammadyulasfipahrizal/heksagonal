@@ -223,7 +223,7 @@ export default async function SingleProductPage({
   };
 
   return (
-    <div className="bg-white">
+    <div className="min-h-screen bg-white">
       <ProductJsonLd product={jsonLdProduct} />
 
       <ProductVariantSelector

@@ -26,43 +26,101 @@ const HeaderTop = () => {
     toast.success("Logout successful!");
   }
   return (
-    <div className="h-10 text-white bg-[#02054b] max-lg:px-5 max-lg:h-16 max-[573px]:px-0">
-      <div className="flex justify-between h-full max-lg:flex-col max-lg:justify-center max-lg:items-center max-w-screen-2xl mx-auto px-12 max-[573px]:px-0">
-        <ul className="flex items-center h-full gap-x-5 max-[370px]:text-sm max-[370px]:gap-x-2">
-          <li className="flex items-center gap-x-2 font-semibold">
-            <FaHeadphones className="text-white" />
-            <span>+62 816-495-284-78</span>
+    <div className="bg-[#02054b] text-white">
+      <div
+        className="
+          mx-auto flex max-w-screen-2xl flex-col
+          items-center justify-center gap-2
+          px-3 py-3
+          sm:px-5
+          lg:h-10 lg:flex-row lg:justify-between lg:gap-4 lg:px-8 lg:py-0
+          xl:px-12
+        "
+      >
+        {/* Contact Information */}
+        <ul
+          className="
+            flex w-full flex-wrap items-center justify-center
+            gap-x-4 gap-y-2 text-xs
+            sm:gap-x-6 sm:text-sm
+            lg:w-auto lg:justify-start lg:gap-x-5
+          "
+        >
+          <li className="flex items-center gap-2 font-semibold">
+            <FaHeadphones className="shrink-0 text-white" />
+            <a
+              href="tel:+6281649528478"
+              className="whitespace-nowrap transition-colors hover:text-amber-300"
+            >
+              +62 816-495-284-78
+            </a>
           </li>
-          <li className="flex items-center gap-x-2 font-semibold">
-            <FaRegEnvelope className="text-white text-xl" />
-            <span>heksagonal@gmail.com</span>
+
+          <li className="flex min-w-0 items-center gap-2 font-semibold">
+            <FaRegEnvelope className="shrink-0 text-lg text-white" />
+            <a
+              href="mailto:heksagonal@gmail.com"
+              className="break-all transition-colors hover:text-amber-300 sm:break-normal"
+            >
+              heksagonal@gmail.com
+            </a>
           </li>
         </ul>
-        <ul className="flex items-center gap-x-5 h-full max-[370px]:text-sm max-[370px]:gap-x-2 font-semibold">
-          {!session ? ( 
-          <>
-          <li className="flex items-center">
-            <Link href="/login" className="flex items-center gap-x-2 font-semibold">
-              <FaRegUser className="text-white" />
-              <span>Login</span>
-            </Link>
-          </li>
-          <li className="flex items-center">
-            <Link href="/register" className="flex items-center gap-x-2 font-semibold">
-              <FaRegUser className="text-white" />
-              <span>Register</span>
-            </Link>
-          </li>
-          </>
-          ) :  (<>
-          <span className="ml-10 text-base">{session.user?.email}</span>
-          <li className="flex items-center">
-            <button onClick={() => handleLogout()} className="flex items-center gap-x-2 font-semibold">
-              <FaRegUser className="text-white" />
-              <span>Log out</span>
-            </button>
-          </li>
-          </>)}
+
+        {/* Authentication */}
+        <ul
+          className="
+            flex w-full items-center justify-center
+            gap-x-5 text-xs font-semibold
+            sm:gap-x-6 sm:text-sm
+            lg:w-auto lg:justify-end lg:gap-x-5
+          "
+        >
+          {!session ? (
+            <>
+              <li className="flex items-center">
+                <Link
+                  href="/login"
+                  className="inline-flex min-h-8 items-center gap-2 transition-colors hover:text-amber-300"
+                >
+                  <FaRegUser className="shrink-0" />
+                  <span>Login</span>
+                </Link>
+              </li>
+
+              <li className="flex items-center">
+                <Link
+                  href="/register"
+                  className="inline-flex min-h-8 items-center gap-2 transition-colors hover:text-amber-300"
+                >
+                  <FaRegUser className="shrink-0" />
+                  <span>Register</span>
+                </Link>
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="min-w-0 max-w-[180px] sm:max-w-[240px] lg:max-w-[200px]">
+                <span
+                  className="block truncate text-xs sm:text-sm"
+                  title={session.user?.email ?? ""}
+                >
+                  {session.user?.email}
+                </span>
+              </li>
+
+              <li className="flex shrink-0 items-center">
+                <button
+                  type="button"
+                  onClick={() => handleLogout()}
+                  className="inline-flex min-h-8 items-center gap-2 transition-colors hover:text-amber-300"
+                >
+                  <FaRegUser className="shrink-0" />
+                  <span>Log out</span>
+                </button>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </div>

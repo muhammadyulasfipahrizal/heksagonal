@@ -1,26 +1,25 @@
-
-import {
-  SectionTitle
-} from "@/components";
 import { Loader } from "@/components/Loader";
 import { CartModule } from "@/components/modules/cart";
 import { Suspense } from "react";
 
 const CartPage = () => {
   return (
-    <div className="bg-white">
-      {/* <SectionTitle title="Cart Page" path="Home | Cart" /> */}
-      <div className="bg-white">
-        <div className="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+    <main className="min-h-screen bg-white text-black">
+      <div className="mx-auto w-full max-w-screen-2xl px-3 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-12 xl:px-10">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl lg:text-4xl">
             Keranjang Belanja
           </h1>
-          <Suspense fallback={<Loader />}>
-            <CartModule />
-          </Suspense>
+          <p className="mt-2 text-sm text-gray-500 sm:text-base">
+            Periksa produk dan jumlah pesanan sebelum melanjutkan checkout.
+          </p>
         </div>
+
+        <Suspense fallback={<Loader />}>
+          <CartModule />
+        </Suspense>
       </div>
-    </div>
+    </main>
   );
 };
 
