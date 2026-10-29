@@ -22,7 +22,7 @@ const siteUrl = "https://heksagonal.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "HEKSAGONAL - Marketplace",
+    default: "HEKSAGONAL - Marketplace Balikpapan Samarinda",
     template: "%s | HEKSAGONAL",
   },
   description:

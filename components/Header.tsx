@@ -28,6 +28,7 @@ import CategoryHeader from "./CategoryHeader";
 
 const Header = () => {
   const { data: session, status } = useSession();
+
   const pathname = usePathname();
   const { wishlist, setWishlist, wishQuantity } = useWishlistStore();
 
@@ -155,57 +156,62 @@ const Header = () => {
 
               {/* Mobile actions */}
               <div className="flex shrink-0 items-center gap-0.5 sm:gap-1 lg:hidden">
+                {/* Cart selalu tampil, baik login maupun logout */}
                 <div className="flex size-9 items-center justify-center sm:size-10">
                   <CartElement />
                 </div>
 
-                <div className="flex size-9 items-center justify-center sm:size-10">
-                  <HeartElement wishQuantity={wishQuantity} />
-                </div>
+                {/* Ikon akun hanya tampil jika sesi terautentikasi */}
+                {status === "authenticated" ? (
+                  <>
+                    {/* Wishlist */}
+                    <div className="flex size-9 items-center justify-center sm:size-10">
+                      <HeartElement wishQuantity={wishQuantity} />
+                    </div>
 
-                {/* Profile */}
-                <Link
-                  href="/profile"
-                  aria-label="Profile"
-                  title="Profile"
-                  className={`
-                    inline-flex size-9 shrink-0 items-center justify-center
-                    rounded-xl transition-colors duration-200
-                    hover:bg-blue-50 hover:text-blue-700
-                    focus-visible:outline-none focus-visible:ring-2
-                    focus-visible:ring-blue-500
-                    sm:size-10
-                    ${
-                      pathname.startsWith("/profile")
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-600"
-                    }
-                  `}
-                >
-                  <FaUser className="size-[18px] sm:size-5" aria-hidden="true" />
-                </Link>
+                    {/* Profile */}
+                    <Link
+                      href="/profile"
+                      aria-label="Profile"
+                      title="Profile"
+                      className={`
+                        inline-flex size-9 shrink-0 items-center justify-center
+                        rounded-xl transition-colors duration-200
+                        hover:bg-blue-50 hover:text-blue-700
+                        focus-visible:outline-none focus-visible:ring-2
+                        focus-visible:ring-blue-500 sm:size-10
+                        ${
+                          pathname.startsWith("/profile")
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-600"
+                        }
+                      `}
+                    >
+                      <FaUser className="size-[18px] sm:size-5" aria-hidden="true" />
+                    </Link>
 
-                {/* My Orders */}
-                <Link
-                  href="/orders"
-                  aria-label="My Orders"
-                  title="My Orders"
-                  className={`
-                    inline-flex size-9 shrink-0 items-center justify-center
-                    rounded-xl transition-colors duration-200
-                    hover:bg-blue-50 hover:text-blue-700
-                    focus-visible:outline-none focus-visible:ring-2
-                    focus-visible:ring-blue-500
-                    sm:size-10
-                    ${
-                      pathname.startsWith("/orders")
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-600"
-                    }
-                  `}
-                >
-                  <FaBoxOpen className="size-5 sm:size-[22px]" aria-hidden="true" />
-                </Link>
+                    {/* My Orders */}
+                    <Link
+                      href="/orders"
+                      aria-label="My Orders"
+                      title="My Orders"
+                      className={`
+                        inline-flex size-9 shrink-0 items-center justify-center
+                        rounded-xl transition-colors duration-200
+                        hover:bg-blue-50 hover:text-blue-700
+                        focus-visible:outline-none focus-visible:ring-2
+                        focus-visible:ring-blue-500 sm:size-10
+                        ${
+                          pathname.startsWith("/orders")
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-600"
+                        }
+                      `}
+                    >
+                      <FaBoxOpen className="size-5 sm:size-[22px]" aria-hidden="true" />
+                    </Link>
+                  </>
+                ) : null}
               </div>
             </div>
 
@@ -247,68 +253,66 @@ const Header = () => {
               </button>
 
               {/* User Actions */}
-              <div
-                className="
-                  flex min-w-0 flex-1 flex-wrap
-                  items-center justify-end gap-2
-                  sm:gap-3
-                  lg:flex-none lg:gap-3
-                  xl:gap-3
-                "
-              >
+                <div
+                  className="
+                    flex min-w-0 flex-1 flex-wrap
+                    items-center justify-end gap-2
+                    sm:gap-3
+                    lg:flex-none lg:gap-3
+                    xl:gap-3
+                  "
+                >
+                  {/* User actions hanya untuk pengguna yang sudah login */}
+                  {status === "authenticated" && (
+                    <div className="hidden items-center gap-2 lg:flex">
+                      {/* Wishlist */}
+                      <HeartElement wishQuantity={wishQuantity} />
 
-                {status === "authenticated" && (
-                  <div className="hidden lg:block">
+                      {/* Profile */}
+                      <Link
+                        href="/profile"
+                        aria-label="Profile"
+                        title="Profile"
+                        className={`
+                          inline-flex size-10 shrink-0 items-center justify-center
+                          rounded-lg transition-colors
+                          hover:bg-blue-50 hover:text-blue-700
+                          ${
+                            pathname.startsWith("/profile")
+                              ? "bg-blue-50 text-blue-700"
+                              : "text-gray-700"
+                          }
+                        `}
+                      >
+                        <FaUser className="size-5" aria-hidden="true" />
+                      </Link>
 
-                    {/* <NotificationBell /> */}
+                      {/* My Orders */}
+                      <Link
+                        href="/orders"
+                        aria-label="My Orders"
+                        title="My Orders"
+                        className={`
+                          inline-flex size-10 shrink-0 items-center justify-center
+                          rounded-lg transition-colors
+                          hover:bg-blue-50 hover:text-blue-700
+                          ${
+                            pathname.startsWith("/orders")
+                              ? "bg-blue-50 text-blue-700"
+                              : "text-gray-700"
+                          }
+                        `}
+                      >
+                        <FaBoxOpen className="size-6" aria-hidden="true" />
+                      </Link>
+                    </div>
+                  )}
 
-                    <HeartElement wishQuantity={wishQuantity} />
-
-                    {/* Profile */}
-                    <Link
-                      href="/profile"
-                      aria-label="Profile"
-                      title="Profile"
-                      className={`
-                        inline-flex size-10 shrink-0 items-center justify-center
-                        rounded-lg transition-colors
-                        hover:bg-blue-50 hover:text-blue-700
-                        ${
-                          pathname.startsWith("/profile")
-                            ? "bg-blue-50 text-blue-700"
-                            : "text-gray-700"
-                        }
-                      `}
-                    >
-                      <FaUser className="size-5" aria-hidden="true" />
-                    </Link>
-
-                    {/* My Orders */}
-                    <Link
-                      href="/orders"
-                      aria-label="My Orders"
-                      title="My Orders"
-                      className={`
-                        inline-flex size-10 shrink-0 items-center justify-center
-                        rounded-lg transition-colors
-                        hover:bg-blue-50 hover:text-blue-700
-                        ${
-                          pathname.startsWith("/orders")
-                            ? "bg-blue-50 text-blue-700"
-                            : "text-gray-700"
-                        }
-                      `}
-                    >
-                      <FaBoxOpen className="size-6" aria-hidden="true" />
-                    </Link>
+                  {/* Cart selalu tampil pada tablet dan desktop */}
+                  <div className="hidden shrink-0 items-center lg:flex">
+                    <CartElement />
                   </div>
-                )}
-
-                {/* Cart on tablet and desktop */}
-                <div className="hidden shrink-0 items-center lg:flex">
-                  <CartElement />
                 </div>
-              </div>
               </div>
             </div>
 

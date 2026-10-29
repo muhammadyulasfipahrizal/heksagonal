@@ -9,9 +9,11 @@ import {
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
+  FaInstagram,
   FaSquareFacebook,
   FaSquarePinterest,
   FaSquareXTwitter,
+  FaWhatsapp,
 } from "react-icons/fa6";
 import { formatRupiah, sanitize } from "@/lib/sanitize";
 import Link from "next/link";
@@ -117,6 +119,27 @@ export default function ProductVariantSelector({
   const handleSelectVariant = (variant: ProductVariant) => {
     setSelectedVariantId(variant.id);
     setSelectedImageOverride(null);
+  };
+
+  const shareText = `${sanitize(product.title)} ${productUrl}`;
+
+  const handleInstagramShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: sanitize(product.title),
+          text: sanitize(product.title),
+          url: productUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareText);
+        alert("Link produk berhasil disalin. Silakan bagikan melalui Instagram.");
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name !== "AbortError") {
+        console.error("Gagal membagikan produk:", error);
+      }
+    }
   };
 
   return (
@@ -408,34 +431,39 @@ export default function ProductVariantSelector({
               Bagikan produk:
             </span>
 
+            {/* WhatsApp */}
+            <Link
+              href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Bagikan ke WhatsApp"
+              title="Bagikan ke WhatsApp"
+              className="text-gray-400 transition hover:text-green-500"
+            >
+              <FaWhatsapp size={23} />
+            </Link>
+
+            {/* Instagram */}
+            <button
+              type="button"
+              onClick={handleInstagramShare}
+              aria-label="Bagikan ke Instagram"
+              title="Bagikan ke Instagram"
+              className="text-gray-400 transition hover:text-pink-500"
+            >
+              <FaInstagram size={23} />
+            </button>
+
+            {/* Facebook */}
             <Link
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               aria-label="Bagikan ke Facebook"
+              title="Bagikan ke Facebook"
               className="text-gray-400 transition hover:text-blue-600"
             >
               <FaSquareFacebook size={23} />
-            </Link>
-
-            <Link
-              href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(productUrl)}&media=${encodeURIComponent(shareImageUrl)}&description=${encodeURIComponent(sanitize(product.title))}`}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Bagikan ke Pinterest"
-              className="text-gray-400 transition hover:text-red-600"
-            >
-              <FaSquarePinterest size={23} />
-            </Link>
-
-            <Link
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(productUrl)}&text=${encodeURIComponent(sanitize(product.title))}`}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Bagikan ke X"
-              className="text-gray-400 transition hover:text-gray-900"
-            >
-              <FaSquareXTwitter size={23} />
             </Link>
           </div>
         </div>
