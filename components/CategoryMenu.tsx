@@ -89,8 +89,8 @@ const CategoryMenu = () => {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, index) => (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-3 lg:gap-5">
+            {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
                 className="animate-pulse rounded-2xl border border-slate-200 p-5"
@@ -117,12 +117,13 @@ const CategoryMenu = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/shop/${createSlug(category.name)}?categoryId=${encodeURIComponent(category.id)}`}
-                 className="
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:gap-5">
+              {categories.slice(0, 6).map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/shop/${createSlug(category.name)}?categoryId=${encodeURIComponent(category.id)}`}
+                  className="
                     group min-w-0 rounded-xl border border-slate-200
                     bg-white p-2.5
                     transition duration-300
@@ -133,53 +134,83 @@ const CategoryMenu = () => {
                     sm:rounded-2xl sm:p-4
                   "
                 >
-                <div className="
-                  relative mb-3 flex aspect-[4/3]
-                  items-center justify-center overflow-hidden
-                  rounded-lg bg-slate-50 p-3
-                  transition-colors group-hover:bg-amber-50
-                  sm:mb-4 sm:rounded-xl sm:p-5
-                ">
-                  <Image
-                    src="https://cdn.scenesku.com/resources/car-care.webp?w=1000"
-                    width={96}
-                    height={96}
-                    alt=""
-                    aria-hidden="true"
+                  <div
                     className="
-                      h-full w-full object-contain
-                      transition-transform duration-300
-                      group-hover:scale-110
-                    "
-                  />
-                </div>
-
-                <div className="flex min-w-0 items-start justify-between gap-1.5 sm:items-center sm:gap-2">
-                  <h3 className="
-                    min-w-0 flex-1 break-words
-                    text-xs font-bold leading-4 text-slate-800
-                    transition-colors group-hover:text-[#02054b]
-                    sm:text-sm sm:leading-5
-                    lg:text-base
-                  ">
-                     {category.name.replace(/\s*\([^)]*\)/g, "").trim()}
-                  </h3>
-
-                  <span
-                    aria-hidden="true"
-                    className="
-                      hidden shrink-0 text-lg text-slate-400
-                      transition-all group-hover:translate-x-1
-                      group-hover:text-amber-600
-                      sm:inline
+                      relative mb-3 flex aspect-[4/3]
+                      items-center justify-center overflow-hidden
+                      rounded-lg bg-slate-50 p-3
+                      transition-colors group-hover:bg-amber-50
+                      sm:mb-4 sm:rounded-xl sm:p-5
                     "
                   >
+                    <Image
+                      src="https://cdn.scenesku.com/resources/car-care.webp?w=1000"
+                      width={96}
+                      height={96}
+                      alt=""
+                      aria-hidden="true"
+                      className="
+                        h-full w-full object-contain
+                        transition-transform duration-300
+                        group-hover:scale-110
+                      "
+                    />
+                  </div>
+
+                  <div className="flex min-w-0 items-start justify-between gap-1.5 sm:items-center sm:gap-2">
+                    <h3
+                      className="
+                        min-w-0 flex-1 break-words
+                        text-xs font-bold leading-4 text-slate-800
+                        transition-colors group-hover:text-[#02054b]
+                        sm:text-sm sm:leading-5 lg:text-base
+                      "
+                    >
+                      {category.name.replace(/\s*\([^)]*\)/g, "").trim()}
+                    </h3>
+
+                    <span
+                      aria-hidden="true"
+                      className="
+                        hidden shrink-0 text-lg text-slate-400
+                        transition-all group-hover:translate-x-1
+                        group-hover:text-amber-600 sm:inline
+                      "
+                    >
+                      →
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Tombol lihat semua kategori */}
+            {categories.length > 6 && (
+              <div className="mt-7 flex justify-center sm:mt-9">
+                <Link
+                  href="/shop"
+                  className="
+                    btn min-h-12 w-full max-w-sm
+                    gap-2 rounded-xl border-0
+                    bg-[#02054b] px-5 text-sm font-bold
+                    normal-case text-white shadow-lg
+                    transition duration-300
+                    hover:-translate-y-0.5 hover:bg-amber-300
+                    hover:text-[#02054b] hover:shadow-xl
+                    focus-visible:outline-none focus-visible:ring-2
+                    focus-visible:ring-amber-500
+                    focus-visible:ring-offset-2
+                    sm:w-auto sm:px-7 sm:text-base
+                  "
+                >
+                  Lihat semua kategori
+                  <span aria-hidden="true" className="text-lg sm:text-xl">
                     →
                   </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>
