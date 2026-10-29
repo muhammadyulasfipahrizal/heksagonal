@@ -14,16 +14,43 @@ import Link from "next/link";
 import React from "react";
 import { FaHeart } from "react-icons/fa6";
 
-const HeartElement = ({wishQuantity}: {wishQuantity: number}) => {
+const HeartElement = ({
+  wishQuantity,
+}: {
+  wishQuantity: number;
+}) => {
   return (
-    <div className="relative">
-      <Link href="/wishlist">
-        <FaHeart className="text-2xl text-black" />
-        <span className="block w-6 h-6 font-bold bg-[#01043D] text-white rounded-full flex justify-center items-center absolute top-[-17px] right-[-22px]">
-          { wishQuantity }
-        </span>
-      </Link>
-    </div>
+    <Link
+      href="/wishlist"
+      aria-label={`Wishlist, ${wishQuantity} item`}
+      title="Wishlist"
+      className="
+        relative inline-flex size-10 shrink-0
+        items-center justify-center rounded-xl
+        text-gray-600 transition-colors duration-200
+        hover:bg-blue-50 hover:text-[#02054b]
+        focus-visible:outline-none
+        focus-visible:ring-2 focus-visible:ring-blue-500
+      "
+    >
+      <FaHeart
+        aria-hidden="true"
+        className="size-5"
+      />
+
+      <span
+        aria-hidden="true"
+        className="
+          absolute right-0.5 top-0.5
+          flex h-[17px] min-w-[17px] items-center justify-center
+          rounded-full bg-[#01043D] px-1
+          text-[9px] font-bold leading-none text-white
+          ring-2 ring-white
+        "
+      >
+        {wishQuantity > 99 ? "99+" : wishQuantity}
+      </span>
+    </Link>
   );
 };
 

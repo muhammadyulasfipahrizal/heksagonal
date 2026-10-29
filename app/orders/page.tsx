@@ -287,42 +287,72 @@ export default function OrdersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
-        <div className="mb-8">
-          <p className="text-sm font-medium text-gray-500">
-            Akun Saya / Pesanan
+    <main className="min-h-screen bg-gray-50 px-3 py-6 sm:px-6 sm:py-10 lg:py-12">
+      <div className="mx-auto w-full max-w-6xl">
+        {/* Header */}
+        <header className="mb-6 sm:mb-8">
+          <p className="text-xs font-semibold text-gray-500 sm:text-sm">
+            Akun Saya <span className="mx-1 text-gray-300">/</span> Pesanan
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
-            Pesanan Saya
-          </h1>
+          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl lg:text-4xl">
+                Pesanan Saya
+              </h1>
 
-          <p className="mt-2 text-gray-500">
-            Lihat riwayat pesanan dan produk yang telah kamu pesan.
-          </p>
-        </div>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500 sm:text-base">
+                Pantau status, detail produk, dan riwayat pesanan Anda.
+              </p>
+            </div>
 
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <p className="text-sm text-gray-500">Total Pesanan</p>
-            <p className="mt-2 text-3xl font-bold text-[#02054b]">
+            {/* <Link
+              href="/shop"
+              className="inline-flex min-h-10 w-fit items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-[#02054b] transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02054b] focus-visible:ring-offset-2"
+            >
+              + Belanja Lagi
+            </Link> */}
+          </div>
+        </header>
+
+        {/* Ringkasan */}
+        <section
+          aria-label="Ringkasan pesanan"
+          className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-4"
+        >
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+            <p className="text-xs font-medium text-gray-500 sm:text-sm">
+              Total Pesanan
+            </p>
+
+            <p className="mt-2 text-2xl font-extrabold text-[#02054b] sm:text-3xl">
               {pagination.total}
             </p>
-          </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <p className="text-sm text-gray-500">Halaman</p>
-            <p className="mt-2 text-3xl font-bold text-[#02054b]">
-              {pagination.totalPages > 0 ? page : 0}
-              <span className="text-lg font-medium text-gray-400">
-                {" "}
-                / {pagination.totalPages}
-              </span>
+            <p className="mt-1 text-xs text-gray-400">
+              Seluruh pesanan
             </p>
           </div>
-        </div>
 
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+            <p className="text-xs font-medium text-gray-500 sm:text-sm">
+              Halaman Aktif
+            </p>
+
+            <p className="mt-2 text-2xl font-extrabold text-[#02054b] sm:text-3xl">
+              {pagination.totalPages > 0 ? page : 0}
+              <span className="text-base font-medium text-gray-400 sm:text-lg">
+                {" "}/ {pagination.totalPages}
+              </span>
+            </p>
+
+            <p className="mt-1 text-xs text-gray-400">
+              Navigasi pesanan
+            </p>
+          </div>
+        </section>
+
+        {/* Error */}
         {error && (
           <div
             role="alert"
@@ -333,252 +363,307 @@ export default function OrdersPage() {
             <button
               type="button"
               onClick={() => void fetchOrders()}
-              className="self-start font-semibold underline sm:self-auto"
+              className="min-h-10 self-start font-semibold underline underline-offset-4 sm:self-auto"
             >
               Coba lagi
             </button>
           </div>
         )}
 
+        {/* Empty State */}
         {!error && orders.length === 0 && (
-          <div className="rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center">
-            <h2 className="text-xl font-bold text-gray-900">
+          <section className="rounded-2xl border border-gray-200 bg-white px-5 py-12 text-center sm:px-8 sm:py-16">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#02054b]/5 text-[#02054b]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.7}
+                className="h-7 w-7"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 8H6"
+                />
+                <circle cx="10" cy="20" r="1" />
+                <circle cx="18" cy="20" r="1" />
+              </svg>
+            </div>
+
+            <h2 className="mt-5 text-lg font-bold text-gray-900 sm:text-xl">
               Belum Ada Pesanan
             </h2>
 
-            <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
-              Pesanan yang kamu buat akan muncul di halaman ini.
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+              Pesanan yang Anda buat akan muncul di sini. Mulai jelajahi
+              produk untuk menemukan kebutuhan Anda.
             </p>
 
             <Link
               href="/shop"
-              className="mt-6 inline-flex rounded-xl bg-[#02054b] px-6 py-3 font-semibold text-white transition hover:bg-blue-950"
+              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#02054b] px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02054b] focus-visible:ring-offset-2"
             >
               Mulai Belanja
             </Link>
+          </section>
+        )}
+
+        {/* Daftar Pesanan */}
+        {!error && orders.length > 0 && (
+          <div className="space-y-5 sm:space-y-6">
+            {orders.map((order) => {
+              const products = order.products ?? [];
+              const totalItems = products.reduce(
+                (sum, item) => sum + item.quantity,
+                0
+              );
+
+              return (
+                <article
+                  key={order.id}
+                  className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                >
+                  {/* Header Pesanan */}
+                  <div className="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                        Nomor Pesanan
+                      </p>
+
+                      <h2 className="mt-1 break-all text-base font-extrabold text-[#02054b] sm:text-lg">
+                        #{order.id}
+                      </h2>
+
+                      <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+                        {formatDate(order.dateTime)}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`inline-flex w-fit max-w-full items-center rounded-full px-3 py-1.5 text-xs font-semibold capitalize ${getStatusStyle(
+                        order.status
+                      )}`}
+                    >
+                      {order.status}
+                    </span>
+                  </div>
+
+                  <div className="space-y-5 p-4 sm:space-y-6 sm:p-5 lg:p-6">
+                    {/* Produk */}
+                    <section aria-label="Produk pesanan">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <h3 className="text-sm font-bold text-gray-900 sm:text-base">
+                          Produk Pesanan
+                        </h3>
+
+                        <span className="shrink-0 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
+                          {totalItems} item
+                        </span>
+                      </div>
+
+                      <div className="divide-y divide-gray-100">
+                        {products.map((item) => {
+                          const product = item.product;
+                          const variant = item.variant;
+
+                          if (!product) return null;
+
+                          const unitPrice = Number(
+                            item.price ?? variant?.price ?? 0
+                          );
+
+                          const subtotal = unitPrice * item.quantity;
+                          const productImage = variant?.image?.trim();
+
+                          const imagePath = productImage
+                            ? productImage.startsWith("http://") ||
+                              productImage.startsWith("https://") ||
+                              productImage.startsWith("/")
+                              ? productImage
+                              : `/${productImage}`
+                            : null;
+
+                          return (
+                            <div
+                              key={item.id}
+                              className="flex gap-3 py-4 first:pt-0 last:pb-0 sm:gap-4"
+                            >
+                              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-24 sm:w-24">
+                                {imagePath ? (
+                                  <Image
+                                    src={getImageSrc(imagePath)}
+                                    alt={`${product.title}${
+                                      variant?.title
+                                        ? ` - ${variant.title}`
+                                        : ""
+                                    }`}
+                                    fill
+                                    sizes="(max-width: 640px) 80px, 96px"
+                                    className="object-contain p-2"
+                                  />
+                                ) : (
+                                  <div className="flex h-full items-center justify-center px-1 text-center text-xs text-gray-400">
+                                    Gambar tidak tersedia
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex min-w-0 flex-1 flex-col justify-center">
+                                <p className="line-clamp-2 text-sm font-semibold leading-5 text-gray-900 sm:text-base">
+                                  {product.title}
+                                </p>
+
+                                {variant?.title && (
+                                  <p className="mt-1 line-clamp-2 text-xs text-gray-500 sm:text-sm">
+                                    Varian: {variant.title}
+                                  </p>
+                                )}
+
+                                <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+                                  {formatPrice(unitPrice)} × {item.quantity}
+                                </p>
+
+                                <p className="mt-2 text-sm font-bold text-[#02054b] sm:text-base">
+                                  {formatPrice(subtotal)}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+
+                    {/* Informasi Pemesanan */}
+                    <section className="rounded-xl border border-gray-100 bg-gray-50 p-4 sm:p-5">
+                      <h3 className="text-sm font-bold text-gray-900 sm:text-base">
+                        Informasi Pemesanan
+                      </h3>
+
+                      <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+                        <div className="min-w-0">
+                          <dt className="text-xs text-gray-500 sm:text-sm">
+                            Nama Penerima
+                          </dt>
+                          <dd className="mt-1 break-words font-medium text-gray-900">
+                            {order.name || "-"}
+                          </dd>
+                        </div>
+
+                        <div className="min-w-0">
+                          <dt className="text-xs text-gray-500 sm:text-sm">
+                            Nomor Telepon
+                          </dt>
+                          <dd className="mt-1 break-words font-medium text-gray-900">
+                            {order.phone || "-"}
+                          </dd>
+                        </div>
+
+                        <div className="min-w-0">
+                          <dt className="text-xs text-gray-500 sm:text-sm">
+                            Email
+                          </dt>
+                          <dd className="mt-1 break-all font-medium text-gray-900">
+                            {order.email || "-"}
+                          </dd>
+                        </div>
+
+                        <div className="min-w-0">
+                          <dt className="text-xs text-gray-500 sm:text-sm">
+                            Metode Pengiriman
+                          </dt>
+                          <dd className="mt-1 font-medium text-gray-900">
+                            {order.deliveryMethod === "SHIPPING"
+                              ? "Kirim ke Alamat"
+                              : "Pickup Toko"}
+                          </dd>
+                        </div>
+
+                        {order.deliveryMethod === "SHIPPING" && (
+                          <div className="min-w-0 sm:col-span-2">
+                            <dt className="text-xs text-gray-500 sm:text-sm">
+                              Alamat Pengiriman
+                            </dt>
+                            <dd className="mt-1 break-words font-medium leading-relaxed text-gray-900">
+                              {[
+                                order.adress,
+                                order.district,
+                                order.city,
+                                order.province,
+                                order.postalCode,
+                              ]
+                                .filter(Boolean)
+                                .join(", ") || "-"}
+                            </dd>
+                          </div>
+                        )}
+
+                        {order.orderNotice && (
+                          <div className="min-w-0 sm:col-span-2">
+                            <dt className="text-xs text-gray-500 sm:text-sm">
+                              Catatan Pesanan
+                            </dt>
+                            <dd className="mt-1 whitespace-pre-wrap break-words font-medium leading-relaxed text-gray-900">
+                              {order.orderNotice}
+                            </dd>
+                          </div>
+                        )}
+                      </dl>
+                    </section>
+
+                    {/* Total */}
+                    <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pt-5">
+                      <div>
+                        <p className="text-xs text-gray-500 sm:text-sm">
+                          Total Pembayaran
+                        </p>
+                        <p className="mt-1 text-xs text-gray-400">
+                          {totalItems} item
+                        </p>
+                      </div>
+
+                      <p className="break-words text-xl font-extrabold leading-tight text-[#02054b] sm:text-right sm:text-2xl">
+                        {formatPrice(Number(order.total))}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
 
-        <div className="space-y-6">
-          {orders.map((order) => (
-            <article
-              key={order.id}
-              className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
-            >
-              <div className="flex flex-col gap-4 border-b border-gray-100 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
-                <div className="min-w-0">
-                  <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                    Nomor Pesanan
-                  </p>
-
-                  <h2 className="mt-1 break-all text-lg font-bold text-[#02054b]">
-                    #{order.id}
-                  </h2>
-
-                  <p className="mt-2 text-sm text-gray-500">
-                    {formatDate(order.dateTime)}
-                  </p>
-                </div>
-
-                <span
-                  className={`inline-flex w-fit items-center rounded-full px-3 py-1.5 text-xs font-semibold capitalize ${getStatusStyle(
-                    order.status
-                  )}`}
-                >
-                  {order.status}
-                </span>
-              </div>
-
-              <div className="space-y-6 p-5 sm:p-6">
-                <section>
-                  <h3 className="mb-4 text-sm font-semibold text-gray-900">
-                    Produk Pesanan ({order.products?.length ?? 0})
-                  </h3>
-
-                  <div className="space-y-4">
-                    
-                    {(order.products ?? []).map((item) => {
-                      const product = item.product;
-                      const variant = item.variant;
-
-                      console.log("variant", variant);
-
-                      if (!product) return null;
-
-                      const unitPrice = Number(
-                        item.price ?? variant?.price ?? 0
-                      );
-
-                      const subtotal = unitPrice * item.quantity;
-                      const productImage = variant?.image?.trim();
-
-                      return (
-                        <div key={item.id} className="flex gap-4">
-                          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-24 sm:w-24">
-                            {productImage ? (
-                              <Image
-                                src={getImageSrc(
-                                  productImage.startsWith("http://") ||
-                                  productImage.startsWith("https://") ||
-                                  productImage.startsWith("/")
-                                    ? productImage
-                                    : `/${productImage}`
-                                )}
-                                alt={`${product.title}${variant?.title ? ` - ${variant.title}` : ""}`}
-                                fill
-                                sizes="96px"
-                                className="object-contain p-2"
-                              />
-                            ) : (
-                              <div className="flex h-full items-center justify-center px-1 text-center text-xs text-gray-400">
-                                No Variant Image
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex min-w-0 flex-1 flex-col justify-center">
-                            <p className="line-clamp-2 font-semibold text-gray-900">
-                              {product.title}
-                            </p>
-
-                            {variant?.title && (
-                              <p className="mt-1 text-sm text-gray-500">
-                                Varian: {variant.title}
-                              </p>
-                            )}
-
-                            <p className="mt-1 text-sm text-gray-500">
-                              {formatPrice(unitPrice)} × {item.quantity}
-                            </p>
-
-                            <p className="mt-2 font-semibold text-[#02054b]">
-                              {formatPrice(subtotal)}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                  </div>
-                </section>
-
-                <section className="rounded-xl bg-gray-50 p-4 sm:p-5">
-                  <h3 className="text-sm font-semibold text-gray-900">
-                    Informasi Pemesanan
-                  </h3>
-
-                  <dl className="mt-3 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-                    <div>
-                      <dt className="text-gray-500">Nama Penerima</dt>
-                      <dd className="mt-1 font-medium text-gray-900">
-                        {order.name}
-                      </dd>
-                    </div>
-
-                    <div>
-                      <dt className="text-gray-500">Nomor Telepon</dt>
-                      <dd className="mt-1 font-medium text-gray-900">
-                        {order.phone}
-                      </dd>
-                    </div>
-
-                    <div>
-                      <dt className="text-gray-500">Email</dt>
-                      <dd className="mt-1 break-all font-medium text-gray-900">
-                        {order.email}
-                      </dd>
-                    </div>
-
-                    <div>
-                      <dt className="text-gray-500">Metode Pengiriman</dt>
-                      <dd className="mt-1 font-medium text-gray-900">
-                        {order.deliveryMethod === "SHIPPING"
-                          ? "Kirim Alamat"
-                          : "Pickup Toko"}
-                      </dd>
-                    </div>
-
-                    {order.deliveryMethod === "SHIPPING" && (
-                      <div className="sm:col-span-2">
-                        <dt className="text-gray-500">
-                          Alamat Pengiriman
-                        </dt>
-                        <dd className="mt-1 font-medium leading-relaxed text-gray-900">
-                          {[
-                            order.adress,
-                            order.district,
-                            order.city,
-                            order.province,
-                            order.postalCode,
-                          ]
-                            .filter(Boolean)
-                            .join(", ")}
-                        </dd>
-                      </div>
-                    )}
-
-                    {order.orderNotice && (
-                      <div className="sm:col-span-2">
-                        <dt className="text-gray-500">
-                          Catatan Pesanan
-                        </dt>
-                        <dd className="mt-1 whitespace-pre-wrap font-medium text-gray-900">
-                          {order.orderNotice}
-                        </dd>
-                      </div>
-                    )}
-                  </dl>
-                </section>
-
-                <div className="flex items-center justify-between gap-4 border-t border-gray-100 pt-5">
-                  <div>
-                    <p className="text-sm text-gray-500">
-                      Total Pembayaran
-                    </p>
-                    <p className="mt-1 text-xs text-gray-400">
-                      {(order.products ?? []).reduce(
-                        (sum, item) => sum + item.quantity,
-                        0
-                      )}{" "}
-                      item
-                    </p>
-                  </div>
-
-                  <p className="text-xl font-bold text-[#02054b]">
-                    {formatPrice(Number(order.total))}
-                  </p>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {pagination.totalPages > 1 && (
+        {/* Pagination */}
+        {!error && pagination.totalPages > 1 && (
           <nav
             aria-label="Navigasi halaman pesanan"
-            className="mt-8 flex flex-wrap items-center justify-center gap-3"
+            className="mt-7 flex flex-wrap items-center justify-center gap-2 sm:mt-8 sm:gap-3"
           >
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((current) => current - 1)}
-              className="join-item btn btn-lg bg-[#02054b] text-white hover:bg-white hover:text-[#02054b] disabled:opacity-50"
-            >
+              aria-label="Halaman sebelumnya"
+              className="join-item btn btn-md min-h-11 min-w-11 border-[#02054b] bg-[#02054b] px-3 text-white hover:bg-white hover:text-[#02054b] disabled:cursor-not-allowed disabled:opacity-40 sm:btn-lg">
               «
             </button>
 
             <button
               type="button"
-              className="join-item btn btn-lg bg-[#02054b] text-white hover:bg-white hover:text-[#02054b]"
+              aria-current="page"
+              className="join-item btn btn-md min-h-11 border-[#02054b] bg-[#02054b] px-4 text-white hover:bg-[#15195c] sm:btn-lg"
             >
-              Page {page}
+              Halaman {page}
             </button>
 
             <button
               type="button"
               disabled={page >= pagination.totalPages}
               onClick={() => setPage((current) => current + 1)}
-              className="join-item btn btn-lg bg-[#02054b] text-white hover:bg-white hover:text-[#02054b]"
+              aria-label="Halaman berikutnya"
+              className="join-item btn btn-md min-h-11 min-w-11 border-[#02054b] bg-[#02054b] px-3 text-white hover:bg-white hover:text-[#02054b] sm:btn-lg"
             >
               »
             </button>

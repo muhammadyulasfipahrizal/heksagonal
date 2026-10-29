@@ -266,87 +266,107 @@ export default function ProfilePage() {
     "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100";
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <main className="min-h-screen bg-gray-50 px-3 py-5 text-gray-900 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full max-w-5xl space-y-5 sm:space-y-6">
+        {/* Back navigation */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-700"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg text-sm font-medium text-gray-600 transition-colors hover:text-[#02054b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02054b] focus-visible:ring-offset-2"
         >
-          <FaArrowLeft />
-          Kembali ke beranda
+          <FaArrowLeft className="shrink-0" />
+          <span>Kembali ke beranda</span>
         </Link>
 
-        <header>
-          <h1 className="text-3xl font-bold text-gray-900">
+        {/* Page heading */}
+        <header className="pb-1 sm:pb-2">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-gray-500 sm:text-sm">
+            Account settings
+          </p>
+
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
             Profil Saya
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
             Kelola informasi akun, keamanan, dan alamat pengiriman.
           </p>
         </header>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="rounded-xl bg-blue-50 p-3 text-blue-700">
+        {/* Account information */}
+        <section className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="mb-6 flex items-start gap-3 sm:gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 sm:h-12 sm:w-12">
               <FaUser size={20} />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold">Informasi akun</h2>
-              <p className="text-sm text-gray-500">
+
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold sm:text-lg">
+                Informasi akun
+              </h2>
+              <p className="mt-1 text-sm leading-5 text-gray-500">
                 Perbarui nama, email, dan nomor telepon.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleProfileSubmit} className="space-y-5">
-            <label className="block space-y-2">
-              <span className="text-sm font-medium">Nama lengkap</span>
+          <form
+            onSubmit={handleProfileSubmit}
+            className="space-y-5 sm:space-y-6"
+          >
+            <label className="block min-w-0 space-y-2">
+              <span className="block text-sm font-semibold text-gray-700">
+                Nama lengkap
+              </span>
               <input
                 required
                 maxLength={100}
                 autoComplete="name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className={inputClass}
+                className={`${inputClass} w-full min-w-0`}
                 placeholder="Nama lengkap"
               />
             </label>
 
-            <label className="block space-y-2">
-              <span className="text-sm font-medium">Email</span>
+            <label className="block min-w-0 space-y-2">
+              <span className="block text-sm font-semibold text-gray-700">
+                Email
+              </span>
               <input
                 required
                 type="email"
                 autoComplete="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className={inputClass}
+                className={`${inputClass} w-full min-w-0`}
                 placeholder="nama@email.com"
               />
-              <span className="text-xs text-gray-500">
+              <span className="block text-xs leading-5 text-gray-500">
                 Pastikan kamu masih memiliki akses ke email baru.
                 Perubahan email di sini belum melakukan verifikasi email.
               </span>
             </label>
 
-            <label className="block space-y-2">
-              <span className="text-sm font-medium">Nomor telepon</span>
+            <label className="block min-w-0 space-y-2">
+              <span className="block text-sm font-semibold text-gray-700">
+                Nomor telepon
+              </span>
               <input
                 type="tel"
                 maxLength={25}
                 autoComplete="tel"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
-                className={inputClass}
+                className={`${inputClass} w-full min-w-0`}
                 placeholder="08xxxxxxxxxx"
               />
             </label>
 
-            <div className="flex justify-end border-t pt-5">
+            <div className="border-t border-gray-100 pt-4 sm:pt-5">
               <button
                 type="submit"
                 disabled={savingProfile}
-                className="rounded-lg bg-[#02054b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[#02054b] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02054b] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:ml-auto sm:w-auto sm:min-w-48"
               >
                 {savingProfile ? "Menyimpan..." : "Simpan perubahan"}
               </button>
@@ -354,22 +374,31 @@ export default function ProfilePage() {
           </form>
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="rounded-xl bg-blue-50 p-3 text-blue-700">
+        {/* Account security */}
+        <section className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="mb-6 flex items-start gap-3 sm:gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 sm:h-12 sm:w-12">
               <FaLock size={20} />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold">Keamanan akun</h2>
-              <p className="text-sm text-gray-500">
+
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold sm:text-lg">
+                Keamanan akun
+              </h2>
+              <p className="mt-1 text-sm leading-5 text-gray-500">
                 Perbarui password akun kamu.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handlePasswordSubmit} className="space-y-5">
-            <label className="block space-y-2">
-              <span className="text-sm font-medium">Password lama</span>
+          <form
+            onSubmit={handlePasswordSubmit}
+            className="space-y-5 sm:space-y-6"
+          >
+            <label className="block min-w-0 space-y-2">
+              <span className="block text-sm font-semibold text-gray-700">
+                Password lama
+              </span>
               <input
                 type="password"
                 autoComplete="current-password"
@@ -377,14 +406,16 @@ export default function ProfilePage() {
                 onChange={(event) =>
                   setCurrentPassword(event.target.value)
                 }
-                className={inputClass}
+                className={`${inputClass} w-full min-w-0`}
                 placeholder="Kosongkan jika belum punya password lokal"
               />
             </label>
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              <label className="block space-y-2">
-                <span className="text-sm font-medium">Password baru</span>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-4 lg:gap-6">
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-semibold text-gray-700">
+                  Password baru
+                </span>
                 <input
                   required
                   type="password"
@@ -393,13 +424,13 @@ export default function ProfilePage() {
                   autoComplete="new-password"
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
-                  className={inputClass}
+                  className={`${inputClass} w-full min-w-0`}
                   placeholder="Minimal 8 karakter"
                 />
               </label>
 
-              <label className="block space-y-2">
-                <span className="text-sm font-medium">
+              <label className="block min-w-0 space-y-2">
+                <span className="block text-sm font-semibold text-gray-700">
                   Konfirmasi password
                 </span>
                 <input
@@ -412,17 +443,17 @@ export default function ProfilePage() {
                   onChange={(event) =>
                     setConfirmPassword(event.target.value)
                   }
-                  className={inputClass}
+                  className={`${inputClass} w-full min-w-0`}
                   placeholder="Ulangi password baru"
                 />
               </label>
             </div>
 
-            <div className="flex justify-end border-t pt-5">
+            <div className="border-t border-gray-100 pt-4 sm:pt-5">
               <button
                 type="submit"
                 disabled={savingPassword}
-                className="rounded-lg bg-[#02054b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[#02054b] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02054b] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:ml-auto sm:w-auto sm:min-w-48"
               >
                 {savingPassword
                   ? "Memperbarui..."
@@ -432,29 +463,33 @@ export default function ProfilePage() {
           </form>
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="rounded-xl bg-blue-50 p-3 text-blue-700">
+        {/* Shipping addresses */}
+        <section className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <div className="mb-6 flex items-start gap-3 sm:gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 sm:h-12 sm:w-12">
               <FaMapMarkerAlt size={20} />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold">
+
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold sm:text-lg">
                 Alamat pengiriman
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="mt-1 text-sm leading-5 text-gray-500">
                 Kelola alamat tersimpan, alamat utama, dan informasi
                 penerima.
               </p>
             </div>
           </div>
 
-          <AddressSelector
-                selectedAddressId={selectedAddressId}
-                onSelect={handleSelectAddress}
-                onAddAddress={() => {
+          <div className="min-w-0">
+            <AddressSelector
+              selectedAddressId={selectedAddressId}
+              onSelect={handleSelectAddress}
+              onAddAddress={() => {
                 // Hubungkan ke modal atau halaman tambah alamat.
-                }}
+              }}
             />
+          </div>
         </section>
       </div>
     </main>

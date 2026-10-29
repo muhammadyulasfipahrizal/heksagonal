@@ -7,9 +7,7 @@ import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api";
-import { formatRupiah } from "@/lib/sanitize";
-import { ContactForm, CheckoutFormData  } from "@/components/ContactForm";
-import AddressSelector from "@/components/AddressSelector";
+import { CheckoutFormData  } from "@/components/ContactForm";
 
 import PickupStoreSelector, {
   type PickupStoreId,
@@ -17,19 +15,17 @@ import PickupStoreSelector, {
 } from "@/components/PickupStoreSelector";
 import { getImageSrc } from "@/lib/utils";
 
-type CheckoutAddress = {
-  id: string;
-  userId: string;
-  recipientName: string;
-  phone: string;
-  label: string | null;
-  adress: string;
-  postalCode: string;
-  city: string;
-  province: string;
-  district: string;
-  isDefault: boolean;
-};
+import OrderSummary from "@/components/modules/checkout/OrderSummary";
+import CheckoutAddressSection from "@/components/modules/checkout/CheckoutAddressSection";
+import CheckoutNotice from "@/components/modules/checkout/CheckoutNotice";
+import type {
+  CheckoutAddress,
+  DeliveryMethod,
+} from "@/components/modules/checkout/types";
+
+import PickupSection from "@/components/modules/checkout/PickupSection";
+import CheckoutActionButton from "@/components/modules/checkout/CheckoutActionButton";
+
 
 interface SavedAddress {
   id: string;
@@ -521,500 +517,99 @@ const CheckoutPage = () => {
 
   return (
     <div className="bg-white">
-      {/* <SectionTitle title="Checkout" path="Home | Cart | Checkout" /> */}
-      
       <div className="hidden h-full w-1/2 bg-white lg:block" aria-hidden="true" />
       <div className="hidden h-full w-1/2 bg-gray-50 lg:block" aria-hidden="true" />
 
-      <main className="relative mx-auto grid max-w-screen-2xl grid-cols-1 gap-x-4 lg:grid-cols-2 lg:px-8 xl:gap-x-6">
+      <main className="relative mx-auto mt-4 grid w-full max-w-screen-2xl grid-cols-1 px-3 sm:px-6 lg:mt-0 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-0 lg:px-8 xl:gap-x-10">
         <h1 className="sr-only">Order information</h1>
 
-        {deliveryMethod !== "pickup" && isLoggedIn && (
-          <AddressSelector
-            selectedAddressId={selectedAddressId}
-            onSelect={handleSelectAddress}
-            onAddAddress={() => {
-              // Hubungkan ke modal atau halaman tambah alamat.
-            }}
-          />
+        {deliveryMethod === "shipping" && isLoggedIn && (
+          <div className="order-2 min-w-0 lg:order-1 lg:col-start-1 lg:row-start-1">
+            <CheckoutAddressSection
+              selectedAddressId={selectedAddressId}
+              onSelect={handleSelectAddress}
+              onAddAddress={() => {
+                // Hubungkan ke modal atau halaman tambah alamat.
+              }}
+            />
+
+             <CheckoutActionButton
+                deliveryMethod={deliveryMethod}
+                isLoggedIn={isLoggedIn}
+                isSubmitting={isSubmitting}
+                hasSelectedAddress={Boolean(selectedAddress)}
+                onPurchase={() => void makePurchase()}
+                onRegister={() => router.push("/register")}
+                className="mt-6 block lg:hidden"
+              />
+          </div>
+          
         )}
 
         {deliveryMethod === "pickup" && isLoggedIn && (
-          <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
-            <div className="h-1 bg-[#02054b]" />
-
-            <div className="flex items-start gap-4 p-5 sm:p-6">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#02054b]/[0.06] text-[#02054b]">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.7}
-                  className="h-6 w-6"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 10h18l-2-6H5l-2 6Zm2 0v10h14V10M9 20v-6h6v6"
-                  />
-                </svg>
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h3 className="text-base font-bold tracking-tight text-gray-900">
-                  Pengambilan Pesanan di Toko
-                </h3>
-
-                <p className="mt-2 text-sm leading-6 text-gray-600">
-                  Silakan ambil pesanan Anda secara langsung di toko kami.
-                  Dengan memilih metode pengambilan di toko, Anda tidak
-                  perlu menunggu pengiriman ke alamat tujuan.
-                </p>
-              </div>
-            </div>
-          </div>
+          <CheckoutNotice
+            title="Pengambilan Pesanan di Toko"
+            description="Silakan ambil pesanan Anda secara langsung di toko kami. Dengan memilih metode pengambilan di toko, Anda tidak perlu menunggu pengiriman ke alamat tujuan."
+            variant="pickup"
+            className="mt-8 hidden lg:block"
+          />
         )}
         
-        {deliveryMethod !== "pickup" && !isLoggedIn && (
-          <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
-            <div className="h-1 bg-[#02054b]" />
-
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:p-6">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#02054b]/[0.06] text-[#02054b]">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.7}
-                  className="h-6 w-6"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 11v5m0-8h.01"
-                  />
-                </svg>
+        {deliveryMethod === "shipping" && !isLoggedIn && (
+          <div className="flex flex-col gap-2 order-2 mt-8 lg:order-1 lg:col-start-1 lg:row-start-1">
+            <CheckoutNotice
+              title="Mohon Maaf, Registrasi Diperlukan"
+              description="Untuk menggunakan metode pengiriman ke alamat tujuan, Anda perlu melakukan registrasi terlebih dahulu. Setelah registrasi selesai, Anda dapat melanjutkan proses checkout."
+            >
+              <div className="mt-4 rounded-xl bg-gray-50 p-3 text-xs leading-5 text-gray-600 hidden lg:block">
+                Registrasi hanya perlu dilakukan satu kali untuk mempermudah proses
+                pemesanan Anda berikutnya.
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base font-bold tracking-tight text-gray-900">
-                    Mohon Maaf, Registrasi Diperlukan
-                  </h3>
-                </div>
-
-                <p className="mt-2 text-sm leading-6 text-gray-600">
-                  Mohon maaf atas ketidaknyamanannya. Untuk menggunakan
-                  metode pengiriman ke alamat tujuan, Anda perlu melakukan
-                  registrasi terlebih dahulu. Setelah registrasi selesai,
-                  Anda dapat melanjutkan proses checkout.
-                </p>
-
-                <div className="mt-4 flex items-start gap-2 rounded-xl bg-gray-50 p-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                    className="mt-0.5 h-4 w-4 shrink-0 text-[#02054b]"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 8v4l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                  </svg>
-                  <p className="text-xs leading-5 text-gray-600">
-                    Registrasi hanya perlu dilakukan satu kali untuk
-                    mempermudah proses pemesanan Anda berikutnya.
-                  </p>
-                </div>
-              </div>
-            </div>
+              
+            </CheckoutNotice>
+            <button
+                type="button"
+                onClick={() => router.push("/register")}
+                className={`lg:hidden w-full rounded-md bg-[#02054b] px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                Registrasi Sekarang
+              </button>
           </div>
+          
         )}
 
         {/* Order Summary */}
-        <section
-          aria-labelledby="summary-heading"
-          className="bg-gray-50 px-4 pb-10 pt-16 sm:px-6 lg:col-start-2 lg:row-start-1 lg:bg-transparent lg:px-0 lg:pb-16"
-        >
-          <div className="mx-auto max-w-lg">
-            <h2 id="summary-heading" className="text-lg font-medium text-gray-900">
-              Ringkasan Order
-            </h2>
+        <OrderSummary
+          products={products}
+          total={total}
+          deliveryMethod={deliveryMethod}
+          setDeliveryMethod={(method: DeliveryMethod) => {
+            setDeliveryMethod(method);
 
-            <ul
-              role="list"
-              className="divide-y divide-gray-200 text-sm font-medium text-gray-900"
-            >
-              {products.map((product) => (
-                <li key={product?.id} className="flex items-start space-x-4 py-6">
-                  <Image
-                    src={getImageSrc(product?.image ? `/${product?.image}` : "/product_placeholder.jpg")}
-                    alt={product?.title}
-                    width={80}
-                    height={80}
-                    className="h-20 w-20 flex-none rounded-md object-cover object-center"
-                  />
-                  <div className="flex-auto space-y-1">
-                    <h3>{product?.title}</h3>
-                    <p className="text-gray-500">x{product?.amount}</p>
-                  </div>
-                  <p className="flex-none text-base font-medium">
-                    {formatRupiah(product?.price)}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            if (method === "pickup") {
+              setIsContactModalOpen(false);
+            }
+          }}
+          isLoggedIn={isLoggedIn}
+          isSubmitting={isSubmitting}
+          hasSelectedAddress={Boolean(selectedAddress)}
+          onPurchase={() => void makePurchase()}
+          onRegister={() => router.push("/register")}
+        />
 
-            <dl className="hidden space-y-6 border-t border-gray-200 pt-6 text-sm font-medium text-gray-900 lg:block">
-              <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Subtotal</dt>
-                <dd>{formatRupiah(total)}</dd>
-              </div>
-              {/* {deliveryMethod === "shipping" && (
-                <div className="flex items-center justify-between">
-                  <dt className="text-gray-600">Pengiriman</dt>
-                  <dd>{formatRupiah(50000)}</dd>
-                </div>
-              )}
-              <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Pajak</dt>
-                <dd>{formatRupiah(total / 10)}</dd>
-              </div> */}
-              <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                <dt className="text-base">Total</dt>
-                <dd className="text-base">
-                  {formatRupiah(total)}
-                </dd>
-              </div>
-            </dl>
-            
-            <div className="mt-6 space-y-3">
-              <h3 className="text-sm font-semibold text-gray-900">
-                Metode Pemesanan
-              </h3>
-
-              <label
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 ${
-                  deliveryMethod === "pickup"
-                    ? "border-[#02054b] bg-blue-50"
-                    : "border-gray-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="deliveryMethod"
-                  value="pickup"
-                  checked={deliveryMethod === "pickup"}
-                  onChange={() => {
-                    setDeliveryMethod("pickup");
-                    setIsContactModalOpen(false);
-                  }}
-                  className="mt-1 accent-[#02054b]"
-                />
-
-                <span>
-                  <span className="block font-medium text-gray-900">
-                    Pickup Toko
-                  </span>
-                  <span className="mt-1 block text-sm text-gray-500">
-                    Ambil pesanan langsung di toko. Tidak perlu mengisi
-                    formulir alamat.
-                  </span>
-                </span>
-              </label>
-
-              <label
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 ${
-                  deliveryMethod === "shipping"
-                    ? "border-[#02054b] bg-blue-50"
-                    : "border-gray-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="deliveryMethod"
-                  value="shipping"
-                  checked={deliveryMethod === "shipping"}
-                  onChange={() => setDeliveryMethod("shipping")}
-                  className="mt-1 accent-[#02054b]"
-                />
-
-                <span>
-                  <span className="block font-medium text-gray-900">
-                    Kirim ke Alamat
-                  </span>
-                  <span className="mt-1 block text-sm text-gray-500">
-                    Pesanan dikirim ke alamat penerima. Informasi kontak
-                    dan alamat wajib diisi.
-                  </span>
-                </span>
-              </label>
-
-              
-            {deliveryMethod === "pickup" ? (
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => void makePurchase()}
-                className="w-full rounded-md bg-[#02054b] px-4 py-3
-                  font-semibold text-white hover:bg-blue-950
-                  disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSubmitting ? "Memproses Pesanan..." : "Buat Pesanan"}
-                </button>
-              ) : isLoggedIn ? (
-                <button
-                  type="button"
-                  disabled={isSubmitting || !selectedAddress}
-                  onClick={() => void makePurchase()}
-                  className="w-full rounded-md bg-[#02054b] px-4 py-3
-                    font-semibold text-white hover:bg-blue-950
-                    disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isSubmitting
-                    ? "Memproses Pesanan..."
-                    : !selectedAddress
-                      ? "Pilih Alamat Pengiriman"
-                      : "Buat Pesanan"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => router.push("/register")}
-                  // onClick={() => setIsContactModalOpen(true)}
-                  className="w-full rounded-md bg-[#02054b] px-4 py-3
-                    font-semibold text-white hover:bg-blue-950"
-                >
-                  Registrasi Sekarang
-                </button>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {!isLoggedIn && deliveryMethod === "pickup" && (
-          <form className="px-4 sm:px-6 lg:col-start-1 lg:row-start-1 lg:px-0">
-            <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
-              <div className="h-1 bg-[#02054b]" />
-
-              <div className="flex items-start gap-4 p-5 sm:p-6">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#02054b]/[0.06] text-[#02054b]">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.7}
-                    className="h-6 w-6"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 10h18l-2-6H5l-2 6Zm2 0v10h14V10M9 20v-6h6v6"
-                    />
-                  </svg>
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-base font-bold tracking-tight text-gray-900">
-                    Pengambilan Pesanan di Toko
-                  </h3>
-
-                  <p className="mt-2 text-sm leading-6 text-gray-600">
-                    Silakan ambil pesanan Anda secara langsung di toko kami.
-                    Dengan memilih metode pengambilan di toko, Anda tidak
-                    perlu menunggu pengiriman ke alamat tujuan.
-                  </p>
-                </div>
-              </div>
-            </div>
-          <div className="mx-auto max-w-lg lg:max-w-none">
-            {/* Contact Information */}
-            <section aria-labelledby="contact-info-heading">
-              <div className="mt-6">
-                <label
-                  htmlFor="name-input"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nama
-                </label>
-                <div className="mt-1">
-                  <input
-                    value={checkoutForm.name}
-                    onChange={(e) =>
-                      setCheckoutForm({
-                        ...checkoutForm,
-                        name: e.target.value,
-                      })
-                    }
-                    type="text"
-                    id="name-input"
-                    name="name-input"
-                    autoComplete="given-name"
-                    required
-                    disabled={isSubmitting}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <label
-                  htmlFor="phone-input"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nomor Telepon
-                </label>
-                <div className="mt-1">
-                  <input
-                    value={checkoutForm.phone}
-                    onChange={(e) =>
-                      setCheckoutForm({
-                        ...checkoutForm,
-                        phone: e.target.value,
-                      })
-                    }
-                    type="tel"
-                    id="phone-input"
-                    name="phone-input"
-                    autoComplete="tel"
-                    required
-                    disabled={isSubmitting}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <label
-                  htmlFor="email-address"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Alamat Email
-                </label>
-                <div className="mt-1">
-                  <input
-                    value={checkoutForm.email}
-                    onChange={(e) =>
-                      setCheckoutForm({
-                        ...checkoutForm,
-                        email: e.target.value,
-                      })
-                    }
-                    type="email"
-                    id="email-address"
-                    name="email-address"
-                    autoComplete="email"
-                    required
-                    disabled={isSubmitting}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6">
-                  <label
-                    htmlFor="order-notice"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Catatan
-                  </label>
-                  <div className="mt-1">
-                    <textarea
-                      className="textarea textarea-bordered min-h-32 w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      id="order-notice"
-                      name="order-notice"
-                      autoComplete="order-notice"
-                      disabled={isSubmitting}
-                      value={checkoutForm.orderNotice}
-                      onChange={(e) =>
-                        setCheckoutForm({
-                          ...checkoutForm,
-                          orderNotice: e.target.value,
-                        })
-                      }
-                    ></textarea>
-                  </div>
-                </div>
-                
-                <PickupStoreSelector
-                  selectedStoreId={selectedStoreId}
-                  onSelect={setSelectedStoreId}
-                />
-            </section>
-          </div>
-        </form>
-        )}
-
-        {isLoggedIn && deliveryMethod === "pickup" && (
-          <form className="px-4 sm:px-6 lg:col-start-1 lg:row-start-1 lg:px-0">
-            <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-sm">
-              <div className="h-1 bg-[#02054b]" />
-
-                
-                <PickupStoreSelector
-                  selectedStoreId={selectedStoreId}
-                  onSelect={setSelectedStoreId}
-                />
-          </div>
-        </form>
-        )}
-        
-        {isContactModalOpen && deliveryMethod === "shipping" && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center
-              bg-black/50 p-4"
-            onClick={(event) => {
-              if (event.target === event.currentTarget) {
-                setIsContactModalOpen(false);
-              }
-            }}
-          >
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="contact-modal-title"
-              className="relative max-h-[90vh] w-full max-w-2xl
-                overflow-y-auto rounded-xl bg-white p-5 shadow-xl
-                sm:p-8"
-            >
-              <div className="mb-6 flex items-center justify-between">
-                <h2
-                  id="contact-modal-title"
-                  className="text-xl font-semibold text-gray-900"
-                >
-                  Informasi Pengiriman
-                </h2>
-
-                <button
-                  type="button"
-                  aria-label="Tutup formulir"
-                  onClick={() => setIsContactModalOpen(false)}
-                  className="rounded-md p-2 text-gray-500
-                    hover:bg-gray-100 hover:text-gray-900"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <ContactForm
-                checkoutForm={checkoutForm}
-                setCheckoutForm={setCheckoutForm}
-                isSubmitting={isSubmitting}
-                makePurchase={makePurchase}
-              />
-            </div>
-          </div>
+        {deliveryMethod === "pickup" && (
+          <PickupSection
+            isLoggedIn={isLoggedIn}
+            checkoutForm={checkoutForm}
+            setCheckoutForm={setCheckoutForm}
+            selectedStoreId={selectedStoreId}
+            setSelectedStoreId={setSelectedStoreId}
+            isSubmitting={isSubmitting}
+            deliveryMethod={deliveryMethod}
+            hasSelectedAddress={Boolean(selectedAddress)}
+            onPurchase={() => void makePurchase()}
+            onRegister={() => router.push("/register")}
+          />
         )}
 
         {isSessionLoading ? (

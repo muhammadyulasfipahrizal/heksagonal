@@ -16,6 +16,7 @@ type WishItemProps = {
   image: string;
   slug: string;
   stockAvailabillity: number;
+  view: "mobile" | "desktop";
 };
 
 const WishItem = ({
@@ -25,12 +26,19 @@ const WishItem = ({
   image,
   slug,
   stockAvailabillity,
+  view,
 }: WishItemProps) => {
   const { data: session, status } = useSession();
   const { removeFromWishlist } = useWishlistStore();
   const [loading, setLoading] = useState(false);
 
-  console.log("wishlist price", price);
+  const formattedPrice = new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(Number(price ?? 0));
+
+  const inStock = stockAvailabillity > 0;
 
   const handleRemove = async () => {
     if (loading) return;
@@ -85,78 +93,146 @@ const WishItem = ({
     }
   };
 
-  const formattedPrice = new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(price);
+  const removeButton = (
+    <button
+      type="button"
+      onClick={handleRemove}
+      disabled={loading}
+      aria-label={`Remove ${title} from wishlist`}
+      title="Remove from wishlist"
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {loading ? (
+        <span className="text-sm">…</span>
+      ) : (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-5 w-5"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 7h12m-10 0 .7 13h6.6L16 7M9 7V4h6v3m-5 4v5m4-5v5"
+          />
+        </svg>
+      )}
+    </button>
+  );
+
+  const productImage = (
+    <Link
+      href={`/product/${slug}`}
+      aria-label={`View ${title}`}
+      className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gray-50 sm:h-28 sm:w-28"
+    >
+      {image ? (
+        <Image
+          src={getImageSrc(image)}
+          alt={title}
+          width={112}
+          height={112}
+          sizes="(max-width: 640px) 96px, 112px"
+          className="h-full w-full object-contain p-2"
+          unoptimized
+        />
+      ) : (
+        <span className="px-2 text-center text-xs text-gray-400">
+          No image available
+        </span>
+      )}
+    </Link>
+  );
+
+  const stockBadge = (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+        inStock
+          ? "bg-green-50 text-green-700"
+          : "bg-red-50 text-red-700"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          inStock ? "bg-green-500" : "bg-red-500"
+        }`}
+      />
+      {inStock ? "In Stock" : "Out of Stock"}
+    </span>
+  );
+
+  const productLink = (
+    <Link
+      href={`/product/${slug}`}
+      className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#02054b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#10166b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02054b] focus-visible:ring-offset-2"
+    >
+      View Product
+    </Link>
+  );
+
+  if (view === "mobile") {
+    return (
+      <article className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md sm:p-4">
+        <div className="flex gap-3 sm:gap-4">
+          {productImage}
+
+          <div className="min-w-0 flex-1 py-1">
+            <div className="flex items-start justify-between gap-2">
+              <Link
+                href={`/product/${slug}`}
+                className="line-clamp-2 text-sm font-semibold leading-5 text-gray-800 transition-colors hover:text-[#02054b] sm:text-base"
+              >
+                {title}
+              </Link>
+
+              {removeButton}
+            </div>
+
+            <p className="mt-2 text-base font-bold text-[#02054b] sm:text-lg">
+              {formattedPrice}
+            </p>
+
+            <div className="mt-2">{stockBadge}</div>
+          </div>
+        </div>
+
+        <div className="mt-4 border-t border-gray-100 pt-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs text-gray-500">
+              Product details
+            </span>
+            {productLink}
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
-    <tr className="border-b border-gray-100">
-      <td className="w-12 text-center">
-        <button
-          type="button"
-          onClick={handleRemove}
-          disabled={loading}
-          aria-label={`Remove ${title} from wishlist`}
-          title="Remove from wishlist"
-          className="rounded-md px-2 py-1 text-xl text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-        >
-          {loading ? "…" : "×"}
-        </button>
-      </td>
+    <tr className="transition-colors hover:bg-gray-50/80">
+      <td className="px-4 py-4 text-center">{removeButton}</td>
 
-      <td className="min-w-24 py-4">
+      <td className="px-4 py-4">{productImage}</td>
+
+      <td className="px-4 py-4">
         <Link
           href={`/product/${slug}`}
-          className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg bg-gray-50"
-        >
-          {image ? (
-            <Image
-              src={getImageSrc(image)}
-              alt={title}
-              width={80}
-              height={80}
-              className="h-full w-full object-contain"
-              unoptimized
-            />
-          ) : (
-            <span className="text-xs text-gray-400">No image</span>
-          )}
-        </Link>
-      </td>
-
-      <td className="min-w-40 px-3 py-4 text-left">
-        <Link
-          href={`/product/${slug}`}
-          className="font-medium text-gray-800 transition-colors hover:text-[#02054b]"
+          className="line-clamp-2 font-semibold text-gray-800 transition-colors hover:text-[#02054b]"
         >
           {title}
         </Link>
-
-        <p className="mt-1 text-sm text-gray-500">{formattedPrice}</p>
+        <p className="mt-1.5 font-semibold text-[#02054b]">
+          {formattedPrice}
+        </p>
       </td>
 
-      <td className="min-w-32 px-3 py-4">
-        {stockAvailabillity > 0 ? (
-          <span className="inline-flex rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
-            In Stock
-          </span>
-        ) : (
-          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700">
-            Out of Stock
-          </span>
-        )}
-      </td>
+      <td className="px-4 py-4">{stockBadge}</td>
 
-      <td className="min-w-32 px-3 py-4">
-        <Link
-          href={`/product/${slug}`}
-          className="inline-flex rounded-lg bg-[#02054b] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#10166b]"
-        >
-          View Product
-        </Link>
-      </td>
+      <td className="px-4 py-4">{productLink}</td>
     </tr>
   );
 };

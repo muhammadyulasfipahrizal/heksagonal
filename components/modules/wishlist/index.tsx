@@ -61,6 +61,8 @@ export const WishlistModule = () => {
             ? result.wishlist
             : [];
 
+        console.log("Wishlist API items:", items);
+
         const productArray = items
           .filter((item: any) => item?.product?.id)
           .map((item: any) => {
@@ -76,15 +78,24 @@ export const WishlistModule = () => {
                 }))
               : [];
 
+            const defaultVariant =
+              variants.find((variant: any) => variant.isDefault) ??
+              variants[0];
+
             return {
               id: String(product.id),
               title: product.title ?? "",
-              mainImage: product.mainImage ?? "",
+              mainImage:
+                defaultVariant?.image ??
+                product.mainImage ??
+                "",
               slug: product.slug ?? "",
               stockAvailabillity: Number(product.inStock ?? 0),
               variants,
             };
           });
+
+        console.log("Normalized wishlist:", productArray);
 
         if (!cancelled) {
           setWishlist(productArray);
@@ -153,20 +164,58 @@ export const WishlistModule = () => {
   }
 
   return (
-    <div className="mx-auto max-w-screen-2xl">
+  <section className="w-full" aria-label="My wishlist">
+    {/* Mobile: product cards */}
+    <div className="space-y-3 md:hidden">
+      {wishlist.map((item) => {
+        const variants = Array.isArray(item.variants)
+          ? item.variants
+          : [];
+
+        const defaultVariant =
+          variants.find((variant) => variant.isDefault) ??
+          variants[0];
+
+        return (
+          <WishItem
+            key={`mobile-${item.id}`}
+            view="mobile"
+            id={item.id}
+            title={item.title}
+            price={Number(defaultVariant?.price ?? 0)}
+            image={defaultVariant?.image ?? item.mainImage ?? ""}
+            slug={item.slug}
+            stockAvailabillity={item.stockAvailabillity}
+          />
+        );
+      })}
+    </div>
+
+    {/* Desktop: product table */}
+    <div className="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm md:block">
       <div className="overflow-x-auto">
-        <table className="table text-center">
+        <table className="w-full min-w-[700px] border-collapse text-left">
           <thead>
-            <tr>
-              <th></th>
-              <th className="text-accent-content">Image</th>
-              <th className="text-accent-content">Name</th>
-              <th className="text-accent-content">Stock Status</th>
-              <th className="text-accent-content">Action</th>
+            <tr className="border-b border-gray-200 bg-gray-50">
+              <th className="w-14 px-4 py-4" scope="col">
+                <span className="sr-only">Remove</span>
+              </th>
+              <th className="w-28 px-4 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500" scope="col">
+                Image
+              </th>
+              <th className="px-4 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500" scope="col">
+                Product
+              </th>
+              <th className="w-36 px-4 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500" scope="col">
+                Stock Status
+              </th>
+              <th className="w-40 px-4 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500" scope="col">
+                Action
+              </th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {wishlist.map((item) => {
               const variants = Array.isArray(item.variants)
                 ? item.variants
@@ -178,11 +227,12 @@ export const WishlistModule = () => {
 
               return (
                 <WishItem
-                  key={item.id}
+                  key={`desktop-${item.id}`}
+                  view="desktop"
                   id={item.id}
                   title={item.title}
-                  price={defaultVariant?.price ?? 0}
-                  image={defaultVariant?.image ?? item.mainImage}
+                  price={Number(defaultVariant?.price ?? 0)}
+                  image={defaultVariant?.image ?? item.mainImage ?? ""}
                   slug={item.slug}
                   stockAvailabillity={item.stockAvailabillity}
                 />
@@ -192,5 +242,10 @@ export const WishlistModule = () => {
         </table>
       </div>
     </div>
-  );
+
+    <p className="mt-4 text-center text-xs text-gray-500 md:text-right">
+      {wishlist.length} {wishlist.length === 1 ? "product" : "products"} in your wishlist
+    </p>
+  </section>
+);
 };

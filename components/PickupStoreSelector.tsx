@@ -60,7 +60,7 @@ export default function PickupStoreSelector({
         <h2 className="text-xl font-bold text-gray-900">
           Pilih Lokasi Pengambilan
         </h2>
-        <p className="mt-2 text-sm leading-6 text-gray-600">
+        <p className="mt-2 text-sm leading-6 text-gray-600 hidden lg:block">
           Pilih toko tempat Anda ingin mengambil pesanan.
           Pastikan lokasi sudah sesuai sebelum melanjutkan.
         </p>
@@ -115,7 +115,8 @@ export default function PickupStoreSelector({
       </div>
 
       {selectedStore && (
-        <div className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-white hidden lg:block">
+          {/* Nama toko dan alamat: tampil di semua ukuran layar */}
           <div className="p-4 sm:p-5">
             <h3 className="font-bold text-gray-900">
               {selectedStore.name}
@@ -124,45 +125,31 @@ export default function PickupStoreSelector({
             <p className="mt-2 text-sm leading-6 text-gray-600">
               {selectedStore.address}
             </p>
-
-            {/* <div className="mt-3 space-y-1">
-              {selectedStore.phoneNumbers.map((phone) => (
-                <p key={phone} className="text-sm text-gray-700">
-                  WhatsApp: {phone}
-                </p>
-              ))}
-            </div> */}
           </div>
 
-          <iframe
-            title={`Peta ${selectedStore.name}`}
-            src={getImageSrc(selectedStore.embedUrl)}
-            width="100%"
-            height="300"
-            style={{ border: 0 }}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            allowFullScreen
-          />
+          {/* Google Maps: hanya tampil di desktop */}
+          <div>
+            <iframe
+              title={`Peta ${selectedStore.name}`}
+              src={getImageSrc(selectedStore.embedUrl)}
+              width="100%"
+              height="300"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
 
-          <div className="flex flex-wrap gap-3 p-4 sm:p-5">
-            <a
-              href={selectedStore.mapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-lg bg-[#02054b] px-4 py-3 text-sm font-semibold text-white hover:bg-blue-950"
-            >
-              Buka Google Maps
-            </a>
-
-            {/* <a
-              href={selectedStore.shareUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-            >
-              Buka Sharelok
-            </a> */}
+            <div className="flex flex-wrap gap-3 p-4 sm:p-5">
+              <a
+                href={selectedStore.mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-lg bg-[#02054b] px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-950"
+              >
+                Buka Google Maps
+              </a>
+            </div>
           </div>
         </div>
       )}

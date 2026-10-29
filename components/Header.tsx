@@ -105,7 +105,7 @@ const Header = () => {
               px-3 py-4 lg:mt-4
               sm:gap-5 sm:px-6 sm:py-5
               lg:flex-row lg:items-center lg:justify-between
-              lg:gap-5 lg:px-8 lg:py-0
+              lg:gap-2 lg:px-8 lg:py-0
               xl:px-12
             "
           >
@@ -131,9 +131,81 @@ const Header = () => {
                 />
               </Link>
 
-              {/* Cart on mobile */}
-              <div className="flex shrink-0 items-center lg:hidden">
-                <CartElement />
+              <button
+                type="button"
+                onClick={() => setIsCategoryOpen(true)}
+                aria-label="Buka kategori produk"
+                className="
+                  hidden lg:inline-flex shrink-0
+                  min-h-11 items-center justify-center gap-2
+                  rounded-lg border border-gray-200
+                  px-4 py-2 text-sm font-semibold
+                  text-gray-700 transition
+                  hover:border-blue-600 hover:bg-blue-50 ml-4
+                  focus-visible:outline-none
+                  focus-visible:ring-2 focus-visible:ring-blue-500
+                  xl:min-h-12 xl:gap-2.5 xl:px-5 xl:text-base
+                "
+              >
+                <span aria-hidden="true" className="text-lg xl:text-xl">
+                  ☰
+                </span>
+                <span>Kategori</span>
+              </button>
+
+              {/* Mobile actions */}
+              <div className="flex shrink-0 items-center gap-0.5 sm:gap-1 lg:hidden">
+                <div className="flex size-9 items-center justify-center sm:size-10">
+                  <CartElement />
+                </div>
+
+                <div className="flex size-9 items-center justify-center sm:size-10">
+                  <HeartElement wishQuantity={wishQuantity} />
+                </div>
+
+                {/* Profile */}
+                <Link
+                  href="/profile"
+                  aria-label="Profile"
+                  title="Profile"
+                  className={`
+                    inline-flex size-9 shrink-0 items-center justify-center
+                    rounded-xl transition-colors duration-200
+                    hover:bg-blue-50 hover:text-blue-700
+                    focus-visible:outline-none focus-visible:ring-2
+                    focus-visible:ring-blue-500
+                    sm:size-10
+                    ${
+                      pathname.startsWith("/profile")
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-600"
+                    }
+                  `}
+                >
+                  <FaUser className="size-[18px] sm:size-5" aria-hidden="true" />
+                </Link>
+
+                {/* My Orders */}
+                <Link
+                  href="/orders"
+                  aria-label="My Orders"
+                  title="My Orders"
+                  className={`
+                    inline-flex size-9 shrink-0 items-center justify-center
+                    rounded-xl transition-colors duration-200
+                    hover:bg-blue-50 hover:text-blue-700
+                    focus-visible:outline-none focus-visible:ring-2
+                    focus-visible:ring-blue-500
+                    sm:size-10
+                    ${
+                      pathname.startsWith("/orders")
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-600"
+                    }
+                  `}
+                >
+                  <FaBoxOpen className="size-5 sm:size-[22px]" aria-hidden="true" />
+                </Link>
               </div>
             </div>
 
@@ -157,7 +229,7 @@ const Header = () => {
                 onClick={() => setIsCategoryOpen(true)}
                 aria-label="Buka kategori produk"
                 className="
-                  inline-flex min-h-10 shrink-0
+                  lg:hidden inline-flex min-h-10 shrink-0
                   items-center justify-center gap-2
                   rounded-lg border border-gray-200
                   px-3 py-2 text-sm font-semibold
@@ -184,10 +256,12 @@ const Header = () => {
                   xl:gap-3
                 "
               >
-                <NotificationBell />
 
                 {status === "authenticated" && (
-                  <>
+                  <div className="hidden lg:block">
+
+                    {/* <NotificationBell /> */}
+
                     <HeartElement wishQuantity={wishQuantity} />
 
                     {/* Profile */}
@@ -227,7 +301,7 @@ const Header = () => {
                     >
                       <FaBoxOpen className="size-6" aria-hidden="true" />
                     </Link>
-                  </>
+                  </div>
                 )}
 
                 {/* Cart on tablet and desktop */}
